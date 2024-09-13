@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-scroll";
 import {FaTimes} from "react-icons/fa";
 import { CiMenuFries } from "react-icons/ci";
+import { Link } from "react-router-dom";
 
 
 export default function Header  ()  {
@@ -10,16 +10,16 @@ export default function Header  ()  {
     const content = () => <>
     <div className="lg:hidden block absolute top-16 w-full left-0 right-0 background-[00009c] transition">
         <ul className="text-center text-white text-xl p-20">
-            <Link spy={true} smooth={true}  to="ListaPedidos">
+            <Link spy={true} smooth={true}  to="/ListaPedidos">
                   <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:rounded">Lista de Pedidos</li>
             </Link>
-            <Link  spy={true} smooth={true} to="Cadastro">
+            <Link  spy={true} smooth={true} to="/Cadastro">
                   <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Cadastro</li>
             </Link>
-            <Link spy={true} smooth={true} to="Relatório">
+            <Link spy={true} smooth={true} to="/Relatório">
                   <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Relatório</li>
             </Link>
-            <Link  spy={true} smooth={true} to="Retirada">
+            <Link  spy={true} smooth={true} to="/Retirada">
                   <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Retirada</li>
             </Link>
         </ul>
@@ -27,7 +27,7 @@ export default function Header  ()  {
     </>
     return(  
         <nav>
-            <div className=" h-1px flex-0 z-5 lg:py-4 px-20 py-3 flex">
+            <div className="h-1px flex-0 z-5 lg:py-4 px-20 py-3 flex">
             <div className="flex items-center flex-1">
             <span className="w-[20vh] h-[70px]">
                 <img src="./src/img/Reciclar_Logo_Principal_Vertical_Negativo.png" alt="" />

@@ -1,12 +1,17 @@
-import Header from './components/header'
 import '../src/App.css'
+// REAPROVEITAMENTO DE ESTRUTURA
+import {Outlet} from "react-router-dom";
+
+import Home from './pages/Home'
+import Header from './components/header';
 function App() {
 
   return (
     <>
-      <div className="bg-[#00009c] h-25 media: h-25  ">
+      <div className="bg-[#00009c]">
         <Header />
-        </div>
+        <Outlet />
+      </div>
 
          
       
