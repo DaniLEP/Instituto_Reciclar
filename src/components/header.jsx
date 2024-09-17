@@ -30,7 +30,7 @@ export default function Header  ()  {
             <div className="h-1px flex-0 z-5 lg:py-4 px-20 py-3 flex">
             <div className="flex items-center flex-1">
             <span className="w-[20vh] h-[70px]">
-                <img src="./src/img/Reciclar_Logo_Principal_Vertical_Negativo.png" alt="" />
+                <img src="/public/Reciclar_Logo_Principal_Vertical_Negativo.png" alt="Logo-Instituto-Reciclar" />
             </span>
             </div>
             <div className="lg:flex md:flex  lg: flex-1 items center justify-end text-white !font-['Chakra Petch, sans serif'] hidden">
