@@ -13,10 +13,10 @@ export default function Header  ()  {
             <Link spy={true} smooth={true}  to="/ListaPedidos">
                   <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:rounded">Lista de Pedidos</li>
             </Link>
-            <Link  spy={true} smooth={true} to="/Cadastro">
-                  <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Cadastro</li>
+            <Link  spy={true} smooth={true} to="/RefServidas">
+                  <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Ref.Servidas</li>
             </Link>
-            <Link spy={true} smooth={true} to="/Relatório">
+            <Link spy={true} smooth={true} to="/Relatorio">
                   <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Relatório</li>
             </Link>
             <Link  spy={true} smooth={true} to="/Retirada">
@@ -36,16 +36,16 @@ export default function Header  ()  {
             <div className="lg:flex md:flex  lg: flex-1 items center justify-end text-white !font-['Chakra Petch, sans serif'] hidden">
                 <div className="flex-10 ">
                     <ul className="flex gap-8 mr-16 mt-[20px] text-[12px] ">
-                        <Link spy={true} smooth={true} to="ListaPedidos">
+                        <Link spy={true} smooth={true} to="/ListaPedidos">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Lista de Pedidos</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="Cadastro">
-                            <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Cadastro</li>
+                        <Link spy={true} smooth={true} to="/RefServidas">
+                            <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Ref.Servidas</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="Relatório">
+                        <Link spy={true} smooth={true} to="/Relatorio">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Relatório</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="Retirada">
+                        <Link spy={true} smooth={true} to="/Retirada">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Retirada</li>
                         </Link>
                     </ul>                        

@@ -5,11 +5,16 @@ import App from "./App.jsx"
 // CONFIGURANDO ROUTER
 import { createBrowserRouter, Router, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
-import Cadastro from './pages/Cadastro.jsx'
+import refServidas from './pages/refServidas.jsx'
 import ListaPedidos from './pages/ListaPedidos.jsx'
 import Relatorio from './pages/Relatorio.jsx'
 import Retirada from './pages/Retirada.jsx'
 import ErrorPage from './components/ErrorPage.jsx'
+import Hortalicas from './components/Hortalicas.jsx'
+import Mantimento from './components/Mantimento.jsx'
+import Proteina from './components/Proteina.jsx'
+import OrdersPage from './components/OrdersPage.jsx'
+import ShoppingListPage from './components/ShoppingListPage.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -50,8 +55,8 @@ const router = createBrowserRouter ([
         element: <ListaPedidos />,
       },
       {
-        path: "/Cadastro",
-        element: <Cadastro />,
+        path: "/RefServidas",
+        element: <refServidas />,
       },
       {
         path: "/Retirada",
@@ -60,6 +65,26 @@ const router = createBrowserRouter ([
       {
         path: "/Relatorio",
         element: <Relatorio />,
+      },
+      {
+        path: "/Proteina",
+        element: <Proteina />
+      },
+      {
+        path: "/Mantimento",
+        element: <Mantimento />
+      },
+      {
+        path: "/Hortalicas",
+        element: <Hortalicas />
+      },
+      {
+        path: "/OrdersPage",
+        element: <OrdersPage />,
+      },
+      {
+        path: "shopping-list",
+        element: <ShoppingListPage />,
       },
     ],
   }

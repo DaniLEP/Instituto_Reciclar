@@ -1,5 +1,4 @@
-
-export default function Retirada  ()  {
+export default function refServidas () {
     return(
         <>
         <div className="bg-white">
@@ -8,4 +7,3 @@ export default function Retirada  ()  {
         </>
     )
 }
-
