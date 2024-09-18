@@ -19,7 +19,7 @@ export default function OrdersPage() {
 
       <div onClick={goToEditOrder} style={{maxWidth: "240px", height: "190px", margin: "0 auto", position:"relative", top:"23vh", right: "35vh", backgroundColor: "#fff", padding: "20px", borderRadius: "8px", color: "black", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
         {/* Ao clicar, redireciona para a página de edição do pedido */}
-        <img src="//mensal.svg" className='w-80 h-[130px] align-center'alt="" />
+        <img src="/mensal.svg" className='w-80 h-[130px] align-center'alt="" />
         <h2>Pedido do Mês Anterior</h2>
       </div>
 

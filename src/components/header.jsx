@@ -30,7 +30,7 @@ export default function Header  ()  {
             <div className="h-1px flex-0 z-5 lg:py-4 px-20 py-3 flex">
             <div className="flex items-center flex-1">
             <span style={{width: "40vh", height: "100px", position: "relative", top: "-2vh"}}>
-                <img src="//logo.svg" alt="Logo-Instituto-Reciclar" />
+                <img src="/logo.svg" alt="Logo-Instituto-Reciclar" />
             </span>
             </div>
             <div className="lg:flex md:flex  lg: flex-1 items center justify-end text-white !font-['Chakra Petch, sans serif'] hidden">
