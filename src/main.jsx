@@ -17,6 +17,7 @@ import OrdersPage from './components/OrdersPage.jsx'
 import ShoppingListPage from './components/ShoppingListPage.jsx'
 import OrderDetailsPage from './components/OrderPageDetails.jsx'
 import Refeicoes from './components/Ref.Servidas.jsx'
+import RetiradaProdutos from './components/Retirada.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -95,6 +96,10 @@ const router = createBrowserRouter ([
       {
         path: "/shopping-list",
         element: <ShoppingListPage />,
+      },
+      {
+        path: "/Retirada",
+        element: <RetiradaProdutos />,
       },
     ],
   }

@@ -1,9 +1,10 @@
+import RetiradaProdutos from "../components/Retirada";
 
 export default function Retirada  ()  {
     return(
         <>
-        <div className="bg-white">
-            RETIRADA
+        <div>
+            <RetiradaProdutos />
         </div>
         </>
     )
