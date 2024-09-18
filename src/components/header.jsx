@@ -13,8 +13,8 @@ export default function Header  ()  {
             <Link spy={true} smooth={true}  to="/ListaPedidos">
                   <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:rounded">Lista de Pedidos</li>
             </Link>
-            <Link  spy={true} smooth={true} to="/RefServidas">
-                  <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Ref.Servidas</li>
+            <Link  spy={true} smooth={true} to="/Cadastro">
+                  <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Cadastr0</li>
             </Link>
             <Link spy={true} smooth={true} to="/Relatorio">
                   <li className="my-4 py-4 border-b border-[#00FF62]  border-white hover:bg-white hover:rounded">Relatório</li>
@@ -39,8 +39,8 @@ export default function Header  ()  {
                         <Link spy={true} smooth={true} to="/ListaPedidos">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Lista de Pedidos</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="/RefServidas">
-                            <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Ref.Servidas</li>
+                        <Link spy={true} smooth={true} to="/Cadastro">
+                            <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Cadastro</li>
                         </Link>
                         <Link spy={true} smooth={true} to="/Relatorio">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Relatório</li>

@@ -1,7 +1,9 @@
+import OrdersPage from "./OrdersPage";
+
 export default function Hortalicas () {
-    return(
-        <div>
-            HORTALIÇAS
-        </div>
-    )
+        return(
+            <div>
+                <OrdersPage />
+            </div>
+        )
 }

@@ -5,7 +5,7 @@ import App from "./App.jsx"
 // CONFIGURANDO ROUTER
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
-import refServidas from './pages/refServidas.jsx'
+import Cadastro from './pages/Cadastro.jsx'
 import ListaPedidos from './pages/ListaPedidos.jsx'
 import Relatorio from './pages/Relatorio.jsx'
 import Retirada from './pages/Retirada.jsx'
@@ -16,6 +16,7 @@ import Proteina from './components/Proteina.jsx'
 import OrdersPage from './components/OrdersPage.jsx'
 import ShoppingListPage from './components/ShoppingListPage.jsx'
 import OrderDetailsPage from './components/OrderPageDetails.jsx'
+import Refeicoes from './components/Ref.Servidas.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -56,8 +57,8 @@ const router = createBrowserRouter ([
         element: <ListaPedidos />,
       },
       {
-        path: "/RefServidas",
-        element: <refServidas />,
+        path: "/Cadastro",
+        element: <Cadastro />,
       },
       {
         path: "/Retirada",
@@ -74,6 +75,10 @@ const router = createBrowserRouter ([
       {
         path: "/Mantimento",
         element: <Mantimento />
+      },
+      {
+        path: "/Cad.Refeicoes",
+        element: <Refeicoes />
       },
       {
         path: "/Hortalicas",

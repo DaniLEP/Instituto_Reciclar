@@ -1,4 +1,6 @@
 import Header from "../components/header"
+
+
 export default function Home () {
     return(
         <>
@@ -17,8 +19,8 @@ export default function Home () {
     {/* HEADER */}
       <div className="bg-[#00009c]">
         <Header />
+
       </div>
-        
         </>
     )
 }

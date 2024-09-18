@@ -95,6 +95,7 @@ const ShoppingListPage = () => {
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
             min="1"
+            className="input-text"
             style={{ width: "15%",  padding: "10px",  border: "1px solid rgb(115 113 113)",  borderRadius: "12px",  fontSize: "16px"
             }}
           />
@@ -140,8 +141,7 @@ const ShoppingListPage = () => {
                     <button onClick={() => handleEditProduct(index)} style={{padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"
                     }}>Editar</button>
 
-                    <button onClick={() => handleRemoveProduct(index)} style={{padding: "8px 16px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"
-                    }}>Remover</button>
+                    <button onClick={() => handleRemoveProduct(index)} >Remover</button>
                   </td>
                 </tr>
               ))}
