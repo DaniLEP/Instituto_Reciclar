@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import {FaTimes} from "react-icons/fa";
 import { CiMenuFries } from "react-icons/ci";
 import { Link } from "react-router-dom";
@@ -29,13 +29,13 @@ export default function Header  ()  {
         <nav>
             <div className="h-1px flex-0 z-5 lg:py-4 px-20 py-3 flex">
             <div className="flex items-center flex-1">
-            <span className="w-[20vh] h-[70px]">
-                <img src="/public/Reciclar_Logo_Principal_Vertical_Negativo.png" alt="Logo-Instituto-Reciclar" />
+            <span style={{width: "40vh", height: "100px", position: "relative", top: "-2vh"}}>
+                <img src="/public/logo.svg" alt="Logo-Instituto-Reciclar" />
             </span>
             </div>
             <div className="lg:flex md:flex  lg: flex-1 items center justify-end text-white !font-['Chakra Petch, sans serif'] hidden">
                 <div className="flex-10 ">
-                    <ul className="flex gap-8 mr-16 mt-[20px] text-[12px] ">
+                    <ul className="flex gap-8 mr-16 mt-[20px] text-[20px] ">
                         <Link spy={true} smooth={true} to="/ListaPedidos">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Lista de Pedidos</li>
                         </Link>

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from "./App.jsx"
 // CONFIGURANDO ROUTER
-import { createBrowserRouter, Router, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import refServidas from './pages/refServidas.jsx'
 import ListaPedidos from './pages/ListaPedidos.jsx'
@@ -15,6 +15,7 @@ import Mantimento from './components/Mantimento.jsx'
 import Proteina from './components/Proteina.jsx'
 import OrdersPage from './components/OrdersPage.jsx'
 import ShoppingListPage from './components/ShoppingListPage.jsx'
+import OrderDetailsPage from './components/OrderPageDetails.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -83,7 +84,11 @@ const router = createBrowserRouter ([
         element: <OrdersPage />,
       },
       {
-        path: "shopping-list",
+        path: "/OrderPageDetail",
+        element: <OrderDetailsPage />,
+      },
+      {
+        path: "/shopping-list",
         element: <ShoppingListPage />,
       },
     ],
