@@ -54,43 +54,43 @@ const router = createBrowserRouter ([
         element: <Home />,
       },
       {
-        path: "/ListaPedidos",
+        path: "/lista-pedidos",
         element: <ListaPedidos />,
       },
       {
-        path: "/Cadastro",
+        path: "/cadastro",
         element: <Cadastro />,
       },
       {
-        path: "/Retirada",
+        path: "/retirada",
         element: <Retirada />,
       },
       {
-        path: "/Relatorio",
+        path: "/relatorio",
         element: <Relatorio />,
       },
       {
-        path: "/Proteina",
+        path: "/proteina",
         element: <Proteina />
       },
       {
-        path: "/Mantimento",
+        path: "/mantimento",
         element: <Mantimento />
       },
       {
-        path: "/Cad.Refeicoes",
+        path: "/cad-refeicoes",
         element: <Refeicoes />
       },
       {
-        path: "/Hortalicas",
+        path: "/hortalicas",
         element: <Hortalicas />
       },
       {
-        path: "/OrdersPage",
+        path: "/orders-page",
         element: <OrdersPage />,
       },
       {
-        path: "/OrderPageDetail",
+        path: "/order-page-detail",
         element: <OrderDetailsPage />,
       },
       {
@@ -98,7 +98,7 @@ const router = createBrowserRouter ([
         element: <ShoppingListPage />,
       },
       {
-        path: "/Retirada",
+        path: "/retirada",
         element: <RetiradaProdutos />,
       },
     ],

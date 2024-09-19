@@ -20,27 +20,27 @@ export default function Cadastro  ()  {
                                    textDecoration: "none",
                                    color: "black"
                                 }}>
-                                <Link  spy={true} smooth={true} to={"/Proteina"} onclick="navigateTo('cadastro-proteina')">
+                                <Link  spy={true} smooth={true} to={"/proteina"} onclick="navigateTo('cadastro-proteina')">
                                     <img src="/proteinas.svg" className="ml-11 h-[120px]"/>
                                         <h2 className="text-[40px]">Proteínas</h2>
                                 </Link>
                             </div>
 
                             <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true}  to={"/Mantimento"} onclick="navigateTo('cadastro-mantimentos')">
+                                <Link spy={true} smooth={true}  to={"/mantimento"} onclick="navigateTo('cadastro-mantimentos')">
                                     <img src="/mantimentos.svg" className=" h-[120px]"/>
                                         <h2 className="text-[40px]">Mantimentos</h2>
                                 </Link>
                             </div>
 
                             <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/Hortalicas"} onclick="navigateTo('Hortalicas')">
+                                <Link spy={true} smooth={true} to={"/hortalicas"} onclick="navigateTo('Hortalicas')">
                                     <img src="/hortalicas.svg" className="h-[120px] ml-5"/>
                                         <h2 className="text-[40px]">Hortaliças</h2>
                                 </Link>
                             </div>
                             <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/Cad.Refeicoes"} onclick="navigateTo('Ref.Servidas')">
+                                <Link spy={true} smooth={true} to={"/cad-refeicoes"} onclick="navigateTo('Ref.Servidas')">
                                     <img src="/ref.servidas.svg" className="h-[120px] ml-14"/>
                                         <h2 className="text-[40px]">Ref.Servidas</h2>
                                 </Link>

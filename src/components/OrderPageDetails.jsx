@@ -32,7 +32,7 @@ export default function OrderDetailsPage() {
 
   // Função para redirecionar para a página de pedidos
   const goBackToOrders = () => {
-    navigate('/OrdersPage');
+    navigate('/orders-page');
   };
 
   // Função para salvar o pedido como um arquivo Excel

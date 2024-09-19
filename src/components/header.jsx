@@ -36,16 +36,16 @@ export default function Header  ()  {
             <div className="lg:flex md:flex  lg: flex-1 items center justify-end text-white !font-['Chakra Petch, sans serif'] hidden">
                 <div className="flex-10 ">
                     <ul className="flex gap-8 mr-16 mt-[20px] text-[20px] ">
-                        <Link spy={true} smooth={true} to="/ListaPedidos">
+                        <Link spy={true} smooth={true} to="/lista-pedidos">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Lista de Pedidos</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="/Cadastro">
+                        <Link spy={true} smooth={true} to="/cadastro">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Cadastro</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="/Relatorio">
+                        <Link spy={true} smooth={true} to="/relatorio">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Relatório</li>
                         </Link>
-                        <Link spy={true} smooth={true} to="/Retirada">
+                        <Link spy={true} smooth={true} to="/retirada">
                             <li className="hover:text-[#00FF62] transition border-b-2   hover:border-[#00FF62] cursor-pointer">Retirada</li>
                         </Link>
                     </ul>                        

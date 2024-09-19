@@ -10,7 +10,7 @@ export default function OrdersPage() {
 
   // Função para redirecionar para a página de edição do pedido anterior
   const goToEditOrder = () => {
-    navigate('/OrderPageDetail'); // Substitua '/edit-order' pela rota correta
+    navigate('/order-page-detail'); // Substitua '/edit-order' pela rota correta
   };
 
   return (
@@ -24,7 +24,7 @@ export default function OrdersPage() {
       </div>
 
       <div onClick={goToShoppingList} style={{maxWidth: "240px", height: "190px", margin: "0 auto", position:"relative", top: "-7vh", right:"-40vh", backgroundColor: "#fff", padding: "20px", borderRadius: "8px", color: "black", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
-        <img src='//plus.svg' className='w-60 h-20 align-center' alt='Novo Pedido' />
+        <img src='/plus.svg' className='w-60 h-20 align-center' alt='Novo Pedido' />
         <br />
         <h2>Fazer Novo Pedido</h2>
       </div>
