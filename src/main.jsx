@@ -18,6 +18,13 @@ import ShoppingListPage from './components/ShoppingListPage.jsx'
 import OrderDetailsPage from './components/OrderPageDetails.jsx'
 import Refeicoes from './components/Ref.Servidas.jsx'
 import RetiradaProdutos from './components/Retirada.jsx'
+import RelatorioProteina from './components/RelatorioProteina.jsx'
+import RelatorioDoacoes from './components/RelatorioDoacoes.jsx'
+import RelatorioMantimento from './components/RelatorioMantimento.jsx'
+import RelatorioHortalicas from './components/RelatorioHortalicas.jsx'
+import RelatorioRef from './components/RelatorioRef.jsx'
+import RelatorioRetirada from './components/RelatorioRetirada.jsx'
+import RelatorioAnual from './components/RelatorioAnual.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -100,6 +107,34 @@ const router = createBrowserRouter ([
       {
         path: "/retirada",
         element: <RetiradaProdutos />,
+      },
+      {
+        path: "/relatorio-proteinas",
+        element: <RelatorioProteina />,
+      },
+      {
+        path: "/relatorio-mantimento",
+        element: <RelatorioMantimento />,
+      },
+      {
+        path: "/relatorio-hortalicas",
+        element: <RelatorioHortalicas />,
+      },
+      {
+        path: "/relatorio-doacoes-recebidas",
+        element: <RelatorioDoacoes />,
+      },
+      {
+        path: "/relatorio-refeicoes",
+        element: <RelatorioRef />,
+      },
+      {
+        path: "/relatorio-retiradas",
+        element: <RelatorioRetirada />,
+      },
+      {
+        path: "/relatorio-anual-mensal",
+        element: <RelatorioAnual />,
       },
     ],
   }
