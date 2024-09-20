@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Webcam from 'react-webcam'; // Importar a webcam
 
 const ShoppingListPage = () => {
+  const [sku, setSku] = useState('');
   const [product, setProduct] = useState('');
   const [supplier, setSupplier] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -9,10 +11,11 @@ const ShoppingListPage = () => {
   const [shoppingList, setShoppingList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
+  const [showCamera, setShowCamera] = useState(false); // Controlar se a câmera está visível
 
   // Função para adicionar ou editar um produto
   const handleAddOrEditProduct = () => {
-    const newItem = { product, supplier, quantity, notes };
+    const newItem = { sku, product, supplier, quantity, notes };
 
     if (isEditing) {
       const updatedList = shoppingList.map((item, index) =>
@@ -26,6 +29,7 @@ const ShoppingListPage = () => {
     }
 
     // Limpar campos após adicionar/editar
+    setSku('');
     setProduct('');
     setSupplier('');
     setQuantity(1);
@@ -41,12 +45,20 @@ const ShoppingListPage = () => {
   // Função para iniciar a edição de um produto
   const handleEditProduct = (index) => {
     const item = shoppingList[index];
+    setSku(item.sku);
     setProduct(item.product);
     setSupplier(item.supplier);
     setQuantity(item.quantity);
     setNotes(item.notes);
     setIsEditing(true);
     setCurrentIndex(index);
+  };
+
+  // Capturar o código da SKU da câmera (simulado aqui)
+  const handleCapture = (e) => {
+    const capturedSku = "123456"; // Simulação de captura de código de barras
+    setSku(capturedSku);
+    setShowCamera(false); // Fechar a câmera após captura
   };
 
   return (
@@ -63,6 +75,34 @@ const ShoppingListPage = () => {
       }}>
         {/* Formulário para adicionar ou editar produtos */}
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+          <input
+            type="text"
+            placeholder="Sku"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            style={{
+              width: "20%",
+              padding: "10px",
+              border: "1px solid rgb(115 113 113)",
+              borderRadius: "12px",
+              fontSize: "16px"
+            }}
+          />
+          <button onClick={() => setShowCamera(true)} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
+            Abrir Câmera
+          </button>
+          {showCamera && (
+            <div>
+              <Webcam
+                audio={false}
+                screenshotFormat="image/jpeg"
+                style={{ width: '100%' }}
+              />
+              <button onClick={handleCapture} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
+                Capturar SKU
+              </button>
+            </div>
+          )}
           <input
             type="text"
             placeholder="Produto"
@@ -95,20 +135,16 @@ const ShoppingListPage = () => {
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
             min="1"
-            className="input-text"
-            style={{ width: "15%",  padding: "10px",  border: "1px solid rgb(115 113 113)",  borderRadius: "12px",  fontSize: "16px"
-            }}
+            style={{ width: "15%", padding: "10px", border: "1px solid rgb(115 113 113)", borderRadius: "12px", fontSize: "16px" }}
           />
           <input
             type="text"
             placeholder="Observações"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            style={{ width: "25%", padding: "10px",  border: "1px solid rgb(115 113 113)", borderRadius: "12px",  fontSize: "16px"
-            }}
+            style={{ width: "25%", padding: "10px", border: "1px solid rgb(115 113 113)", borderRadius: "12px", fontSize: "16px" }}
           />
-          <button onClick={handleAddOrEditProduct} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease", whiteSpace: "nowrap"
-          }}>
+          <button onClick={handleAddOrEditProduct} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease", whiteSpace: "nowrap" }}>
             {isEditing ? 'Salvar Alterações' : 'Adicionar Produto'}
           </button>
         </div>
@@ -118,10 +154,10 @@ const ShoppingListPage = () => {
         {shoppingList.length === 0 ? (
           <p className="text-center">Nenhum produto adicionado.</p>
         ) : (
-          <table style={{ marginTop: "5vh", width: '100%', backgroundColor: "#00009C", color: "#fff", borderCollapse: "collapse", textAlign: "center"
-          }}>
+          <table style={{ marginTop: "5vh", width: '100%', backgroundColor: "#00009C", color: "#fff", borderCollapse: "collapse", textAlign: "center" }}>
             <thead>
               <tr>
+                <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Sku</th>
                 <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Produto</th>
                 <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Fornecedor</th>
                 <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
@@ -132,16 +168,16 @@ const ShoppingListPage = () => {
             <tbody>
               {shoppingList.map((item, index) => (
                 <tr key={index} style={{ backgroundColor:"white", color:"black", border: "1 solid black" }}>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.product}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.supplier}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantity}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.notes}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                  
-                    <button onClick={() => handleEditProduct(index)} style={{padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"
-                    }}>Editar</button>
-
-                    <button onClick={() => handleRemoveProduct(index)} >Remover</button>
+                    <button onClick={() => handleEditProduct(index)} style={{padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"}}>
+                      Editar
+                    </button>
+                    <button onClick={() => handleRemoveProduct(index)}>Remover</button>
                   </td>
                 </tr>
               ))}
@@ -149,8 +185,9 @@ const ShoppingListPage = () => {
           </table>
         )}
         <Link to={"/Mantimento"}>
-        <button  style={{padding: "8px 16px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"
-        }}>Voltar</button>
+          <button style={{ padding: "8px 16px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
+            Voltar
+          </button>
         </Link>
       </div>
     </div>
