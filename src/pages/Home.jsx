@@ -18,7 +18,6 @@ export default function Home () {
     {/* HEADER */}
       <div className="bg-[#00009c]">
         <Header />
-
       </div>
         </>
     )

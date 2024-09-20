@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // Dados fictícios para exemplificação
 const produtosData = [
@@ -184,6 +185,11 @@ const RetiradaProdutos = () => {
           </div>
         )}
       </div>
+      <Link to={'/'}>
+      <button type="button" id="return"  style={{ position: "absolute", top: "18vh", background: "none", border: "none", right:"42vh" }}>
+          <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+        </button>
+        </Link>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const ShoppingListPage = () => {
   const [sku, setSku] = useState('');
@@ -225,6 +226,11 @@ const ShoppingListPage = () => {
           </table>
         )}
       </div>
+      <Link to={'/orders-page'}>
+      <button type="button" id="return"  style={{ position: "absolute", top: "22vh", background: "none", border: "none", right:"24vh" }}>
+          <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+        </button>
+        </Link>
     </div>
   );
 };
