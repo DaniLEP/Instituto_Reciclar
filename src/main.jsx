@@ -25,6 +25,8 @@ import RelatorioHortalicas from './components/RelatorioHortalicas.jsx'
 import RelatorioRef from './components/RelatorioRef.jsx'
 import RelatorioRetirada from './components/RelatorioRetirada.jsx'
 import RelatorioAnual from './components/RelatorioAnual.jsx'
+import OrderStatusPage from './components/OrderStatusPage.jsx'
+import EditOrderPage from './components/EditOrderPage.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -136,6 +138,18 @@ const router = createBrowserRouter ([
         path: "/relatorio-anual-mensal",
         element: <RelatorioAnual />,
       },
+      {
+        path: "/edit-order",
+        element: <OrderDetailsPage />,
+      },
+      {
+        path: "/order-status",
+        element: <OrderStatusPage />
+      },
+      {
+      path: '/edit-order/:id',
+      element: <EditOrderPage />
+    }
     ],
   }
 ])
