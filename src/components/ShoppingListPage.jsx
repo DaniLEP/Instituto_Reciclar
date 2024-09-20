@@ -119,8 +119,16 @@ const ShoppingListPage = () => {
         )}
         
         {/* Scanner de código de barras */}
-        <video ref={videoRef} style={{ width: '100%', height: 'auto', borderRadius: '8px', marginBottom: '20px' }} />
-
+        <video
+  id="video"
+  style={{
+    width: '300px', // Defina a largura desejada
+    height: 'auto', // Mantém a proporção da altura
+    border: '2px solid #000', // Bordas opcionais para visualizar o vídeo
+    borderRadius: '8px' // Bordas arredondadas opcionais
+  }}
+  autoPlay
+></video>
         {/* Formulário para adicionar ou editar produtos */}
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
           <input
