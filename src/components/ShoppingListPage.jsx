@@ -61,6 +61,11 @@ const ShoppingListPage = () => {
     setShowCamera(false); // Fechar a câmera após captura
   };
 
+  // Definir o uso da câmera traseira
+  const videoConstraints = {
+    facingMode: { exact: "environment" } // Definir para usar a câmera traseira
+  };
+
   return (
     <div style={{ background: "#00009c", padding: '20px', color: "white", minHeight: '100vh' }}>
       <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold" , fontFamily: "chakra petch"}}>Lista de Compras</h1>
@@ -96,6 +101,7 @@ const ShoppingListPage = () => {
               <Webcam
                 audio={false}
                 screenshotFormat="image/jpeg"
+                videoConstraints={videoConstraints} // Usar a câmera traseira
                 style={{ width: '100%' }}
               />
               <button onClick={handleCapture} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
