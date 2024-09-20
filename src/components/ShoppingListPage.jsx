@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 
 const ShoppingListPage = () => {
   const [sku, setSku] = useState('');
@@ -120,15 +119,17 @@ const ShoppingListPage = () => {
         
         {/* Scanner de código de barras */}
         <video
-  id="video"
-  style={{
-    width: '300px', // Defina a largura desejada
-    height: 'auto', // Mantém a proporção da altura
-    border: '2px solid #000', // Bordas opcionais para visualizar o vídeo
-    borderRadius: '8px' // Bordas arredondadas opcionais
-  }}
-  autoPlay
-></video>
+          id="video"
+          style={{
+            width: '200px', // Reduzido para 200px de largura
+            height: 'auto', // Mantém a proporção da altura
+            border: '2px solid #000', // Bordas opcionais para visualizar o vídeo
+            borderRadius: '8px' // Bordas arredondadas opcionais
+          }}
+          autoPlay
+          ref={videoRef} // Atribuindo a referência ao vídeo
+        ></video>
+
         {/* Formulário para adicionar ou editar produtos */}
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
           <input
@@ -208,16 +209,14 @@ const ShoppingListPage = () => {
             </thead>
             <tbody>
               {shoppingList.map((item, index) => (
-                <tr key={index} style={{ backgroundColor: "white", color: "black", border: "1 solid black" }}>
+                <tr key={index}>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.product}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.supplier}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantity}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.notes}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                    <button onClick={() => handleEditProduct(index)} style={{ padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
-                      Editar
-                    </button>
+                    <button onClick={() => handleEditProduct(index)} style={{ marginRight: '10px' }}>Editar</button>
                     <button onClick={() => handleRemoveProduct(index)}>Remover</button>
                   </td>
                 </tr>
@@ -225,11 +224,6 @@ const ShoppingListPage = () => {
             </tbody>
           </table>
         )}
-        <Link to={"/Mantimento"}>
-          <button style={{ padding: "8px 16px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
-            Voltar
-          </button>
-        </Link>
       </div>
     </div>
   );
