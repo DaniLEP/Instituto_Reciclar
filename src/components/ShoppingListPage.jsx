@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner'; // Importar o scanner de código de barras
 
 const ShoppingListPage = () => {
   const [sku, setSku] = useState('');
@@ -11,7 +10,9 @@ const ShoppingListPage = () => {
   const [shoppingList, setShoppingList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
-  const [showScanner, setShowScanner] = useState(false); // Controla o scanner
+  const videoRef = useRef(null); // Referência para o vídeo da câmera
+  const [isCameraActive, setIsCameraActive] = useState(false); // Estado para controlar se a câmera está ativa
+  const [isBarcodeSupported, setIsBarcodeSupported] = useState(true); // Verificação de suporte ao BarcodeDetector
 
   // Função para adicionar ou editar um produto
   const handleAddOrEditProduct = () => {
@@ -54,9 +55,55 @@ const ShoppingListPage = () => {
     setCurrentIndex(index);
   };
 
+  // Função para iniciar o scanner
+  const startCamera = () => {
+    if (!('BarcodeDetector' in window)) {
+      setIsBarcodeSupported(false); // Se o navegador não suportar, exibe uma mensagem
+      return;
+    }
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } }) // Câmera traseira
+      .then((stream) => {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setIsCameraActive(true);
+      })
+      .catch((err) => console.error('Erro ao acessar a câmera: ', err));
+  };
+
+  // Função para escanear código de barras
+  const scanBarcode = async () => {
+    if (videoRef.current && 'BarcodeDetector' in window) {
+      const barcodeDetector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
+
+      try {
+        const barcodes = await barcodeDetector.detect(videoRef.current);
+        if (barcodes.length > 0) {
+          setSku(barcodes[0].rawValue); // Captura o valor do código de barras
+        }
+      } catch (err) {
+        console.error('Erro ao detectar código de barras: ', err);
+      }
+    }
+  };
+
+  // Usando o efeito para escanear a cada frame
+  useEffect(() => {
+    let scanInterval;
+    if (isCameraActive) {
+      scanInterval = setInterval(scanBarcode, 500); // Faz o scanner a cada 500ms
+    }
+    return () => clearInterval(scanInterval); // Limpa o intervalo ao desmontar
+  }, [isCameraActive]);
+
+  useEffect(() => {
+    startCamera(); // Inicia a câmera ao carregar a página
+  }, []);
+
   return (
     <div style={{ background: "#00009c", padding: '20px', color: "white", minHeight: '100vh' }}>
-      <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold" , fontFamily: "chakra petch"}}>Lista de Compras</h1>
+      <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold", fontFamily: "chakra petch" }}>Lista de Compras</h1>
       <div style={{
         maxWidth: "1100px",
         margin: "0 auto",
@@ -66,6 +113,14 @@ const ShoppingListPage = () => {
         color: "black",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
       }}>
+        {/* Verifica se o navegador suporta a API */}
+        {!isBarcodeSupported && (
+          <p style={{ color: "red", textAlign: "center" }}>Seu navegador não suporta o BarcodeDetector.</p>
+        )}
+        
+        {/* Scanner de código de barras */}
+        <video ref={videoRef} style={{ width: '100%', height: 'auto', borderRadius: '8px', marginBottom: '20px' }} />
+
         {/* Formulário para adicionar ou editar produtos */}
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
           <input
@@ -81,29 +136,6 @@ const ShoppingListPage = () => {
               fontSize: "16px"
             }}
           />
-          <button onClick={() => setShowScanner(true)} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
-            Abrir Scanner
-          </button>
-          
-          {/* Scanner de código de barras */}
-          {showScanner && (
-            <div>
-              <BarcodeScannerComponent
-                width={400}
-                height={300}
-                onUpdate={(err, result) => {
-                  if (result) {
-                    setSku(result.text); // Define a SKU automaticamente
-                    setShowScanner(false); // Fechar scanner após captura
-                  } else if (err) {
-                    console.error(err); // Tratamento de erro (opcional)
-                  }
-                }}
-                facingMode="environment" // Usar a câmera traseira
-              />
-            </div>
-          )}
-          
           <input
             type="text"
             placeholder="Produto"
@@ -168,14 +200,14 @@ const ShoppingListPage = () => {
             </thead>
             <tbody>
               {shoppingList.map((item, index) => (
-                <tr key={index} style={{ backgroundColor:"white", color:"black", border: "1 solid black" }}>
+                <tr key={index} style={{ backgroundColor: "white", color: "black", border: "1 solid black" }}>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.product}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.supplier}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantity}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.notes}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                    <button onClick={() => handleEditProduct(index)} style={{padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease"}}>
+                    <button onClick={() => handleEditProduct(index)} style={{ padding: "8px 16px", marginRight: "10px", border: "none", background: "#F20DE7", color: "#fff", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
                       Editar
                     </button>
                     <button onClick={() => handleRemoveProduct(index)}>Remover</button>
