@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Webcam from 'react-webcam'; // Importar a webcam
+import BarcodeScannerComponent from 'react-qr-barcode-scanner'; // Importar o scanner de código de barras
 
 const ShoppingListPage = () => {
   const [sku, setSku] = useState('');
@@ -11,7 +11,7 @@ const ShoppingListPage = () => {
   const [shoppingList, setShoppingList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
-  const [showCamera, setShowCamera] = useState(false); // Controlar se a câmera está visível
+  const [showScanner, setShowScanner] = useState(false); // Controla o scanner
 
   // Função para adicionar ou editar um produto
   const handleAddOrEditProduct = () => {
@@ -54,18 +54,6 @@ const ShoppingListPage = () => {
     setCurrentIndex(index);
   };
 
-  // Capturar o código da SKU da câmera (simulado aqui)
-  const handleCapture = (e) => {
-    const capturedSku = "123456"; // Simulação de captura de código de barras
-    setSku(capturedSku);
-    setShowCamera(false); // Fechar a câmera após captura
-  };
-
-  // Definir o uso da câmera traseira
-  const videoConstraints = {
-    facingMode: { exact: "environment" } // Definir para usar a câmera traseira
-  };
-
   return (
     <div style={{ background: "#00009c", padding: '20px', color: "white", minHeight: '100vh' }}>
       <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold" , fontFamily: "chakra petch"}}>Lista de Compras</h1>
@@ -93,22 +81,29 @@ const ShoppingListPage = () => {
               fontSize: "16px"
             }}
           />
-          <button onClick={() => setShowCamera(true)} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
-            Abrir Câmera
+          <button onClick={() => setShowScanner(true)} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
+            Abrir Scanner
           </button>
-          {showCamera && (
+          
+          {/* Scanner de código de barras */}
+          {showScanner && (
             <div>
-              <Webcam
-                audio={false}
-                screenshotFormat="image/jpeg"
-                videoConstraints={videoConstraints} // Usar a câmera traseira
-                style={{ width: '100%' }}
+              <BarcodeScannerComponent
+                width={400}
+                height={300}
+                onUpdate={(err, result) => {
+                  if (result) {
+                    setSku(result.text); // Define a SKU automaticamente
+                    setShowScanner(false); // Fechar scanner após captura
+                  } else if (err) {
+                    console.error(err); // Tratamento de erro (opcional)
+                  }
+                }}
+                facingMode="environment" // Usar a câmera traseira
               />
-              <button onClick={handleCapture} style={{ padding: "12px 20px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease" }}>
-                Capturar SKU
-              </button>
             </div>
           )}
+          
           <input
             type="text"
             placeholder="Produto"
