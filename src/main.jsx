@@ -27,8 +27,8 @@ import RelatorioRetirada from './components/RelatorioRetirada.jsx'
 import RelatorioAnual from './components/RelatorioAnual.jsx'
 import OrderStatusPage from './components/OrderStatusPage.jsx'
 import EditOrderPage from './components/EditOrderPage.jsx'
-import CadastroGeral from './components/CadProdutos.jsx'
 import EntradaProdutos from './components/Entrada.jsx'
+import CadProdutos from './components/CadProdutos.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -154,7 +154,7 @@ const router = createBrowserRouter ([
       },
       {
         path: '/cadastro-geral',
-        element: <CadastroGeral />
+        element: <CadProdutos />
       },
       {
         path: '/entrada-produtos',
