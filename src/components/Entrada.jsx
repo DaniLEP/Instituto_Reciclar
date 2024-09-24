@@ -202,7 +202,7 @@ function ProductEntry() {
             style={{
               width: '50%',       // Reduz a largura para 50%
               display: 'block',    // Garante que seja um bloco
-              margin: '0 auto',    // Centraliza o vídeo horizontalmente
+              margin: '0 auto 20px auto', // Adiciona margem inferior
               borderRadius: '10px'
             }}
           ></video>
