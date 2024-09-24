@@ -79,21 +79,7 @@ const TableData = styled.td`
   padding: 8px;
 `;
 
-const ActionButton = styled.button`
-  padding: 12px 20px;
-  background: #F20DE7;
-  color: #fff;
-  border-radius: 12px;
-  cursor: pointer;
-  border: none;
-  margin-top: 10px;
-
-  &:hover {
-    background-color: #d10ccf;
-  }
-`;
-
-const RemoveButton = styled(ActionButton)`
+const ActionButton = styled(Button)`
   margin-left: 10px;
 `;
 
@@ -113,41 +99,39 @@ function CadProdutos() {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if ('BarcodeDetector' in window) {
-      const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8'] });
+    const initBarcodeScanner = async () => {
+      if ('BarcodeDetector' in window) {
+        const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8'] });
+        
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
 
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.play();
-          }
-        })
-        .catch(console.error);
+          const scanBarcode = async () => {
+            const barcodes = await barcodeDetector.detect(videoRef.current);
+            if (barcodes.length > 0) {
+              setSku(barcodes[0].rawValue);  // Preenche o SKU automaticamente
+            }
+          };
 
-      const scanBarcode = () => {
-        if (videoRef.current) {
-          barcodeDetector.detect(videoRef.current)
-            .then(barcodes => {
-              if (barcodes.length > 0) {
-                setSku(barcodes[0].rawValue);  // Preenche o SKU automaticamente
-              }
-            })
-            .catch(console.error);
+          const interval = setInterval(scanBarcode, 1000);  // Verifica o código a cada segundo
+          return () => clearInterval(interval);
+        } catch (error) {
+          console.error('Erro ao acessar a câmera:', error);
         }
-      };
+      } else {
+        alert('API BarcodeDetector não é suportada no seu navegador.');
+      }
+    };
 
-      const interval = setInterval(scanBarcode, 1000);  // Verifica o código a cada segundo
+    initBarcodeScanner();
 
-      return () => {
-        clearInterval(interval);
-        if (videoRef.current && videoRef.current.srcObject) {
-          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-        }
-      };
-    } else {
-      alert('API BarcodeDetector não é suportada no seu navegador.');
-    }
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const handleSave = () => {
@@ -156,17 +140,21 @@ function CadProdutos() {
       setProducts([...products, newProduct]);
 
       // Limpa os campos após adicionar o produto
-      setSku('');
-      setName('');
-      setSupplier('');
-      setUnit('');
-      setQuantity('');
-      setDateAdded('');
-      setExpiryDate('');
-      setUnitPrice('');
-      setTotalPrice('');
-      setType('');
+      resetForm();
     }
+  };
+
+  const resetForm = () => {
+    setSku('');
+    setName('');
+    setSupplier('');
+    setUnit('');
+    setQuantity('');
+    setDateAdded('');
+    setExpiryDate('');
+    setUnitPrice('');
+    setTotalPrice('');
+    setType('');
   };
 
   const handleRemove = (index) => {
@@ -186,7 +174,7 @@ function CadProdutos() {
           <video
             ref={videoRef}
             style={{
-              width: '100%',  // 100% para ocupar toda a largura
+              width: '100%',
               display: 'block',
               marginBottom: '20px',
               borderRadius: '10px'
@@ -326,7 +314,7 @@ function CadProdutos() {
                   <TableData>{product.totalPrice}</TableData>
                   <TableData>{product.type}</TableData>
                   <TableData>
-                    <RemoveButton onClick={() => handleRemove(index)}>Remover</RemoveButton>
+                    <ActionButton onClick={() => handleRemove(index)}>Remover</ActionButton>
                   </TableData>
                 </tr>
               ))}
