@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
+import { Link } from 'react-router-dom';
+
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -321,6 +323,11 @@ function CadProdutos() {
             </tbody>
           </Table>
         )}
+          <Link to={'/cadastro'}>
+            <button type="button" id="return"  style={{ position: "absolute", top: "19vh", background: "none", border:"none", right:"30vh" }}>
+              <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+            </button>
+        </Link>
       </Container>
     </>
   );

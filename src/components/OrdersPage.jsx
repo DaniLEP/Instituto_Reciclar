@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 export default function OrdersPage() {
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export default function OrdersPage() {
           margin: "0 auto",
           position: "relative",
           top: "20vh",
-          right: "-29vh",
+          right: "-2vh",
           backgroundColor: "#fff",
           padding: "20px",
           borderRadius: "8px",
@@ -47,7 +47,7 @@ export default function OrdersPage() {
           margin: "0px auto",
           position: "relative",
           top: "-10vh",
-          right: "29vh",
+          right: "43vh",
           background: "rgb(255, 255, 255)",
           padding: "20px",
           borderRadius: "8px",
@@ -55,10 +55,27 @@ export default function OrdersPage() {
           boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 8px"
         }}
       >
+        
         <img src='/status.svg' className='w-60 h-20 align-center' alt='Status do Pedido' />
         <br />
         <h2>Status do Pedido</h2>
       </div>
+      <div className="card" style={{
+          maxWidth: "240px",
+          height: "190px",
+          margin: "0 auto",
+          position: "relative",
+          top: "-39vh",
+          right: "-47vh",
+          backgroundColor: "#fff",
+          padding: "20px",
+          borderRadius: "8px",
+          color: "black",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"}}>
+        <Link spy={true} smooth={true} to={"/lista-pedidos"} onclick="navigateTo('Home')">
+          <img src="/return.svg" className="h-[120px] ml-7 "/>
+        </Link>
+       </div>
     </div>
   );
 };

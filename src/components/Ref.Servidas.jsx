@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
+import { Link } from 'react-router-dom';
 
 const Refeicoes = () => {
   const [formData, setFormData] = useState({
@@ -158,6 +159,11 @@ const Refeicoes = () => {
           </tbody>
         </table>
       </div>
+      <Link to={'/cadastro'}>
+            <button type="button" id="return"  style={{ position: "absolute", top: "37vh", background: "none", border:"none", right:"66vh" }}>
+              <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+            </button>
+        </Link>
     </div>
   );
 };
