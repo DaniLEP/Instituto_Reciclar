@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 
 // Estilos globais
@@ -195,14 +195,17 @@ function ProductEntry() {
         Entrada de Produtos
       </h1>
       <Container>
-        <FormGroup>
-          <Label>SKU (Escaneie o código de barras):</Label>
-          <Input
-            type="text"
-            value={sku}
-            placeholder="Escaneie o código de barras"
-            readOnly
-          />
+      <FormGroup>
+          <Label>Scanner de Código de Barras:</Label>
+          <video
+            ref={videoRef}
+            style={{
+              width: '50%',       // Reduz a largura para 50%
+              display: 'block',    // Garante que seja um bloco
+              margin: '0 auto',    // Centraliza o vídeo horizontalmente
+              borderRadius: '10px'
+            }}
+          ></video>
         </FormGroup>
 
         <FormGroup>
