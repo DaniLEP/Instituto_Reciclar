@@ -236,6 +236,7 @@ function ProductEntry() {
             <option value="proteina">Proteína</option>
             <option value="mantimento">Mantimento</option>
             <option value="hortalicas">Hortaliças</option>
+            <option value="diversos">Diversos</option>
           </Select>
         </FormGroup>
 
