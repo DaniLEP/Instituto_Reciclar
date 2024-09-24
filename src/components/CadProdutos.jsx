@@ -174,7 +174,7 @@ function CadProdutos() {
           <video
             ref={videoRef}
             style={{
-              width: '100%',
+              width: '50%', // Ajuste o tamanho aqui
               display: 'block',
               marginBottom: '20px',
               borderRadius: '10px'
