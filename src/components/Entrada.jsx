@@ -209,6 +209,16 @@ function ProductEntry() {
         </FormGroup>
 
         <FormGroup>
+          <Label>SKU:</Label>
+          <Input
+            type="text"
+            value={sku}
+            readOnly // Torna o campo somente leitura
+            placeholder="SKU será preenchido automaticamente"
+          />
+        </FormGroup>
+
+        <FormGroup>
           <Label>Nome do Produto:</Label>
           <Input
             type="text"
