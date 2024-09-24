@@ -8,7 +8,7 @@ export default function Header  ()  {
     const [click, setClick] = useState(false);
     const handleClick = () => setClick(!click);
     const content = () => <>
-    <div className="lg:hidden block absolute top-16 w-full left-0 right-0 background-[00009c] transition">
+    <div className="lg:hidden block relative top-16 w-full left-0 right-0 background-[00009c] transition">
         <ul className="text-center text-white text-xl p-20">
             <Link spy={true} smooth={true}  to="/ListaPedidos">
                   <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:rounded">Lista de Pedidos</li>

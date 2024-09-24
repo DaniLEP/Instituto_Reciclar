@@ -8,11 +8,6 @@ export default function OrdersPage() {
     navigate('/shopping-list');
   };
 
-  // Função para redirecionar para a página de edição do pedido
-  const goToEditOrder = () => {
-    navigate('/edit-order'); // Ajuste a rota para a página de edição correta
-  };
-
   // Função para visualizar o status dos pedidos
   const goToOrderStatus = () => {
     navigate('/order-status'); // Rota para a página de status dos pedidos
@@ -23,27 +18,6 @@ export default function OrdersPage() {
       <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold", fontFamily: "chakra petch" }}>
         Consulta de Pedido
       </h1>
-
-      <div
-        onClick={goToEditOrder}
-        style={{
-          maxWidth: "240px",
-          height: "190px",
-          margin: "0 auto",
-          position: "relative",
-          top: "23vh",
-          right: "54vh",
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "8px",
-          color: "black",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
-        }}
-      >
-        <img src="/mensal.svg" className='w-80 h-[130px] align-center' alt="" />
-        <h2>Pedido do Mês Anterior</h2>
-      </div>
-
       <div
         onClick={goToShoppingList}
         style={{
@@ -51,8 +25,8 @@ export default function OrdersPage() {
           height: "190px",
           margin: "0 auto",
           position: "relative",
-          top: "-7vh",
-          right: "-40vh",
+          top: "20vh",
+          right: "-29vh",
           backgroundColor: "#fff",
           padding: "20px",
           borderRadius: "8px",
@@ -72,8 +46,8 @@ export default function OrdersPage() {
           height: "190px",
           margin: "0px auto",
           position: "relative",
-          top: "-37vh",
-          right: "6vh",
+          top: "-10vh",
+          right: "29vh",
           background: "rgb(255, 255, 255)",
           padding: "20px",
           borderRadius: "8px",

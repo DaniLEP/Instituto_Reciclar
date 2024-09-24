@@ -27,6 +27,8 @@ import RelatorioRetirada from './components/RelatorioRetirada.jsx'
 import RelatorioAnual from './components/RelatorioAnual.jsx'
 import OrderStatusPage from './components/OrderStatusPage.jsx'
 import EditOrderPage from './components/EditOrderPage.jsx'
+import CadastroGeral from './components/CadProdutos.jsx'
+import EntradaProdutos from './components/Entrada.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -147,9 +149,18 @@ const router = createBrowserRouter ([
         element: <OrderStatusPage />
       },
       {
-      path: '/edit-order/:id',
-      element: <EditOrderPage />
-    }
+        path: '/edit-order/:id',
+        element: <EditOrderPage />
+      },
+      {
+        path: '/cadastro-geral',
+        element: <CadastroGeral />
+      },
+      {
+        path: '/entrada-produtos',
+        element: <EntradaProdutos />
+      },
+      
     ],
   }
 ])

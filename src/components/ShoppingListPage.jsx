@@ -211,7 +211,6 @@ const ShoppingListPage = () => {
             <tbody>
               {shoppingList.map((item, index) => (
                 <tr key={index}>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.product}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.supplier}</td>
                   <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantity}</td>
