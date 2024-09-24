@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 
-// Estilos globais para personalizar a página
+// Estilos globais
 const GlobalStyle = createGlobalStyle`
   body {
     background-color: #00009C;
@@ -12,7 +12,6 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-// Estilização do container
 const Container = styled.div`
   max-width: 800px;
   margin: 50px auto;
@@ -22,7 +21,6 @@ const Container = styled.div`
   border-radius: 10px;
 `;
 
-// Estilização dos formulários e botões
 const FormGroup = styled.div`
   margin-bottom: 15px;
 `;
@@ -51,13 +49,12 @@ const Select = styled.select`
 
 const Button = styled.button`
   padding: 12px 20px;
-  background: #F20DE7; 
-  color: #fff; 
-  border-radius: 12px; 
-  cursor: pointer; 
-  border: none; 
-  transition: background-color 0.3s ease; 
-  white-space: nowrap;
+  background: #F20DE7;
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
   margin-top: 10px;
 
   &:hover {
@@ -83,16 +80,12 @@ const TableData = styled.td`
 `;
 
 const ActionButton = styled.button`
-  position: relative;
-  left: 39px;
   padding: 12px 20px;
-  background: #F20DE7; 
-  color: #fff; 
-  border-radius: 12px; 
-  cursor: pointer; 
-  border: none; 
-  transition: background-color 0.3s ease; 
-  white-space: nowrap;
+  background: #F20DE7;
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
   margin-top: 10px;
 
   &:hover {
@@ -101,21 +94,7 @@ const ActionButton = styled.button`
 `;
 
 const RemoveButton = styled(ActionButton)`
-  padding: 12px 20px;
-  background: #F20DE7; 
-  color: #fff; 
-  border-radius: 12px; 
-  cursor: pointer; 
-  border: none; 
-  transition: background-color 0.3s ease; 
-  white-space: nowrap;
-  margin-top: 10px; 
   margin-left: 10px;
-
-  &:hover {
-    background-color: #d10ccf;
-  }
-  }
 `;
 
 function ProductEntry() {
@@ -127,10 +106,45 @@ function ProductEntry() {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
-  const handleScan = (event) => {
-    const scannedSku = event.target.value;
-    setSku(scannedSku);
-  };
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if ('BarcodeDetector' in window) {
+      const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8'] });
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+          }
+        })
+        .catch(console.error);
+
+      const scanBarcode = () => {
+        if (videoRef.current) {
+          barcodeDetector.detect(videoRef.current)
+            .then(barcodes => {
+              if (barcodes.length > 0) {
+                setSku(barcodes[0].rawValue);  // Preenche o SKU automaticamente
+              }
+            })
+            .catch(console.error);
+        }
+      };
+
+      const interval = setInterval(scanBarcode, 1000);  // Verifica o código a cada segundo
+
+      return () => {
+        clearInterval(interval);
+        if (videoRef.current && videoRef.current.srcObject) {
+          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        }
+      };
+    } else {
+      alert('API BarcodeDetector não é suportada no seu navegador.');
+    }
+  }, []);
 
   const handleSave = () => {
     if (sku && name && type && date) {
@@ -186,8 +200,8 @@ function ProductEntry() {
           <Input
             type="text"
             value={sku}
-            onChange={handleScan}
             placeholder="Escaneie o código de barras"
+            readOnly
           />
         </FormGroup>
 
@@ -222,7 +236,12 @@ function ProductEntry() {
 
         <Button onClick={handleSave}>{isEditing ? 'Atualizar Produto' : 'Salvar Produto'}</Button>
 
-        {/* Tabela de Produtos Adicionados */}
+        {/* Vídeo do scanner */}
+        <FormGroup>
+          <Label>Scanner de Código de Barras:</Label>
+          <video ref={videoRef} style={{ width: '100%', borderRadius: '10px' }}></video>
+        </FormGroup>
+
         {products.length > 0 && (
           <>
             <Table>
