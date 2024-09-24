@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
+import { Link } from 'react-router-dom';
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -279,6 +280,11 @@ function ProductEntry() {
             <Button onClick={handleStoreProducts}>Guardar Produtos</Button>
           </>
         )}
+        <Link to={'/orders-page'}>
+          <button type="button" id="return"  style={{ position: "absolute", top: "27vh", background: "none", border:"none", right:"44vh" }}>
+            <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+          </button>
+        </Link>
       </Container>
     </>
   );
