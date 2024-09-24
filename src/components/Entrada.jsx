@@ -280,7 +280,7 @@ function ProductEntry() {
             <Button onClick={handleStoreProducts}>Guardar Produtos</Button>
           </>
         )}
-        <Link to={'/orders-page'}>
+        <Link to={'/cadastro'}>
           <button type="button" id="return"  style={{ position: "absolute", top: "27vh", background: "none", border:"none", right:"44vh" }}>
             <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
           </button>
