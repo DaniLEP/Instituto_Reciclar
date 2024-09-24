@@ -195,7 +195,7 @@ function ProductEntry() {
         Entrada de Produtos
       </h1>
       <Container>
-      <FormGroup>
+        <FormGroup>
           <Label>Scanner de Código de Barras:</Label>
           <video
             ref={videoRef}
@@ -238,12 +238,6 @@ function ProductEntry() {
         </FormGroup>
 
         <Button onClick={handleSave}>{isEditing ? 'Atualizar Produto' : 'Salvar Produto'}</Button>
-
-        {/* Vídeo do scanner */}
-        <FormGroup>
-          <Label>Scanner de Código de Barras:</Label>
-          <video ref={videoRef} style={{ width: '100%', borderRadius: '10px' }}></video>
-        </FormGroup>
 
         {products.length > 0 && (
           <>
