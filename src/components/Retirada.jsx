@@ -361,8 +361,7 @@ const RetiradaProdutos = () => {
 
         {produtoSelecionado && (
           <div style={{ marginTop: '20px' }}>
-            <h2 className='text-center'>Retirar Produto</h2>
-            <br />
+            <h2 className='text-center mb-1'>Retirar Produto</h2>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ flexBasis: '45%' }}>
                 <label style={{ display: 'block', marginBottom: '10px' }}>
@@ -399,7 +398,7 @@ const RetiradaProdutos = () => {
         )}
 
         {mensagem && (
-          <div style={{ marginTop: '20px', color: 'green' }}>
+          <div style={{ marginTop: '20px', color: 'green', textAlign: "center" }}>
             <p>{mensagem}</p>
           </div>
         )}
