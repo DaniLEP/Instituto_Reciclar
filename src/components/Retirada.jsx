@@ -375,7 +375,7 @@ const RetiradaProdutos = () => {
           </button>
         </div>
 
-        <video id="videoScanner" style={{ width: '100%', display: isScanning ? 'block' : 'none' }}></video>
+        <video id="videoScanner" style={{ width: '20%', display: isScanning ? 'block' : 'none' }}></video>
 
         {produtos.length > 0 && (
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
