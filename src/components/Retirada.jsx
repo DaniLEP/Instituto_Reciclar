@@ -195,7 +195,7 @@
 // };
 
 // export default RetiradaProdutos;
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 
 const produtosData = [
   { SKU: '1234', nome: 'Coxa de Frango', qtdeEstoque: 100, tipo: 'proteina', dataCadastro: '2023-06-01' },
@@ -212,46 +212,6 @@ const RetiradaProdutos = () => {
   const [retirante, setRetirante] = useState('');
   const [quantidadeRetirada, setQuantidadeRetirada] = useState('');
   const [mensagem, setMensagem] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-
-  useEffect(() => {
-    if ('BarcodeDetector' in window) {
-      const barcodeDetector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
-
-      const startScanner = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          const video = document.querySelector('#videoScanner');
-          video.srcObject = stream;
-          video.play();
-
-          const scan = () => {
-            barcodeDetector.detect(video)
-              .then(barcodes => {
-                if (barcodes.length > 0) {
-                  setNomeOuSKU(barcodes[0].rawValue); // Atualiza o input com a SKU lida
-                }
-              })
-              .catch(err => {
-                console.error('Erro ao detectar o código de barras: ', err);
-              });
-
-            requestAnimationFrame(scan);
-          };
-
-          scan();
-        } catch (err) {
-          console.error('Erro ao acessar a câmera: ', err);
-        }
-      };
-
-      if (isScanning) {
-        startScanner();
-      }
-    } else {
-      console.error('BarcodeDetector não é suportado neste navegador.');
-    }
-  }, [isScanning]);
 
   const handleConsulta = (sku) => {
     const resultado = produtosData.filter((produto) => {
@@ -355,7 +315,7 @@ const RetiradaProdutos = () => {
             disabled={isConsultaDisabled}
             style={{
               padding: '10px 20px',
-              background: isConsultaDisabled ? '#ccc' : '#28a745',
+              background: isConsultaDisabled ? '#ccc' : '#F20DE7',
               color: '#fff',
               borderRadius: '4px',
               cursor: isConsultaDisabled ? 'not-allowed' : 'pointer',
@@ -365,21 +325,7 @@ const RetiradaProdutos = () => {
             Consultar
           </button>
 
-          <button
-            onClick={() => setIsScanning(!isScanning)}
-            style={{
-              padding: '10px 20px',
-              background: '#17a2b8',
-              color: '#fff',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            {isScanning ? 'Parar Scanner' : 'Iniciar Scanner'}
-          </button>
         </div>
-
-        <video id="videoScanner" style={{ width: '100%', maxHeight: '300px', marginTop: '20px', display: isScanning ? 'block' : 'none' }}></video>
 
         {produtos.length > 0 && (
           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
@@ -402,7 +348,7 @@ const RetiradaProdutos = () => {
                   <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>
                     <button
                       onClick={() => handleSelecionarProduto(produto)}
-                      style={{ padding: '8px 16px', background: '#28a745', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
+                      style={{ padding: '8px 16px', background: '#F20DE7', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
                     >
                       Selecionar
                     </button>
@@ -415,7 +361,8 @@ const RetiradaProdutos = () => {
 
         {produtoSelecionado && (
           <div style={{ marginTop: '20px' }}>
-            <h2>Retirar Produto</h2>
+            <h2 className='text-center'>Retirar Produto</h2>
+            <br />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ flexBasis: '45%' }}>
                 <label style={{ display: 'block', marginBottom: '10px' }}>
@@ -444,7 +391,7 @@ const RetiradaProdutos = () => {
 
             <button
               onClick={handleRetirarProduto}
-              style={{ padding: '10px 20px', background: '#dc3545', color: '#fff', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}
+              style={{ padding: '10px 20px', background: '#F20DE7', color: '#fff', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}
             >
               Retirar
             </button>
