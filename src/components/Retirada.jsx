@@ -262,7 +262,7 @@ const RetiradaProdutos = () => {
   const isConsultaDisabled = !nomeOuSKU || !data || !tipoProduto;
 
   return (
-    <div style={{ background: '#003366', height: '100vh', color: 'black', fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+    <div style={{ background: '#00009c', height: '100vh', color: 'black', fontFamily: 'Arial, sans-serif', padding: '20px' }}>
       <h1 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 'bold', margin: '20px 0', color: 'white' }}>Retirada de Produtos</h1>
 
       <div style={{ maxWidth: '900px', margin: '0 auto', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)' }}>
