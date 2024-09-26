@@ -195,7 +195,6 @@
 // };
 
 // export default RetiradaProdutos;
-
 import { useState, useEffect } from 'react';
 
 const produtosData = [
@@ -216,7 +215,6 @@ const RetiradaProdutos = () => {
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    // Verificar se o navegador suporta o BarcodeDetector
     if ('BarcodeDetector' in window) {
       const barcodeDetector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
 
@@ -231,9 +229,7 @@ const RetiradaProdutos = () => {
             barcodeDetector.detect(video)
               .then(barcodes => {
                 if (barcodes.length > 0) {
-                  // Pegar o primeiro código de barras detectado
-                  setNomeOuSKU(barcodes[0].rawValue);
-                  handleConsulta(barcodes[0].rawValue); // Faz a consulta automaticamente
+                  setNomeOuSKU(barcodes[0].rawValue); // Atualiza o input com a SKU lida
                 }
               })
               .catch(err => {
@@ -306,55 +302,64 @@ const RetiradaProdutos = () => {
   const isConsultaDisabled = !nomeOuSKU || !data || !tipoProduto;
 
   return (
-    <div style={{ background: '#00009c', height: '100vh', color: 'black', fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+    <div style={{ background: '#003366', height: '100vh', color: 'black', fontFamily: 'Arial, sans-serif', padding: '20px' }}>
       <h1 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 'bold', margin: '20px 0', color: 'white' }}>Retirada de Produtos</h1>
 
-      <div style={{ maxWidth: '900px', margin: '0 auto', background: 'white', padding: '20px', borderRadius: '8px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ marginRight: '20px' }}>
-            Nome ou SKU:
-            <input
-              type="text"
-              value={nomeOuSKU}
-              onChange={(e) => setNomeOuSKU(e.target.value)}
-              style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </label>
+      <div style={{ maxWidth: '900px', margin: '0 auto', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={{ flexBasis: '30%' }}>
+            <label style={{ display: 'block', marginBottom: '10px' }}>
+              Nome ou SKU:
+              <input
+                type="text"
+                value={nomeOuSKU}
+                onChange={(e) => setNomeOuSKU(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' }}
+              />
+            </label>
+          </div>
 
-          <label style={{ marginRight: '20px' }}>
-            Data:
-            <input
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </label>
+          <div style={{ flexBasis: '30%' }}>
+            <label style={{ display: 'block', marginBottom: '10px' }}>
+              Data:
+              <input
+                type="date"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' }}
+              />
+            </label>
+          </div>
 
-          <label style={{ marginRight: '20px' }}>
-            Tipo de Produto:
-            <select
-              value={tipoProduto}
-              onChange={(e) => setTipoProduto(e.target.value)}
-              style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="">Selecione</option>
-              <option value="proteina">Proteína</option>
-              <option value="mantimento">Mantimento</option>
-              <option value="hortaliças">Hortaliças</option>
-              <option value="doações">Doações</option>
-            </select>
-          </label>
+          <div style={{ flexBasis: '30%' }}>
+            <label style={{ display: 'block', marginBottom: '10px' }}>
+              Tipo de Produto:
+              <select
+                value={tipoProduto}
+                onChange={(e) => setTipoProduto(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' }}
+              >
+                <option value="">Selecione</option>
+                <option value="proteina">Proteína</option>
+                <option value="mantimento">Mantimento</option>
+                <option value="hortaliças">Hortaliças</option>
+                <option value="doações">Doações</option>
+              </select>
+            </label>
+          </div>
+        </div>
 
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button
             onClick={() => handleConsulta(nomeOuSKU)}
             disabled={isConsultaDisabled}
             style={{
               padding: '10px 20px',
-              background: isConsultaDisabled ? '#ccc' : '#F20DE7',
+              background: isConsultaDisabled ? '#ccc' : '#28a745',
               color: '#fff',
               borderRadius: '4px',
               cursor: isConsultaDisabled ? 'not-allowed' : 'pointer',
+              marginRight: '10px',
             }}
           >
             Consultar
@@ -364,10 +369,9 @@ const RetiradaProdutos = () => {
             onClick={() => setIsScanning(!isScanning)}
             style={{
               padding: '10px 20px',
-              background: '#28a745',
+              background: '#17a2b8',
               color: '#fff',
               borderRadius: '4px',
-              marginLeft: '20px',
               cursor: 'pointer',
             }}
           >
@@ -375,30 +379,30 @@ const RetiradaProdutos = () => {
           </button>
         </div>
 
-        <video id="videoScanner" style={{ width: '20%', display: isScanning ? 'block' : 'none' }}></video>
-              <br /><br />
+        <video id="videoScanner" style={{ width: '100%', maxHeight: '300px', marginTop: '20px', display: isScanning ? 'block' : 'none' }}></video>
+
         {produtos.length > 0 && (
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
             <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Nome</th>
-                <th>Tipo</th>
-                <th>Estoque</th>
-                <th>Selecionar</th>
+              <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
+                <th style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>SKU</th>
+                <th style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>Nome</th>
+                <th style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>Tipo</th>
+                <th style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>Estoque</th>
+                <th style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>Selecionar</th>
               </tr>
             </thead>
             <tbody>
               {produtos.map((produto) => (
                 <tr key={produto.SKU}>
-                  <td>{produto.SKU}</td>
-                  <td>{produto.nome}</td>
-                  <td>{produto.tipo}</td>
-                  <td>{produto.qtdeEstoque}</td>
-                  <td>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>{produto.SKU}</td>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>{produto.nome}</td>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>{produto.tipo}</td>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>{produto.qtdeEstoque}</td>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #dee2e6' }}>
                     <button
                       onClick={() => handleSelecionarProduto(produto)}
-                      style={{ padding: '5px 10px', background: '#28a745', color: '#fff', borderRadius: '4px' }}
+                      style={{ padding: '8px 16px', background: '#28a745', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
                     >
                       Selecionar
                     </button>
@@ -410,36 +414,40 @@ const RetiradaProdutos = () => {
         )}
 
         {produtoSelecionado && (
-          <div>
+          <div style={{ marginTop: '20px' }}>
             <h2>Retirar Produto</h2>
-            <div>
-              <label>
-                Nome do Retirante:
-                <input
-                  type="text"
-                  value={retirante}
-                  onChange={(e) => setRetirante(e.target.value)}
-                  style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
-              </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ flexBasis: '45%' }}>
+                <label style={{ display: 'block', marginBottom: '10px' }}>
+                  Nome do Retirante:
+                  <input
+                    type="text"
+                    value={retirante}
+                    onChange={(e) => setRetirante(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                  />
+                </label>
+              </div>
 
-              <label style={{ marginLeft: '20px' }}>
-                Quantidade:
-                <input
-                  type="number"
-                  value={quantidadeRetirada}
-                  onChange={(e) => setQuantidadeRetirada(e.target.value)}
-                  style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
-              </label>
-
-              <button
-                onClick={handleRetirarProduto}
-                style={{ marginLeft: '20px', padding: '10px 20px', background: '#dc3545', color: '#fff', borderRadius: '4px' }}
-              >
-                Retirar
-              </button>
+              <div style={{ flexBasis: '45%' }}>
+                <label style={{ display: 'block', marginBottom: '10px' }}>
+                  Quantidade:
+                  <input
+                    type="number"
+                    value={quantidadeRetirada}
+                    onChange={(e) => setQuantidadeRetirada(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                  />
+                </label>
+              </div>
             </div>
+
+            <button
+              onClick={handleRetirarProduto}
+              style={{ padding: '10px 20px', background: '#dc3545', color: '#fff', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}
+            >
+              Retirar
+            </button>
           </div>
         )}
 
