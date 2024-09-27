@@ -21,7 +21,7 @@ export default function Home () {
               {/* Container Responsivo */}
               <div className="container max-w-[2000px] h-[70vh] mx-auto text-center relative top-[9vh]">
                 {/* Menu com Grid Responsivo */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative top-[5vh]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative top-[20vh]">
                   
                   {/* Card Lista de Pedidos */}
                   <div className="card bg-white rounded-lg shadow-md p-6 gap-3 cursor-pointer transition-transform duration-300 hover:scale-105">
