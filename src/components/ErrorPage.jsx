@@ -6,7 +6,7 @@ export default function ErrorPage () {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "center", 
             height: "100vh",
             color: "white",
             fontFamily: "Chakra Petch , sans serif",
