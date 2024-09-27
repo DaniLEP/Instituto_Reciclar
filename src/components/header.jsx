@@ -10,7 +10,7 @@ export default function Header() {
   return (
     <>
       <nav>
-        <div className="flex h-[77px] w-full items-center justify-between py-[20px] px-[96px] border-b">
+        <div className="flex h-[77px] w-full items-center justify-between py-[20px] p-[96px] border-b">
           {/* Logo */}
           <div className="flex items-center flex-1">
             <span className="w-[235px] ">
