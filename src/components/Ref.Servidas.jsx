@@ -1,6 +1,142 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  background: #00009c;
+  padding: 20px;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Title = styled.h1`
+  color: white;
+  font-size: 2.5rem;
+  text-align: center;
+`;
+
+const FormContainer = styled.div`
+  background: white;
+  padding: 12px;
+  font-size: 13px;
+  color: black;
+  border-radius: 40px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+const FormGroup = styled.div`
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+  }
+`;
+
+const Label = styled.label`
+  margin-bottom: 5px;
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  color: black;
+  border: 1px solid rgb(115, 113, 113);
+  border-radius: 12px;
+`;
+
+const Button = styled.button`
+  padding: 11px 12px;
+  background: #f20de7;
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+
+  &:hover {
+    background-color: #d10ccf;
+  }
+`;
+
+const Table = styled.table`
+  margin-top: 5vh;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  overflow-x: auto; /* Adiciona rolagem horizontal quando necessário */
+
+  thead {
+    display: block;
+  }
+
+  tbody {
+    display: block;
+    overflow-y: auto; /* Permite rolagem vertical */
+    max-height: 300px; /* Altura máxima para a rolagem */
+    overflow-x: hidden; /* Esconde a rolagem horizontal na tbody */
+  }
+
+  tr {
+    display: table;
+    table-layout: fixed; /* Garante que as colunas tenham o mesmo tamanho */
+    width: 100%;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 100px; /* Largura mínima para as células */
+  }
+
+  th {
+    background-color: #00ff62;
+    color: black;
+  }
+
+  @media (max-width: 768px) {
+    th,
+    td {
+      font-size: 10px;
+      padding: 12px 1px;
+    }
+  }
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+`;
+
+const ReturnButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    top: 5px;
+    right: 10px;
+  }
+`;
 
 const Refeicoes = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +149,7 @@ const Refeicoes = () => {
     quantidadeRefeicoesAparte: 0,
     dataRefeicao: ''
   });
+
   const [refeicoes, setRefeicoes] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
@@ -69,10 +206,10 @@ const Refeicoes = () => {
   };
 
   return (
-    <div style={{ background: "#00009c", padding: '20px', minHeight: '100vh', overflow: "hidden" }}>
-      <h1 className='text-white text-center text-[90px]'>Cadastrar Refeição</h1>
-      <div style={{ background: "white", padding: '12px', fontSize: "13px", color: "black", borderRadius: "40px", margin: "0 auto" }}>
-        <form style={{display: "flex", marginRight:"1px"}}>
+    <Container>
+      <Title>Cadastrar Refeição</Title>
+      <FormContainer>
+        <Form>
           {[
             { label: 'Turma/Funcionários', name: 'turma', type: 'text' },
             { label: 'Qtde de Almoço', name: 'almoco', type: 'number' },
@@ -83,88 +220,63 @@ const Refeicoes = () => {
             { label: 'Qtde de Refeições', name: 'quantidadeRefeicoesAparte', type: 'number' },
             { label: 'Data da Refeição', name: 'dataRefeicao', type: 'date' }
           ].map((input, index) => (
-            <div style={{ marginBottom: '10px', width: '50%', display: "flex-grid" }} key={index}>
-              <label>{input.label}: </label>
-              <input
+            <FormGroup key={index}>
+              <Label>{input.label}:</Label>
+              <Input
                 name={input.name}
                 type={input.type}
                 value={formData[input.name]}
                 onChange={handleInputChange}
-                style={{ width: '80%', padding: '10px', color: "black", border: "1px solid rgb(115 113 113)", borderRadius: "12px"}}
               />
-            </div>
+            </FormGroup>
           ))}
+        </Form>
 
-          
-        </form>
-
-        <div style={{ position: "relative", right: "-65vh"}}>
-        <button
-            type="button"
-            onClick={handleAddRefeicao}
-            style={{ padding: "11px 12px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", transition: "background-color 0.3s ease", whiteSpace: "nowrap", marginRight: '10px'  }}
-          >
+        <Actions>
+          <Button onClick={handleAddRefeicao}>
             {editIndex !== null ? 'Atualizar Refeição' : 'Adicionar Refeição'}
-          </button>
-          <button
-            onClick={exportToExcel}
-            style={{ padding: "11px 12px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none", marginRight: '10px' }}
-          >
-            Exportar para Excel
-          </button>
-          <button
-            onClick={clearForm}
-            style={{ padding: "11px 12px", background: "#F20DE7", color: "#fff", borderRadius: "12px", cursor: "pointer", border: "none" }}
-          >
-            Limpar Formulário
-          </button>
-        </div>
-          <br />
+          </Button>
+          <Button onClick={exportToExcel}>Exportar para Excel</Button>
+          <Button onClick={clearForm}>Limpar Formulário</Button>
+        </Actions>
+
         <h2 className='text-black text-center text-[30px]'>Refeições Cadastradas</h2>
-        <table style={{ marginTop: "5vh", width: '100%', borderCollapse: "collapse", textAlign: "center" }}>
+        <Table>
           <thead>
-            <tr className="bg-[#00FF62] text-black font-normal">
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Turma</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Almoço</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Jantar</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Café da Manhã</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Lanche da Tarde</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Refeições à Parte</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Qtd. Refeições à Parte</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Data</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Ações</th>
+            <tr>
+              <th>Turma</th>
+              <th>Almoço</th>
+              <th>Jantar</th>
+              <th>Café da Manhã</th>
+              <th>Lanche da Tarde</th>
+              <th>Refeições à Parte</th>
+              <th>Qtd. Refeições à Parte</th>
+              <th>Data</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {refeicoes.map((refeicao, index) => (
               <tr key={index}>
                 {Object.keys(refeicao).map((key, i) => (
-                  <td key={i} style={{ border: '1px solid #ddd', padding: '8px' }}>{refeicao[key]}</td>
+                  <td key={i}>{refeicao[key]}</td>
                 ))}
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                  <button
-                    onClick={() => handleEdit(index)}
-                    style={{ padding: "6px 12px", background: "#F20DE7", color: "#fff", borderRadius: "8px", cursor: "pointer", border: "none", marginRight: '5px' }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleRemove(index)}
-                    style={{ padding: "6px 12px", background: "#F20DE7", color: "#fff", borderRadius: "8px", cursor: "pointer", border: "none" }}
-                  >Remover
-                  </button>
+                <td>
+                  <Button onClick={() => handleEdit(index)}>Editar</Button>
+                  <Button onClick={() => handleRemove(index)}>Remover</Button>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </FormContainer>
+
       <Link to={'/cadastro'}>
-            <button type="button" id="return"  style={{ position: "absolute", top: "37vh", background: "none", border:"none", right:"66vh" }}>
-              <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-            </button>
-        </Link>
-    </div>
+        <ReturnButton>
+          <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+        </ReturnButton>
+      </Link>
+    </Container>
   );
 };
 

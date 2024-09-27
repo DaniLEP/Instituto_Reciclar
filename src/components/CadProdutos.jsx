@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { Link } from 'react-router-dom';
-
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -12,6 +11,17 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
   }
+   
+
+  @media (max-width: 768px) {
+   #return{
+    position: absolute;
+    top: 0vh
+    background: none;
+    border: none;
+    right: 1vh; 
+  }
+  }
 `;
 
 const Container = styled.div`
@@ -21,6 +31,18 @@ const Container = styled.div`
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+
+  @media (max-width: 768px) {
+    padding: 15px;
+    margin: 20px;
+  }
+`;
+
+const Title = styled.h1`
+  text-align: center;
+  font-size: 36px;
+  color: #ffffff;
+  margin-bottom: 20px;
 `;
 
 const FormGroup = styled.div`
@@ -35,18 +57,32 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #00009C;
+    outline: none;
+  }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #00009C;
+    outline: none;
+  }
 `;
 
 const Button = styled.button`
@@ -58,6 +94,7 @@ const Button = styled.button`
   border: none;
   transition: background-color 0.3s ease;
   margin-top: 10px;
+  width: 100%;
 
   &:hover {
     background-color: #d10ccf;
@@ -68,21 +105,33 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 `;
 
 const TableHead = styled.th`
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
   background-color: #f2f2f2;
 `;
 
 const TableData = styled.td`
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
 `;
 
 const ActionButton = styled(Button)`
   margin-left: 10px;
+`;
+
+const NoDataMessage = styled.p`
+  text-align: center;
+  color: #666;
+  margin-top: 20px;
 `;
 
 function CadProdutos() {
@@ -97,44 +146,6 @@ function CadProdutos() {
   const [totalPrice, setTotalPrice] = useState('');
   const [type, setType] = useState('');
   const [products, setProducts] = useState([]);
-
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const initBarcodeScanner = async () => {
-      if ('BarcodeDetector' in window) {
-        const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8'] });
-        
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-
-          const scanBarcode = async () => {
-            const barcodes = await barcodeDetector.detect(videoRef.current);
-            if (barcodes.length > 0) {
-              setSku(barcodes[0].rawValue);  // Preenche o SKU automaticamente
-            }
-          };
-
-          const interval = setInterval(scanBarcode, 1000);  // Verifica o código a cada segundo
-          return () => clearInterval(interval);
-        } catch (error) {
-          console.error('Erro ao acessar a câmera:', error);
-        }
-      } else {
-        alert('API BarcodeDetector não é suportada no seu navegador.');
-      }
-    };
-
-    initBarcodeScanner();
-
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
 
   const handleSave = () => {
     if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && totalPrice && type) {
@@ -167,30 +178,15 @@ function CadProdutos() {
   return (
     <>
       <GlobalStyle />
-      <h1 style={{ textAlign: "center", fontSize: "40px", fontWeight: "bold", color: "white" }}>
-        Cadastro de Produtos
-      </h1>
+      <Title>Cadastro de Produtos</Title>
       <Container>
-        <FormGroup>
-          <Label>Scanner de Código de Barras:</Label>
-          <video
-            ref={videoRef}
-            style={{
-              width: '30%', // Ajuste o tamanho aqui
-              display: 'block',
-              marginBottom: '20px',
-              borderRadius: '10px'
-            }}
-          ></video>
-        </FormGroup>
-
         <FormGroup>
           <Label>SKU:</Label>
           <Input
             type="text"
             value={sku}
-            readOnly // Campo somente leitura
-            placeholder="SKU será preenchido automaticamente"
+            onChange={(e) => setSku(e.target.value)}
+            placeholder="Digite o SKU do produto"
           />
         </FormGroup>
 
@@ -285,7 +281,7 @@ function CadProdutos() {
 
         <Button onClick={handleSave}>Adicionar Produto</Button>
 
-        {products.length > 0 && (
+        {products.length > 0 ? (
           <Table>
             <thead>
               <tr>
@@ -322,11 +318,14 @@ function CadProdutos() {
               ))}
             </tbody>
           </Table>
+        ) : (
+          <NoDataMessage>Nenhum produto cadastrado.</NoDataMessage>
         )}
-          <Link to={'/cadastro'}>
-            <button type="button" id="return"  style={{ position: "absolute", top: "19vh", background: "none", border:"none", right:"30vh" }}>
-              <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-            </button>
+        
+        <Link to={'/cadastro'}>
+          <button type="button" id="return" style={{ position: "absolute", top: "0vh", background: "none", border:"none", right:"30vh" }}>
+            <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
+          </button>
         </Link>
       </Container>
     </>

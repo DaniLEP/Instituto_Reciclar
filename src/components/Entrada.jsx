@@ -1,29 +1,46 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { Link } from 'react-router-dom';
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
   body {
-    background-color: #00009C;
-    font-family: Arial, sans-serif;
-    color: #333;
+    background-color: #00009C; /* Fundo azul */
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
+    color: black;
   }
 `;
 
 const Container = styled.div`
   max-width: 800px;
   margin: 50px auto;
-  padding: 20px;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+
+  @media (max-width: 768px) {
+    margin: 20px;
+    padding: 15px;
+  }
+`;
+
+const Title = styled.h1`
+  text-align: center;
+  font-size: 2.5rem;
+  color: #00009C;
+  margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    font-size: 2rem; /* Ajuste de tamanho de fonte para telas menores */
+  }
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 `;
 
 const Label = styled.label`
@@ -34,29 +51,44 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #00009C;
+    outline: none;
+  }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #00009C;
+    outline: none;
+  }
 `;
 
 const Button = styled.button`
-  padding: 12px 20px;
+  width: 100%;
+  padding: 12px;
   background: #F20DE7;
   color: #fff;
-  border-radius: 12px;
-  cursor: pointer;
+  border-radius: 8px;
   border: none;
-  transition: background-color 0.3s ease;
-  margin-top: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.3s;
 
   &:hover {
     background-color: #d10ccf;
@@ -67,35 +99,55 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-`;
 
-const TableHead = styled.th`
-  border: 1px solid #ddd;
-  padding: 8px;
-  background-color: #f2f2f2;
-`;
-
-const TableData = styled.td`
-  border: 1px solid #ddd;
-  padding: 8px;
-`;
-
-const ActionButton = styled.button`
-  padding: 12px 20px;
-  background: #F20DE7;
-  color: #fff;
-  border-radius: 12px;
-  cursor: pointer;
-  border: none;
-  margin-top: 10px;
-
-  &:hover {
-    background-color: #d10ccf;
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 `;
 
+const TableHead = styled.th`
+  padding: 12px;
+  background-color: #f2f2f2;
+  border: 2px solid #ddd;
+`;
+
+const TableData = styled.td`
+  padding: 12px;
+  border: 2px solid #ddd;
+`;
+
+const ActionButton = styled(Button)`
+  background: #007bff;
+  font-size: 10px;
+  width: 100px;
+  margin-right: 12px;
+`;
+
 const RemoveButton = styled(ActionButton)`
-  margin-left: 10px;
+  background: #dc3545;
+  font-size: 10px;
+  width: 100px;
+`;
+
+const BackButton = styled(Link)`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  img {
+    width: 40px;
+    height: 40px;
+
+    @media (max-width: 768px) {
+      width: 30px; /* Ajuste do tamanho da imagem para telas menores */
+      height: 30px;
+    }
+  }
 `;
 
 function ProductEntry() {
@@ -106,46 +158,6 @@ function ProductEntry() {
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    if ('BarcodeDetector' in window) {
-      const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8'] });
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.play();
-          }
-        })
-        .catch(console.error);
-
-      const scanBarcode = () => {
-        if (videoRef.current) {
-          barcodeDetector.detect(videoRef.current)
-            .then(barcodes => {
-              if (barcodes.length > 0) {
-                setSku(barcodes[0].rawValue);  // Preenche o SKU automaticamente
-              }
-            })
-            .catch(console.error);
-        }
-      };
-
-      const interval = setInterval(scanBarcode, 1000);  // Verifica o código a cada segundo
-
-      return () => {
-        clearInterval(interval);
-        if (videoRef.current && videoRef.current.srcObject) {
-          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-        }
-      };
-    } else {
-      alert('API BarcodeDetector não é suportada no seu navegador.');
-    }
-  }, []);
 
   const handleSave = () => {
     if (sku && name && type && date) {
@@ -192,30 +204,19 @@ function ProductEntry() {
   return (
     <>
       <GlobalStyle />
-      <h1 style={{ textAlign: "center", fontSize: "80px", fontStyle: "bold", fontFamily: "chakra petch", color: "white" }}>
-        Entrada de Produtos
-      </h1>
       <Container>
-        <FormGroup>
-          <Label>Scanner de Código de Barras:</Label>
-          <video
-            ref={videoRef}
-            style={{
-              width: '50%',       // Reduz a largura para 50%
-              display: 'block',    // Garante que seja um bloco
-              margin: '0 auto 20px auto', // Adiciona margem inferior
-              borderRadius: '10px'
-            }}
-          ></video>
-        </FormGroup>
+        <BackButton to={'/cadastro'}>
+          <img src="/return.svg" alt="Voltar" />
+        </BackButton>
+        <Title>Entrada de Produtos</Title>
 
         <FormGroup>
           <Label>SKU:</Label>
           <Input
             type="text"
             value={sku}
-            readOnly // Torna o campo somente leitura
-            placeholder="SKU será preenchido automaticamente"
+            onChange={(e) => setSku(e.target.value)}
+            placeholder="Digite o SKU do produto"
           />
         </FormGroup>
 
@@ -281,11 +282,6 @@ function ProductEntry() {
             <Button onClick={handleStoreProducts}>Guardar Produtos</Button>
           </>
         )}
-        <Link to={'/cadastro'}>
-          <button type="button" id="return"  style={{ position: "absolute", top: "27vh", background: "none", border:"none", right:"44vh" }}>
-            <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-          </button>
-        </Link>
       </Container>
     </>
   );

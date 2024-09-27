@@ -15,8 +15,8 @@ export default function RelatorioAnual() {
     e.preventDefault();
     // Simulação de dados
     const dadosExemplo = [
-      { sku: 'P001', tipoSelecionado: 'Proteína', fornecedor: 'Fornecedor A', quantidade: 100, unidadeMedida: 'Kg', tipo: 'Proteína', valorUnitario: 20, valorTotal: 2000, valorGasto: 2000, dataCadastro: "2024-09-19" },
-      { sku: 'M002', tipoSelecionado: 'Mantimento', fornecedor: 'Fornecedor B', quantidade: 200, unidadeMedida: 'Kg', tipo: 'Mantimento', valorUnitario: 10, valorTotal: 2000, valorGasto: 2000, dataCadastro: "2024-09-19" },
+      { sku: 'P001', tipo: 'Proteína', quantidade: 100, quantidadeConsumida: 30, valorUnitario: 20, valorTotal: 2000, valorGasto: 2000 },
+      { sku: 'M002', tipo: 'Mantimento', quantidade: 200, quantidadeConsumida: 50, valorUnitario: 10, valorTotal: 2000, valorGasto: 2000 },
     ];
     setDadosTabela(dadosExemplo);
     gerarGrafico(dadosExemplo);
@@ -40,21 +40,22 @@ export default function RelatorioAnual() {
       chart.destroy(); // Destroi gráfico anterior ao gerar um novo
     }
 
-    const tipoProdutos = [...new Set(dados.map(dado => dado.tipoSelecionado))];
-    const valores = tipoProdutos.map(tipo => 
+    const tipos = [...new Set(dados.map(dado => dado.tipo))];
+    const valores = tipos.map(tipo => 
       dados
-        .filter(dado => dado.tipoSelecionado === tipo)
-        .reduce((acc, dado) => acc + dado.valorTotal, 0)
+        .filter(dado => dado.tipo === tipo)
+        .reduce((acc, dado) => acc + dado.quantidade, 0)
     );
 
     const novoGrafico = new Chart(ctx, {
-      type: 'pie',
+      type: 'bar', // Alterado para gráfico de barras
       data: {
-        labels: tipoProdutos,
+        labels: tipos,
         datasets: [{
+          label: 'Quantidade Total',
           data: valores,
-          backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'],
-          borderColor: ['rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
         }]
       },
@@ -68,11 +69,11 @@ export default function RelatorioAnual() {
 
   return (
     <div style={{ background: "#00009C", display: "flex", flexDirection: "column", alignItems: "center", margin: "0", padding: "20px", minHeight: "100vh", overflow: "hidden" }}>
-      <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "5px 0" }}>
+      <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "5px 0", boxSizing: "border-box" }}>
         <h1 className='text-center text-black text-[35px]'>Relatório Periódico</h1>
         
         <form id="consultaForm" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
             <label htmlFor="dataInicio" style={{ fontWeight: "bold", margin: "8px 18px" }}>Data Início:</label>
             <input
               type="date"
@@ -95,7 +96,7 @@ export default function RelatorioAnual() {
             />
           </div>
           
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "20px" }}>
             <label htmlFor="tipoProduto" style={{ fontWeight: "bold", margin: "8px 18px" }}>Tipo de Produto:</label>
             <select
               id="tipoProduto"
@@ -128,42 +129,40 @@ export default function RelatorioAnual() {
         </div>
 
         {/* Tabela com estilo visual aprimorado */}
-        <table id="tabelaResultados" style={{ width: "100%", borderCollapse: "collapse", margin: "20px 0", fontSize: "16px" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#00009C", color: "#fff", textAlign: "center" }}>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>SKU</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo Selecionado</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Fornecedor</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Uni. Medida</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Unitário</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Total</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Gasto no Período</th>
-              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Data Cadastro</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dadosTabela.map((item, index) => (
-              <tr key={index} style={{ textAlign: "center" }}>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.tipoSelecionado}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.fornecedor}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.quantidade}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.unidadeMedida}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.tipo}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorUnitario}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorTotal}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorGasto}</td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.dataCadastro}</td>
+        <div style={{ overflowX: "auto", margin: "20px 0" }}>
+          <table id="tabelaResultados" style={{ width: "100%", borderCollapse: "collapse", fontSize: "16px" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#00009C", color: "#fff", textAlign: "center" }}>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>SKU</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade Consumida</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Unitário</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Total</th>
+                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Gasto no Período</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {dadosTabela.map((item, index) => (
+                <tr key={index} style={{ textAlign: "center", backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.tipo}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.quantidade}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.quantidadeConsumida}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorUnitario}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorTotal}</td>
+                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorGasto}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <button type="button" id="return" onClick={voltar} style={{ position: "absolute", top: "5vh", background: "none", border: "none", right:"190vh" }}>
-          <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-        </button>
+
+      {/* Botão de voltar estilizado */}
+      <button type="button" onClick={voltar} style={{ padding: "10px 20px", border: "none", backgroundColor: "#F20DE7", color: "#fff", borderRadius: "4px", position: "relative", top: "20px", left: "20px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
+        Voltar
+      </button>
     </div>
   );
 }

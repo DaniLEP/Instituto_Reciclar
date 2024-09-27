@@ -1,42 +1,46 @@
 import { Link } from "react-router-dom";
-export default function Cadastro  ()  {
-    return(
-        <>
-        <div className="bg-[#00009c]">
-                <div /*container*/ className="container" style={{maxWidth: "700px", height: "110vh", margin: "0px auto", textAlign: "center", top: "10vh"}}>
-                    <span className="text-[5.1rem] font-bold font-[ChakraPetch] font-[italic] text-white text-left mr-10">Cadastro</span>
-        
-                    <div /*menu*/ style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",  gap:"20px", position: "relative", top: "5vh" }}> 
-                            {/* CARDS */}
-                           
-                            <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/entrada-produtos"} onclick="navigateTo('Entrada')">
-                                    <img src="/entrada.svg" className="h-[120px] ml-24"/>
-                                        <h2 className="text-[40px]">Entrada de Produtos</h2>
-                                </Link>
-                            </div>
-                            <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/cadastro-geral"} onclick="navigateTo('CadastroGeral')">
-                                    <img src="/cadastro.svg" className="h-[120px] ml-24"/>
-                                        <h2 className="text-[40px]">Cadastro de Produtos</h2>
-                                </Link>
-                            </div>
-                            <div className="card" style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "2rem", marginBottom: "10px", textDecoration: "bold", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/cad-refeicoes"} onclick="navigateTo('Ref.Servidas')">
-                                    <img src="/ref.servidas.svg" className="h-[120px] ml-16"/>
-                                        <h2 className="text-[40px]">Ref.Servidas</h2>
-                                </Link>
-                            </div>
-                            <div className="card"  style={{ background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", padding: "20px", cursor: "pointer", transition: "transform 0.3s ease", fontSize: "1.5rem", marginBottom: "10px", textDecoration: "none", color: "black"}}>
-                                <Link spy={true} smooth={true} to={"/"} onclick="navigateTo('Home')">
-                                    <img src="/return.svg" className="h-[120px] ml-20 mt-5"/>
-                                </Link>
-                            </div>
-                         
-                    </div>
+
+export default function Cadastro() {
+    return (
+        <div className="bg-[#00009c] min-h-screen flex items-center justify-center">
+            <div className=" mx-auto p-6  rounded-lg shadow-lg" style={{ maxWidth: "700px" }}>
+                <h1 className="text-[3rem] font-bold font-[ChakraPetch] text-white  text-center mb-10">Cadastro</h1>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Cards */}
+                    <Card 
+                        link="/cadastro-geral" 
+                        imgSrc="/cadastro.svg" 
+                        title="Cadastro de Produtos" 
+                    />
+                    <Card 
+                        link="/entrada-produtos" 
+                        imgSrc="/entrada.svg" 
+                        title="Entrada de Produtos" 
+                    />
+                    <Card 
+                        link="/cad-refeicoes" 
+                        imgSrc="/ref.servidas.svg" 
+                        title="Ref. Servidas" 
+                    />
+                    <Card 
+                        link="/" 
+                        imgSrc="/return.svg" 
+                        title="Voltar" 
+                        isBackCard
+                    />
+                </div>
             </div>
         </div>
-        </>
-    )
+    );
 }
 
+const Card = ({ link, imgSrc, title, isBackCard }) => {
+    return (
+        <div className="bg-gray-100 rounded-lg shadow-md transition-transform transform hover:scale-105">
+            <Link to={link} className="flex flex-col items-center p-6 text-center">
+                <img src={imgSrc} className="h-[120px] mx-auto mb-4" alt={title} />
+                <h2 className={`text-[1.5rem] font-bold ${isBackCard ? 'text-gray-700' : 'text-black'}`}>{title}</h2>
+            </Link>
+        </div>
+    );
+}
