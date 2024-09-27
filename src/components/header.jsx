@@ -22,22 +22,22 @@ export default function Header() {
           <div className="hidden lg:flex flex-1 items-center justify-end text-white">
             <ul className="flex gap-2 mr-16 mt-[-7px] text-[20px]">
               <Link to="/lista-pedidos">
-                <button className="inline-flex items-center text-white justify-center text-[16px] font-bold transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Lista de Pedidos
                 </button>
               </Link>
               <Link to="/cadastro">
-                <button className="inline-flex items-center text-white justify-center text-[16px] font-bold transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Cadastro
                 </button>
               </Link>
               <Link to="/relatorio">
-                <button className="inline-flex items-center text-white justify-center text-[16px] font-bold transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Relatório
                 </button>
               </Link>
               <Link to="/retirada">
-                <button className="inline-flex items-center text-white justify-center text-[16px] font-bold transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Retirada
                 </button>
               </Link>
