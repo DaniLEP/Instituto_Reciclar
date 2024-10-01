@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const produtosData = [
     { SKU: '1234', nome: 'Coxa de Frango', qtdeEstoque: 100, tipo: 'proteina', dataCadastro: '2023-06-01' },
-    { SKU: '5678', nome: 'Alface', qtdeEstoque: 50, tipo: 'hortaliças', dataCadastro: '2023-06-01' },
+    { SKU: '5678', nome: 'Alface', qtdeEstoque: 50, tipo: 'hortaliças', dataCadastro: '2023-07-01' },
     // Adicione mais produtos conforme necessário
 ];
 
@@ -199,7 +199,7 @@ const RetiradaProdutos = () => {
 
                 {/* Botão para voltar à página inicial */}
                 <div className="mt-6 text-center">
-                    <Link to="/" className="px-4 py-2 bg-[#d10ccf] text-white rounded hover:bg-[#d10ccf]">
+                    <Link to="/retirada" className="px-4 py-2 bg-[#d10ccf] text-white rounded hover:bg-[#d10ccf]">
                         Voltar
                     </Link>
                 </div>

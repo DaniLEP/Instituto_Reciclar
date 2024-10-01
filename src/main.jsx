@@ -29,6 +29,8 @@ import OrderStatusPage from './components/OrderStatusPage.jsx'
 import EditOrderPage from './components/EditOrderPage.jsx'
 import EntradaProdutos from './components/Entrada.jsx'
 import CadProdutos from './components/CadProdutos.jsx'
+import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
+import Estoque from './components/Estoque.jsx'
 
 // const router = createBrowserRouter ([
 //   {
@@ -159,7 +161,19 @@ const router = createBrowserRouter ([
       {
         path: '/entrada-produtos',
         element: <EntradaProdutos />
-      }
+      },
+      {
+        path: '/historico-retiradas',
+        element: <HistoricoRetiradas />,
+      },
+      {
+        path: '/retirada-produtos',
+        element: <RetiradaProdutos />,
+      },
+      {
+        path: '/estoque',
+        element: <Estoque />,
+      },
       
     ],
   }

@@ -13,8 +13,8 @@ export default function RelatorioRetirada() {
     e.preventDefault();
     // Simulação de dados
     const dadosExemplo = [
-      { sku: 'P001', tipoProduto: 'Proteína', fornecedor: 'Coxa de Frango', quantidade: 100, unidadeMedida: 'Kg', estoqueAtual: 50, quantidadeRetirada: 50, dataRetirada: "2024-09-18", nomeRetirante: "Rose" },
-      { sku: 'M002', tipoProduto: 'Mantimento', fornecedor: 'Arroz', quantidade: 200, unidadeMedida: 'Kg', estoqueAtual: 150, quantidadeRetirada: 50, dataRetirada: "2024-09-18", nomeRetirante: "Maria" },
+      { sku: 'P001', tipoProduto: 'Proteína', produto: 'Coxa de Frango', fornecedor: 'Calvo', quantidade: 100, unidadeMedida: 'Kg', estoqueAtual: 50, quantidadeRetirada: 50, dataRetirada: "2024-09-18", nomeRetirante: "Rose" },
+      { sku: 'M002', tipoProduto: 'Mantimento', produto: 'Alface', fornecedor: 'Dia', quantidade: 200, unidadeMedida: 'Kg', estoqueAtual: 150, quantidadeRetirada: 50, dataRetirada: "2024-09-18", nomeRetirante: "Maria" },
     ];
     setDadosTabela(dadosExemplo);
     gerarGrafico(dadosExemplo);
@@ -99,6 +99,7 @@ export default function RelatorioRetirada() {
             <tr style={{ backgroundColor: "#00009C", color: "#fff", textAlign: "center" }}>
               <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>SKU</th>
               <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo de Produto</th>
+              <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Produto</th>
               <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Fornecedor</th>
               <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade Total</th>
               <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Unidade de Medida</th>
@@ -113,6 +114,7 @@ export default function RelatorioRetirada() {
               <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff", textAlign: "center" }}>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.sku}</td>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.tipoProduto}</td>
+                <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.produto}</td>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.fornecedor}</td>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.quantidade}</td>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.unidadeMedida}</td>
