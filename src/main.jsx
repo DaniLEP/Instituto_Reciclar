@@ -32,28 +32,6 @@ import CadProdutos from './components/CadProdutos.jsx'
 import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
 import Estoque from './components/Estoque.jsx'
 
-// const router = createBrowserRouter ([
-//   {
-//     path: "/",
-//     element: <Home />,
-//   },
-//   {
-//     path: "/ListaPedidos",
-//     element: <ListaPedidos />,
-//   },
-//   {
-//     path: "/Cadastro",
-//     element: <Cadastro />,
-//   },
-//   {
-//     path: "/Retirada",
-//     element: <Retirada />,
-//   },
-//   {
-//     path: "/Relatorio",
-//     element: <Relatorio />,
-//   },
-// ])
 
 const router = createBrowserRouter ([
   {
