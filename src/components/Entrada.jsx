@@ -153,6 +153,7 @@ const BackButton = styled(Link)`
 function ProductEntry() {
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
+  const [valor, setValor] = useState('');
   const [type, setType] = useState('');
   const [date, setDate] = useState('');
   const [products, setProducts] = useState([]);
@@ -160,8 +161,8 @@ function ProductEntry() {
   const [editIndex, setEditIndex] = useState(null);
 
   const handleSave = () => {
-    if (sku && name && type && date) {
-      const newProduct = { sku, name, type, date };
+    if (sku && name && valor && type && date) {
+      const newProduct = { sku, name, valor,type, date };
 
       if (isEditing) {
         const updatedProducts = [...products];
@@ -176,6 +177,7 @@ function ProductEntry() {
       // Limpa os campos após adicionar ou editar o produto
       setSku('');
       setName('');
+      setValor('');
       setType('');
       setDate('');
     }
@@ -185,6 +187,7 @@ function ProductEntry() {
     const productToEdit = products[index];
     setSku(productToEdit.sku);
     setName(productToEdit.name);
+    setValor(productToEdit.valor);
     setType(productToEdit.type);
     setDate(productToEdit.date);
     setIsEditing(true);
@@ -229,6 +232,15 @@ function ProductEntry() {
             placeholder="Digite o nome do produto"
           />
         </FormGroup>
+        <FormGroup>
+          <Label>Valor:</Label>
+          <Input
+            type="number"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            placeholder="Digite o valor"
+          />
+        </FormGroup>
 
         <FormGroup>
           <Label>Tipo de Produto:</Label>
@@ -242,7 +254,7 @@ function ProductEntry() {
         </FormGroup>
 
         <FormGroup>
-          <Label>Data de Cadastro:</Label>
+          <Label>Data de Retirada:</Label>
           <Input
             type="date"
             value={date}
@@ -259,6 +271,7 @@ function ProductEntry() {
                 <tr>
                   <TableHead>SKU</TableHead>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Valor</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Data de Cadastro</TableHead>
                   <TableHead>Ações</TableHead>
@@ -269,6 +282,7 @@ function ProductEntry() {
                   <tr key={index}>
                     <TableData>{product.sku}</TableData>
                     <TableData>{product.name}</TableData>
+                    <TableData>{product.valor}</TableData>
                     <TableData>{product.type}</TableData>
                     <TableData>{product.date}</TableData>
                     <TableData>

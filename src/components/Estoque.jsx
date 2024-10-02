@@ -100,7 +100,7 @@ const Estoque = () => {
                         <p><strong>Nome:</strong> {product.name}</p>
                         <p><strong>Tipo:</strong> {product.type}</p>
                         <p><strong>Quantidade:</strong> {product.quantity}</p>
-                        <p><strong>Preço:</strong> R$ {product.price}</p>
+                        <p><strong>Valor Total:</strong> R$ {product.price}</p>
                         <p><strong>Data de Cadastro:</strong> {product.registerDate.toLocaleDateString()}</p>
                         <p><strong>Data de Vencimento:</strong> {product.expiryDate.toLocaleDateString()}</p>
                         <p><strong>Dias de Consumo:</strong> {calculateConsumptionDays(product.registerDate, product.expiryDate)} dias</p>
@@ -116,7 +116,7 @@ const Estoque = () => {
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Nome</th>
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Tipo</th>
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Quantidade</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Preço</th>
+                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Valor Total</th>
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Cadastro</th>
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Vencimento</th>
                                 <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Dias de Consumo</th>

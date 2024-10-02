@@ -39,7 +39,7 @@ const Card = ({ link, imgSrc, title, isBackCard }) => {
         <div className="bg-gray-100 rounded-lg shadow-md transition-transform transform hover:scale-105">
             <Link to={link} className="flex flex-col items-center p-6 text-center">
                 <img src={imgSrc} className="h-[120px] mx-auto mb-4" alt={title} />
-                <h2 className={`text-[1.5rem] font-bold ${isBackCard ? 'text-gray-700' : 'text-black'}`}>{title}</h2>
+                <h2 className={`text-[1.5rem] font-bold ${isBackCard ? 'text-black' : 'text-black'}`}>{title}</h2>
             </Link>
         </div>
     );
