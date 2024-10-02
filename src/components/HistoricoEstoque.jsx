@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom'; // Import para navegar
-import React from 'react';
 
 const HistoricoRetiradas = () => {
   const navigate = useNavigate(); // Hook de navegação
@@ -42,11 +41,6 @@ const HistoricoRetiradas = () => {
     }));
   };
 
-  // Função para restaurar o produto ao estoque e removê-lo da tabela
-  const restaurarProduto = (id) => {
-    setRetiradas(retiradas.filter((retirada) => retirada.id !== id));
-    alert(`Produto restaurado ao estoque.`);
-  };
 
   // Função para exportar para Excel
   const exportarExcel = () => {
@@ -139,7 +133,6 @@ const HistoricoRetiradas = () => {
                 <td style={styles.cell}>{retirada.quantidade}</td>
                 <td style={styles.cell}>
                   <button style={styles.editButton} onClick={() => abrirFormularioEdicao(retirada)}>Editar</button>
-                  <button style={styles.restoreButton} onClick={() => restaurarProduto(retirada.id)}>Restaurar</button>
                 </td>
               </tr>
             ))}
@@ -243,15 +236,6 @@ const styles = {
     borderBottom: '1px solid #ddd',
   },
   editButton: {
-    backgroundColor: '#F20DE7',
-    color: 'white',
-    border: 'none',
-    padding: '5px 10px',
-    cursor: 'pointer',
-    borderRadius: '3px',
-    marginRight: '12px'
-  },
-  restoreButton: {
     backgroundColor: '#F20DE7',
     color: 'white',
     border: 'none',
