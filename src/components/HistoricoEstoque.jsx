@@ -14,6 +14,10 @@ const HistoricoRetiradas = () => {
   
   const [produtoAtual, setProdutoAtual] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [retiradasFiltradas, setRetiradasFiltradas] = useState([]);
 
   // Abrir o modal com os dados do produto atual
   const abrirFormularioEdicao = (produto) => {
@@ -54,6 +58,20 @@ const HistoricoRetiradas = () => {
     saveAs(data, 'historico-retiradas.xlsx');
   };
 
+  // Função para filtrar as retiradas
+  const filtrarRetiradas = () => {
+    const filtradas = retiradas.filter((retirada) => {
+      const dataRetirada = new Date(retirada.data);
+      const inicio = new Date(dataInicio);
+      const fim = new Date(dataFim);
+      return dataRetirada >= inicio && dataRetirada <= fim && retirada.tipo === tipoFiltro;
+    });
+    setRetiradasFiltradas(filtradas);
+  };
+
+  // Verifica se todos os campos estão preenchidos
+  const todosCamposPreenchidos = dataInicio && dataFim && tipoFiltro;
+
   return (
     <div style={styles.container}>
       {/* Botão de Voltar */}
@@ -62,33 +80,72 @@ const HistoricoRetiradas = () => {
       </button>
 
       <h1 style={styles.title}>Histórico de Retiradas</h1>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.headerCell}>SKU</th>
-            <th style={styles.headerCell}>Nome</th>
-            <th style={styles.headerCell}>Tipo</th>
-            <th style={styles.headerCell}>Data</th>
-            <th style={styles.headerCell}>Quantidade</th>
-            <th style={styles.headerCell}>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {retiradas.map((retirada) => (
-            <tr key={retirada.id} style={styles.row}>
-              <td style={styles.cell}>{retirada.sku}</td>
-              <td style={styles.cell}>{retirada.nome}</td>
-              <td style={styles.cell}>{retirada.tipo}</td>
-              <td style={styles.cell}>{retirada.data}</td>
-              <td style={styles.cell}>{retirada.quantidade}</td>
-              <td style={styles.cell}>
-                <button style={styles.editButton} onClick={() => abrirFormularioEdicao(retirada)}>Editar</button>
-                <button style={styles.restoreButton} onClick={() => restaurarProduto(retirada.id)}>Restaurar</button>
-              </td>
+
+      {/* Formulário de Consulta */}
+      <div>
+        <label style={styles.label}>Data Início:</label>
+        <input 
+          type="date" 
+          value={dataInicio} 
+          onChange={(e) => setDataInicio(e.target.value)} 
+          style={styles.input}
+        />
+
+        <label style={styles.label}>Data Final:</label>
+        <input 
+          type="date" 
+          value={dataFim} 
+          onChange={(e) => setDataFim(e.target.value)} 
+          style={styles.input}
+        />
+
+        <label style={styles.label}>Tipo:</label>
+        <select value={tipoFiltro} onChange={(e) => setTipoFiltro(e.target.value)} style={styles.input}>
+          <option value="">Selecione um tipo</option>
+          <option value="Proteína">Proteína</option>
+          <option value="Mantimento">Mantimento</option>
+          <option value="Hortaliças">Hortaliças</option>
+        </select>
+
+        <button 
+          style={styles.filterButton} 
+          onClick={filtrarRetiradas} 
+          disabled={!todosCamposPreenchidos}
+        >
+          Consultar
+        </button>
+      </div>
+
+      {/* Tabela de Resultados */}
+      {retiradasFiltradas.length > 0 && (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.headerCell}>SKU</th>
+              <th style={styles.headerCell}>Nome</th>
+              <th style={styles.headerCell}>Tipo</th>
+              <th style={styles.headerCell}>Data</th>
+              <th style={styles.headerCell}>Quantidade</th>
+              <th style={styles.headerCell}>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {retiradasFiltradas.map((retirada) => (
+              <tr key={retirada.id} style={styles.row}>
+                <td style={styles.cell}>{retirada.sku}</td>
+                <td style={styles.cell}>{retirada.nome}</td>
+                <td style={styles.cell}>{retirada.tipo}</td>
+                <td style={styles.cell}>{retirada.data}</td>
+                <td style={styles.cell}>{retirada.quantidade}</td>
+                <td style={styles.cell}>
+                  <button style={styles.editButton} onClick={() => abrirFormularioEdicao(retirada)}>Editar</button>
+                  <button style={styles.restoreButton} onClick={() => restaurarProduto(retirada.id)}>Restaurar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <button style={styles.exportButton} onClick={exportarExcel}>Exportar para Excel</button>
 
@@ -182,40 +239,54 @@ const styles = {
   },
   cell: {
     padding: '10px',
-    borderBottom: '1px solid #ddd',
     textAlign: 'center',
-    color: '#333',
+    borderBottom: '1px solid #ddd',
   },
   editButton: {
     backgroundColor: '#F20DE7',
-    border: 'none',
     color: 'white',
-    padding: '8px 12px',
+    border: 'none',
+    padding: '5px 10px',
     cursor: 'pointer',
-    borderRadius: '5px',
-    marginRight: '10px',
-    transition: 'background-color 0.2s ease',
+    borderRadius: '3px',
+    marginRight: '12px'
   },
   restoreButton: {
     backgroundColor: '#F20DE7',
-    border: 'none',
     color: 'white',
-    padding: '8px 12px',
+    border: 'none',
+    padding: '5px 10px',
     cursor: 'pointer',
-    borderRadius: '5px',
-    transition: 'background-color 0.2s ease',
+    borderRadius: '3px',
   },
   exportButton: {
     backgroundColor: '#F20DE7',
-    border: 'none',
     color: 'white',
-    padding: '10px 20px',
-    fontSize: '1em',
+    border: 'none',
+    padding: '12px 20px',
     cursor: 'pointer',
     borderRadius: '5px',
+  },
+  label: {
     display: 'block',
-    margin: '0 auto',
-    transition: 'background-color 0.2s ease',
+    marginBottom: '5px',
+    fontWeight: 'bold',
+  },
+  input: {
+    width: '100%',
+    padding: '8px',
+    marginBottom: '10px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+  },
+  filterButton: {
+    backgroundColor: '#F20DE7',
+    color: 'white',
+    border: 'none',
+    padding: '10px 15px',
+    cursor: 'pointer',
+    borderRadius: '4px',
+    marginBottom: '20px',
   },
   modalOverlay: {
     position: 'fixed',
@@ -231,46 +302,31 @@ const styles = {
   modalContent: {
     backgroundColor: 'white',
     padding: '20px',
-    borderRadius: '8px',
+    borderRadius: '5px',
     width: '400px',
-    boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
   },
   modalTitle: {
-    marginBottom: '15px',
-    fontSize: '1.5em',
-    textAlign: 'center',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold',
-  },
-  input: {
-    width: '100%',
-    padding: '8px',
-    marginBottom: '15px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+    marginBottom: '20px',
   },
   modalActions: {
     display: 'flex',
     justifyContent: 'space-between',
   },
   saveButton: {
-    backgroundColor: '#F20DE7',
+    backgroundColor: '#4CAF50',
     color: 'white',
     border: 'none',
-    padding: '10px 20px',
-    borderRadius: '5px',
+    padding: '10px 15px',
     cursor: 'pointer',
+    borderRadius: '5px',
   },
   cancelButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#F44336',
     color: 'white',
     border: 'none',
-    padding: '10px 20px',
-    borderRadius: '5px',
+    padding: '10px 15px',
     cursor: 'pointer',
+    borderRadius: '5px',
   },
 };
 
