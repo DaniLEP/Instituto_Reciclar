@@ -27,7 +27,7 @@ export default function Header() {
                 </button>
               </Link>
               <Link to="/cadastro">
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-1 py-2">
                   Cadastro
                 </button>
               </Link>
@@ -39,6 +39,11 @@ export default function Header() {
               <Link to="/retirada">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Retirada
+                </button>
+              </Link>
+              <Link to="/meu-perfil">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                  <img src="/myUser.svg" />
                 </button>
               </Link>
             </ul>
@@ -77,6 +82,11 @@ export default function Header() {
               <Link to="/retirada">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Retirada
+                </li>
+              </Link>
+              <Link to="/meu-perfil">
+                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
+                  Meu Perfil
                 </li>
               </Link>
             </ul>
@@ -120,10 +130,14 @@ export default function Header() {
                   transition: "transform 0.3s ease",
                   marginBottom: "10px",
                   color: "black",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center", // Garantindo que o conteúdo fique centralizado
                 }}
               >
                 <Link to="/lista-pedidos">
-                  <img src="/listaPedidos.svg" className="h-[120px] ml-24" />
+                  <img src="/listaPedidos.svg" className="h-[120px] ml-[65px]" />
                   <h2 className="text-[40px]">Lista de Pedidos</h2>
                 </Link>
               </div>
@@ -138,10 +152,14 @@ export default function Header() {
                   transition: "transform 0.3s ease",
                   marginBottom: "10px",
                   color: "black",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Link to="/cadastro">
-                  <img src="/cadastro.svg" className="h-[120px] ml-24" />
+                  <img src="/cadastro.svg" className="h-[120px] ml-[10px]" />
                   <h2 className="text-[40px]">Cadastro</h2>
                 </Link>
               </div>
@@ -156,10 +174,14 @@ export default function Header() {
                   transition: "transform 0.3s ease",
                   marginBottom: "10px",
                   color: "black",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Link to="/relatorio">
-                  <img src="/relatorio.svg" className="h-[120px] ml-20" />
+                  <img src="/relatorio.svg" className="h-[120px] ml-[20px]" />
                   <h2 className="text-[40px]">Relatórios</h2>
                 </Link>
               </div>
@@ -174,10 +196,14 @@ export default function Header() {
                   transition: "transform 0.3s ease",
                   marginBottom: "10px",
                   color: "black",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Link to="/retirada">
-                  <img src="/retirada.svg" className="h-[120px] ml-20" />
+                  <img src="/retirada.svg" className="h-[120px] ml-[10px]" />
                   <h2 className="text-[40px]">Retirada</h2>
                 </Link>
               </div>

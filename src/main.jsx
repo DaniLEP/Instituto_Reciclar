@@ -27,6 +27,8 @@ import EntradaProdutos from './components/Entrada.jsx'
 import CadProdutos from './components/CadProdutos.jsx'
 import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
 import Estoque from './components/Estoque.jsx'
+import Profile from './components/perfil.jsx'
+import EditProfile from './components/useStates.jsx'
 
 
 const router = createBrowserRouter ([
@@ -132,6 +134,14 @@ const router = createBrowserRouter ([
         path: '/estoque',
         element: <Estoque />,
       },
+      {
+        path: '/meu-perfil',
+        element: <Profile />,
+      },
+      {
+        path: '/editar-perfil',
+        element: < EditProfile /> 
+      }
       
     ],
   }
