@@ -43,9 +43,9 @@ export default function Header() {
               </Link>
               <Link to="/meu-perfil">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  <img src="/myUser.svg" />
+                  <img src="/myUser.svg" className="h-[32px] w-[32px] rounded-full" alt="User" />
                 </button>
-              </Link>
+            </Link>
             </ul>
           </div>
 
