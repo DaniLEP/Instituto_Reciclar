@@ -18,7 +18,7 @@ export default function Cadastro() {
                         title="Entrada de Produtos" 
                     />
                     <Card 
-                        link="/cad-refeicoes" 
+                        link="/cad-refeicoes" a
                         imgSrc="/ref.servidas.svg" 
                         title="Ref. Servidas" 
                     />

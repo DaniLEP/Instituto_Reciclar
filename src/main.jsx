@@ -29,6 +29,7 @@ import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
 import Estoque from './components/Estoque.jsx'
 import Profile from './components/perfil.jsx'
 import EditProfile from './components/useStates.jsx'
+import StatusRef from './components/StatusRef.jsx'
 
 
 const router = createBrowserRouter ([
@@ -141,8 +142,11 @@ const router = createBrowserRouter ([
       {
         path: '/editar-perfil',
         element: < EditProfile /> 
-      }
-      
+      },
+      {
+        path: "/status-ref",
+        element: <StatusRef />
+      },
     ],
   }
 ])
