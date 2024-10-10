@@ -30,6 +30,8 @@ import Estoque from './components/Estoque.jsx'
 import Profile from './components/perfil.jsx'
 import EditProfile from './components/useStates.jsx'
 import StatusRef from './components/StatusRef.jsx'
+import ReceitaCadastro from './components/receitaCad.jsx'
+import QuantidadeRefeicoes from './components/qtdeRef.jsx'
 
 
 const router = createBrowserRouter ([
@@ -146,6 +148,14 @@ const router = createBrowserRouter ([
       {
         path: "/status-ref",
         element: <StatusRef />
+      },
+      {
+        path: "/cad-cardapio",
+        element: <ReceitaCadastro/>
+      },
+        {
+        path: "/quantidade-refeicoes",
+        element: <QuantidadeRefeicoes />
       },
     ],
   }
