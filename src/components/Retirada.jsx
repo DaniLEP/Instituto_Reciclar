@@ -73,35 +73,21 @@ const RetiradaProdutos = () => {
                     <div>
                         <label className="block mb-2">
                             Nome ou SKU:
-                            <input
-                                type="text"
-                                value={nomeOuSKU}
-                                onChange={(e) => setNomeOuSKU(e.target.value)}
-                                className="w-full p-2 border rounded"
-                            />
+                            <input type="text" value={nomeOuSKU}  onChange={(e) => setNomeOuSKU(e.target.value)} className="w-full p-2 border rounded"/>
                         </label>
                     </div>
 
                     <div>
                         <label className="block mb-2">
                             Data:
-                            <input
-                                type="date"
-                                value={data}
-                                onChange={(e) => setData(e.target.value)}
-                                className="w-full p-2 border rounded"
-                            />
+                            <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="w-full p-2 border rounded"/>
                         </label>
                     </div>
 
                     <div>
                         <label className="block mb-2">
                             Tipo de Produto:
-                            <select
-                                value={tipoProduto}
-                                onChange={(e) => setTipoProduto(e.target.value)}
-                                className="w-full p-2 border rounded"
-                            >
+                            <select value={tipoProduto} onChange={(e) => setTipoProduto(e.target.value)} className="w-full p-2 border rounded" >
                                 <option value="">Selecione</option>
                                 <option value="proteina">Proteína</option>
                                 <option value="mantimento">Mantimento</option>
@@ -113,11 +99,7 @@ const RetiradaProdutos = () => {
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
-                    <button
-                        onClick={handleConsulta}
-                        disabled={isConsultaDisabled}
-                        className={`px-4 py-2 rounded text-white ${isConsultaDisabled ? 'bg-[#d10ccf] cursor-not-allowed' : ' bg-[#d10ccf] hover:bg-[#d10ccf]'}`}
-                    >
+                    <button onClick={handleConsulta} disabled={isConsultaDisabled} className={`px-4 py-2 rounded text-white ${isConsultaDisabled ? 'bg-[#d10ccf] cursor-not-allowed' : ' bg-[#d10ccf] hover:bg-[#d10ccf]'}`} >
                         Consultar
                     </button>
                 </div>
@@ -141,10 +123,7 @@ const RetiradaProdutos = () => {
                                     <td className="border p-2">{produto.tipo}</td>
                                     <td className="border p-2">{produto.qtdeEstoque}</td>
                                     <td className="border p-2">
-                                        <button
-                                            onClick={() => handleSelecionarProduto(produto)}
-                                            className="px-4 py-2 bg-[#d10ccf] text-white rounded "
-                                        >
+                                        <button onClick={() => handleSelecionarProduto(produto)} className="px-4 py-2 bg-[#d10ccf] text-white rounded " >
                                             Selecionar
                                         </button>
                                     </td>

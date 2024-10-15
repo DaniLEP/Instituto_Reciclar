@@ -24,7 +24,7 @@ const FormContainer = styled.div`
   padding: 12px;
   font-size: 13px;
   color: black;
-  border-radius: 40px;
+  border-radius: 10px;
   width: 100%;
   max-width: 800px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -135,7 +135,6 @@ const QuantidadeRefeicoes = () => {
     jantar: 0,
     cafeManha: 0,
     lancheTarde: 0,
-    refeicoesAparte: '',
     quantidadeRefeicoesAparte: 0,
     dataRefeicao: ''
   });
@@ -172,7 +171,6 @@ const QuantidadeRefeicoes = () => {
       jantar: 0,
       cafeManha: 0,
       lancheTarde: 0,
-      refeicoesAparte: '',
       quantidadeRefeicoesAparte: 0,
       dataRefeicao: ''
     });
@@ -214,18 +212,12 @@ const QuantidadeRefeicoes = () => {
             { label: 'Qtde de Jantar', name: 'jantar', type: 'number' },
             { label: 'Qtde de Café', name: 'cafeManha', type: 'number' },
             { label: 'Qtde de Lanche', name: 'lancheTarde', type: 'number' },
-            { label: 'Refeições Parte', name: 'refeicoesAparte', type: 'text' },
             { label: 'Qtde de Refeições', name: 'quantidadeRefeicoesAparte', type: 'number' },
             { label: 'Data da Refeição', name: 'dataRefeicao', type: 'date' }
           ].map((input, index) => (
             <FormGroup key={index}>
               <Label>{input.label}:</Label>
-              <Input
-                name={input.name}
-                type={input.type}
-                value={formData[input.name]}
-                onChange={handleInputChange}
-              />
+              <Input name={input.name}  type={input.type}  value={formData[input.name]} onChange={handleInputChange} />
             </FormGroup>
           ))}
         </Form>
@@ -237,7 +229,7 @@ const QuantidadeRefeicoes = () => {
           <Button onClick={exportToExcel}>Exportar para Excel</Button>
           <Button onClick={clearForm}>Limpar Formulário</Button>
         </Actions>
-
+            <br /><br />
         <h2 className="text-black text-center text-[30px]">Refeições Cadastradas</h2>
         <Table>
           <thead>
@@ -246,7 +238,6 @@ const QuantidadeRefeicoes = () => {
               <th>Jantar</th>
               <th>Café da Manhã</th>
               <th>Lanche da Tarde</th>
-              <th>Refeições à Parte</th>
               <th>Qtd. Refeições à Parte</th>
               <th>Data</th>
               <th>Ações</th>
@@ -266,7 +257,7 @@ const QuantidadeRefeicoes = () => {
             ))}
           </tbody>
         </Table>
-
+              <br /><br />
         <Button type="submit" onClick={handleSubmit}>
           Salvar Quantidade
         </Button>

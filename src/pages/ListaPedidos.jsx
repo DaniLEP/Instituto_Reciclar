@@ -27,7 +27,7 @@ export default function ListaPedidos() {
 
                         {/* Card 2 - Retiradas */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/relatorio-retiradas"}>
+                            <Link to={"/hortalicas"}>
                                 <img src="/hortalicas.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Hortaliças"/>
                                 <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Hortaliças</h2>
                             </Link>

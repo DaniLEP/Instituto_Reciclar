@@ -49,20 +49,15 @@ export default function Header() {
             </ul>
           </div>
 
-          {/* Botão do Menu (Mobile) */}
+          {/* Botão do Menu - (Mobile) */}
           <button
             className="block lg:hidden text-white text-[30px] z-50"
-            onClick={handleClick}
-          >
+            onClick={handleClick}>
             {click ? <FaTimes /> : <CiMenuFries />}
           </button>
 
-          {/* Menu (Mobile) */}
-          <div
-            className={`${
-              click ? "block" : "hidden"
-            } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`}
-          >
+          {/* Menu - (Mobile) */}
+          <div className={`${ click ? "block" : "hidden" } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`} >
             <ul className="text-center text-white text-xl">
               <Link to="/lista-pedidos">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
@@ -98,115 +93,38 @@ export default function Header() {
       <div className={`${click ? "hidden" : "block"}`}>
         {/* Conteúdo da Home (Cards) */}
         <div className="bg-white">
-          <div
-            className="container"
-            style={{
-              maxWidth: "2000px",
-              height: "70vh",
-              margin: "0px auto",
-              textAlign: "center",
-              position: "relative",
-              top: "20vh",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "20px",
-                position: "relative",
-                top: "5vh",
-              }}
-            >
-              {/* CARDS */}
-              <div
-                className="card"
-                style={{
-                  background: "#fff",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  padding: "20px",
-                  cursor: "pointer",
-                  transition: "transform 0.3s ease",
-                  marginBottom: "10px",
-                  color: "black",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center", // Garantindo que o conteúdo fique centralizado
-                }}
-              >
-                <Link to="/lista-pedidos">
-                  <img src="/listaPedidos.svg" className="h-[120px] ml-[65px]" />
-                  <h2 className="text-[40px]">Lista de Pedidos</h2>
-                </Link>
-              </div>
-              <div
-                className="card"
-                style={{
-                  background: "#fff",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  padding: "20px",
-                  cursor: "pointer",
-                  transition: "transform 0.3s ease",
-                  marginBottom: "10px",
-                  color: "black",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Link to="/cadastro">
-                  <img src="/cadastro.svg" className="h-[120px] ml-[10px]" />
-                  <h2 className="text-[40px]">Cadastro</h2>
-                </Link>
-              </div>
-              <div
-                className="card"
-                style={{
-                  background: "#fff",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  padding: "20px",
-                  cursor: "pointer",
-                  transition: "transform 0.3s ease",
-                  marginBottom: "10px",
-                  color: "black",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Link to="/relatorio">
-                  <img src="/relatorio.svg" className="h-[120px] ml-[20px]" />
-                  <h2 className="text-[40px]">Relatórios</h2>
-                </Link>
-              </div>
-              <div
-                className="card"
-                style={{
-                  background: "#fff",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  padding: "20px",
-                  cursor: "pointer",
-                  transition: "transform 0.3s ease",
-                  marginBottom: "10px",
-                  color: "black",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Link to="/retirada">
-                  <img src="/retirada.svg" className="h-[120px] ml-[10px]" />
-                  <h2 className="text-[40px]">Retirada</h2>
-                </Link>
-              </div>
+          <div className="container" style={{
+              maxWidth: "2000px", height: "70vh",  margin: "0px auto",  textAlign: "center",  position: "relative",  top: "20vh", }} >
+            <div style={{  display: "grid",  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",  gap: "20px",  position: "relative",  top: "5vh",  }} >
+              {/* CARDS */}             
+                {/* Card 1 - Lista Pedidos */}
+                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                  <Link to={"/lista-pedidos"}>
+                      <img src="/listaPedidos.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Proteinas"/>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Lista de Pedidos</h2>
+                  </Link>
+                </div>
+                {/* Card 2 - Cadastro */}
+                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                  <Link to={"/cadastro"}>
+                      <img src="/cadastro.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Mantimentos"/>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Cadastro</h2>
+                  </Link>
+                </div>
+                {/* Card 3 - Relatorios */}
+                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                  <Link to={"/relatorio"}>
+                      <img src="/relatorio.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Relatorios"/>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Relatórios</h2>
+                  </Link>
+                </div>
+                {/* Card 4 - Retirada */}
+                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                    <Link to={"/retirada"}>
+                      <img src="/retirada.svg"className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Voltar"/>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Retirada</h2>
+                  </Link>
+                </div>                    
             </div>
           </div>
         </div>
