@@ -19,7 +19,7 @@ export default function ListaPedidos() {
                         </div>
                         {/* Card  - Ref.Servidas */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/Mantimentos"}>
+                            <Link to={"/mantimentos"}>
                                 <img src="/mantimentos.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Mantimentos"/>
                                 <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Mantimentos</h2>
                             </Link>

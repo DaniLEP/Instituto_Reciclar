@@ -23,12 +23,12 @@ export default function Header() {
             <ul className="flex gap-2 mr-16 mt-[-7px] text-[20px]">
               <Link to="/lista-pedidos">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  Lista de Pedidos
+                  Pedidos
                 </button>
               </Link>
               <Link to="/cadastro">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-1 py-2">
-                  Cadastro
+                  Cadastros
                 </button>
               </Link>
               <Link to="/relatorio">
@@ -98,28 +98,28 @@ export default function Header() {
             <div style={{  display: "grid",  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",  gap: "20px",  position: "relative",  top: "5vh",  }} >
               {/* CARDS */}             
                 {/* Card 1 - Lista Pedidos */}
-                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                   <Link to={"/lista-pedidos"}>
                       <img src="/listaPedidos.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Proteinas"/>
                       <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Lista de Pedidos</h2>
                   </Link>
                 </div>
                 {/* Card 2 - Cadastro */}
-                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                   <Link to={"/cadastro"}>
                       <img src="/cadastro.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Mantimentos"/>
                       <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Cadastro</h2>
                   </Link>
                 </div>
                 {/* Card 3 - Relatorios */}
-                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                   <Link to={"/relatorio"}>
                       <img src="/relatorio.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Relatorios"/>
                       <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Relatórios</h2>
                   </Link>
                 </div>
                 {/* Card 4 - Retirada */}
-                <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                     <Link to={"/retirada"}>
                       <img src="/retirada.svg"className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Voltar"/>
                       <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Retirada</h2>
