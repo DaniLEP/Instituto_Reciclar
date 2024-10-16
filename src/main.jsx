@@ -159,7 +159,7 @@ const router = createBrowserRouter ([
         element: <QuantidadeRefeicoes />
       },
       {
-        path: "/Login",
+        path: "/login",
         element: <LoginForm />
       },
     ],
