@@ -61,12 +61,12 @@ export default function Header() {
             <ul className="text-center text-white text-xl">
               <Link to="/lista-pedidos">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Lista de Pedidos
+                  Pedidos
                 </li>
               </Link>
               <Link to="/cadastro">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Cadastro
+                  Cadastros
                 </li>
               </Link>
               <Link to="/relatorio">
@@ -101,14 +101,14 @@ export default function Header() {
                 <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                   <Link to={"/lista-pedidos"}>
                       <img src="/listaPedidos.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Proteinas"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Lista de Pedidos</h2>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Pedidos</h2>
                   </Link>
                 </div>
                 {/* Card 2 - Cadastro */}
                 <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                   <Link to={"/cadastro"}>
                       <img src="/cadastro.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Mantimentos"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Cadastro</h2>
+                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Cadastros</h2>
                   </Link>
                 </div>
                 {/* Card 3 - Relatorios */}
