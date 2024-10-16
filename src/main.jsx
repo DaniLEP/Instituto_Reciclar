@@ -32,6 +32,7 @@ import EditProfile from './components/useStates.jsx'
 import StatusRef from './components/StatusRef.jsx'
 import ReceitaCadastro from './components/receitaCad.jsx'
 import QuantidadeRefeicoes from './components/qtdeRef.jsx'
+import LoginForm from './pages/Login.jsx'
 
 
 const router = createBrowserRouter ([
@@ -153,9 +154,13 @@ const router = createBrowserRouter ([
         path: "/cad-cardapio",
         element: <ReceitaCadastro/>
       },
-        {
+      {
         path: "/quantidade-refeicoes",
         element: <QuantidadeRefeicoes />
+      },
+      {
+        path: "/Login",
+        element: <LoginForm />
       },
     ],
   }
