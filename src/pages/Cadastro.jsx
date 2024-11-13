@@ -23,7 +23,7 @@ export default function Cadastro() {
                         title="Ref. Servidas" 
                     />
                     <Card 
-                        link="/" 
+                        link="/Home" 
                         imgSrc="/return.svg" 
                         title="Voltar" 
                         isBackCard

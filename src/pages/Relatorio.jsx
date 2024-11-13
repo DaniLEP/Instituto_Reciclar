@@ -43,7 +43,7 @@ export default function Relatorio() {
 
                         {/* Card 3 - Voltar */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/"}>
+                            <Link to={"/Home"}>
                                 <img
                                     src="/return.svg"
                                     className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
