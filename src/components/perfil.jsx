@@ -61,7 +61,7 @@ export default function Profile() {
           textAlign: 'center',
         }}
       >
-        <BackButton to={'/'}>
+        <BackButton to={'/Home'}>
           <img src="/return.svg" alt="Voltar" />
         </BackButton>
 

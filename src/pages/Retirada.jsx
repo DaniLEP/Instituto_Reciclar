@@ -13,7 +13,7 @@ export default function Retirada() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
                         {/* Card 1 - Retirada */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/retirada-produtos"}>
+                            <Link to={"/Retirada_Produtos"}>
                                 <img
                                     src="/retirada_produto.svg"
                                     className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
@@ -27,7 +27,7 @@ export default function Retirada() {
 
                         {/* Card 2 - Histórico de Retirada */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/historico-retiradas"}>
+                            <Link to={"/Historico_Retirada"}>
                                 <img
                                     src="/historico.svg"
                                     className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
@@ -41,7 +41,7 @@ export default function Retirada() {
 
                         {/* Card 3 - Voltar */}
                         <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                            <Link to={"/"}>
+                            <Link to={"/Home"}>
                                 <img
                                     src="/return.svg"
                                     className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"

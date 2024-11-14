@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // useParams para capturar o ID do pedido
 
-const EditOrderPage = () => {
+const EditPagePedidos = () => {
   const { id } = useParams(); // Pega o ID da URL
   const navigate = useNavigate(); // Para redirecionar de volta após editar
   const [order, setOrder] = useState(null);
@@ -74,4 +74,4 @@ const EditOrderPage = () => {
   );
 };
 
-export default EditOrderPage;
+export default EditPagePedidos;

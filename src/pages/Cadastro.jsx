@@ -8,22 +8,27 @@ export default function Cadastro() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* Cards */}
                     <Card 
-                        link="/cadastro-geral" 
+                        link="/Cadastro_Geral" 
                         imgSrc="/cadastro.svg" 
                         title="Cadastro de Produtos" 
                     />
                     <Card 
-                        link="/entrada-produtos" 
+                        link="/Entrada_Produtos" 
                         imgSrc="/entrada.svg" 
                         title="Entrada de Produtos" 
                     />
                     <Card 
-                        link="/cad-refeicoes" a
+                        link="/Cadastro_Refeicoes" 
                         imgSrc="/ref.servidas.svg" 
                         title="Ref. Servidas" 
                     />
+                      <Card 
+                        link="/Cadastro_Fornecedor" 
+                        imgSrc="/entregador.png" 
+                        title="Fornecedor" 
+                    />
                     <Card 
-                        link="/" 
+                        link="/Home" 
                         imgSrc="/return.svg" 
                         title="Voltar" 
                         isBackCard

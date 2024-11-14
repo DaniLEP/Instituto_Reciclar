@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Link } from "react-router-dom";
 
-export default function EditProfile() {
+export default function EditPerfil() {
   // Estado para armazenar os dados do formulário
   const [userData, setUserData] = useState({
     name: 'João da Silva',

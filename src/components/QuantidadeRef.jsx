@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -17,30 +17,29 @@ const Title = styled.h1`
   color: white;
   font-size: 2.5rem;
   text-align: center;
+  margin-bottom: 20px;
 `;
 
 const FormContainer = styled.div`
   background: white;
-  padding: 12px;
-  font-size: 13px;
-  color: black;
-  border-radius: 10px;
+  padding: 20px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 800px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const Form = styled.form`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
 `;
 
 const FormGroup = styled.div`
   flex: 1 1 45%;
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 
   @media (max-width: 768px) {
     flex: 1 1 100%;
@@ -48,46 +47,68 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  color: #333;
 `;
 
 const Input = styled.input`
-  padding: 10px;
-  color: black;
-  border: 1px solid rgb(115, 113, 113);
-  border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #4c6ef5;
+  }
 `;
 
 const Button = styled.button`
-  padding: 11px 12px;
+  padding: 12px 18px;
   background: #f20de7;
-  color: #fff;
-  border-radius: 12px;
-  cursor: pointer;
+  color: white;
+  border-radius: 8px;
   border: none;
+  cursor: pointer;
+  font-size: 1rem;
   transition: background-color 0.3s ease;
-  margin-right: 10px;
+  margin-top: 10px;
+  margin-right: 15px;
 
   &:hover {
     background-color: #d10ccf;
   }
+
+  &:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
 `;
 
 const Table = styled.table`
-  margin-top: 5vh;
+  margin-top: 30px;
   width: 100%;
   border-collapse: collapse;
   text-align: center;
 
   thead {
-    display: block;
+    background-color: #4c6ef5;
+    color: white;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    border: 1px solid #ddd;
   }
 
   tbody {
-    display: block;
-    overflow-y: auto;
     max-height: 300px;
-    overflow-x: hidden;
+    overflow-y: auto;
+    display: block;
   }
 
   tr {
@@ -95,38 +116,37 @@ const Table = styled.table`
     table-layout: fixed;
     width: 100%;
   }
-
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    min-width: 100px;
-  }
-
-  th {
-    background-color: #00ff62;
-    color: black;
-  }
 `;
 
 const Actions = styled.div`
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  gap: 10px;
   margin-top: 10px;
 `;
 
 const ReturnButton = styled.button`
   position: absolute;
-  top: 10px;
-  right: 20px;
-  background: none;
+  top: 20px;
+  left: 20px;
   border: none;
+  padding: 10px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  background: #F20DE7;
+  color: white;
 
   @media (max-width: 768px) {
-    top: 5px;
-    right: 10px;
+    top: 10px;
+    left: 10px;
   }
+`;
+
+const H2 = styled.h2`
+  text-align: center;
+  margin-top: 10px;
+  font-size: 25px;
 `;
 
 const QuantidadeRefeicoes = () => {
@@ -136,17 +156,18 @@ const QuantidadeRefeicoes = () => {
     cafeManha: 0,
     lancheTarde: 0,
     quantidadeRefeicoesAparte: 0,
-    dataRefeicao: ''
+    dataRefeicao: '',
   });
 
   const [refeicoes, setRefeicoes] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -172,7 +193,7 @@ const QuantidadeRefeicoes = () => {
       cafeManha: 0,
       lancheTarde: 0,
       quantidadeRefeicoesAparte: 0,
-      dataRefeicao: ''
+      dataRefeicao: '',
     });
   };
 
@@ -194,12 +215,31 @@ const QuantidadeRefeicoes = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simular o salvamento e redirecionar para outra página
-    console.log('Quantidade de refeições servidas salva:', refeicoes);
 
-    // Limpar a tabela
-    setRefeicoes([]);
+    // Verificação se todos os campos estão preenchidos
+    if (
+      formData.almoco &&
+      formData.jantar &&
+      formData.cafeManha &&
+      formData.lancheTarde &&
+      formData.quantidadeRefeicoesAparte &&
+      formData.dataRefeicao
+    ) {
+      // Simular o salvamento e redirecionar para outra página
+      console.log('Quantidade de refeições servidas salva:', refeicoes);
 
+      // Exibir o alerta
+      alert('Quantidade de alimentos salva com sucesso!');
+
+      // Limpar a tabela
+      setRefeicoes([]);
+
+      // Redirecionar para a página inicial
+      navigate('/Cadastro'); // Redireciona para a página de Cadastro após salvar
+    } else {
+      // Se os campos não estão preenchidos, exibe um alerta
+      alert('Por favor, preencha todos os campos!');
+    }
   };
 
   return (
@@ -213,11 +253,16 @@ const QuantidadeRefeicoes = () => {
             { label: 'Qtde de Café', name: 'cafeManha', type: 'number' },
             { label: 'Qtde de Lanche', name: 'lancheTarde', type: 'number' },
             { label: 'Qtde de Refeições', name: 'quantidadeRefeicoesAparte', type: 'number' },
-            { label: 'Data da Refeição', name: 'dataRefeicao', type: 'date' }
+            { label: 'Data da Refeição', name: 'dataRefeicao', type: 'date' },
           ].map((input, index) => (
             <FormGroup key={index}>
               <Label>{input.label}:</Label>
-              <Input name={input.name}  type={input.type}  value={formData[input.name]} onChange={handleInputChange} />
+              <Input
+                name={input.name}
+                type={input.type}
+                value={formData[input.name]}
+                onChange={handleInputChange}
+              />
             </FormGroup>
           ))}
         </Form>
@@ -229,8 +274,9 @@ const QuantidadeRefeicoes = () => {
           <Button onClick={exportToExcel}>Exportar para Excel</Button>
           <Button onClick={clearForm}>Limpar Formulário</Button>
         </Actions>
-            <br /><br />
-        <h2 className="text-black text-center text-[30px]">Refeições Cadastradas</h2>
+        <H2>
+          <h2>Refeições Cadastradas</h2>
+        </H2>
         <Table>
           <thead>
             <tr>
@@ -250,24 +296,18 @@ const QuantidadeRefeicoes = () => {
                   <td key={i}>{refeicao[key]}</td>
                 ))}
                 <td>
-                  <Button onClick={() => handleEdit(index)}>Editar</Button>
-                  <Button onClick={() => handleRemove(index)}>Remover</Button>
+                  <button onClick={() => handleEdit(index)}>Editar</button>
+                  <button onClick={() => handleRemove(index)}>Excluir</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-              <br /><br />
-        <Button type="submit" onClick={handleSubmit}>
-          Salvar Quantidade
-        </Button>
+        <Button onClick={handleSubmit}>Salvar Refeições</Button>
       </FormContainer>
-
-      <Link to={'/cad-cardapio'}>
-        <ReturnButton>
-          <img src="/return.svg" alt="Voltar" style={{ width: '50px', height: '50px' }} />
-        </ReturnButton>
-      </Link>
+      <ReturnButton>
+        <Link to="/Cadastro_Refeicoes">Voltar</Link>
+      </ReturnButton>
     </Container>
   );
 };

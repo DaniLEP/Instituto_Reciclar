@@ -1,22 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
-export default function OrdersPage() {
-  const navigate = useNavigate();
+export default function PaginaPedidos() {
 
   // Função para redirecionar para a página de lista de compras
-  const goToShoppingList = () => {
-    navigate('/shopping-list');
-  };
+  const navigate = useNavigate()
+
+  const goToShoppingList = () =>  navigate('/Cadastro_Produtos');
 
   // Função para visualizar o status dos pedidos
   const goToOrderStatus = () => {
-    navigate('/order-status'); // Rota para a página de status dos pedidos
+    navigate('/Status_Pedido'); // Rota para a página de status dos pedidos
   };
 
   return (
     <div className="orders-page">
-      <h1 className="title">Consulta de Pedido</h1>
 
       <div className="card-container">
         {/* Cartão 1 - Novo Pedido */}
@@ -33,7 +31,7 @@ export default function OrdersPage() {
 
         {/* Cartão 3 - Voltar */}
         <div className="card">
-          <Link to="/lista-pedidos">
+          <Link to="/Home">
             <img src="/return.svg" alt="Voltar" className="card-icon" />
           </Link>
           <h2 className="card-title">Voltar</h2>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-const ReceitaCadastro = () => {
+const CadastroRefeicoes = () => {
   const [cafeManha, setCafeManha] = useState('');
   const [lancheTarde, setLancheTarde] = useState('');
   const [almoco, setAlmoco] = useState('');
@@ -16,7 +16,7 @@ const ReceitaCadastro = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/quantidade-refeicoes');
+    navigate('/Quantidade_Refeicoes');
   };
 
   const handleBack = () => {
@@ -270,4 +270,4 @@ const ReceitaCadastro = () => {
   );
 };
 
-export default ReceitaCadastro;
+export default CadastroRefeicoes;

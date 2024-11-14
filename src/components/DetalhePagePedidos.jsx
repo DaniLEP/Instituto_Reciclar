@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-export default function OrderDetailsPage() {
+
+export default function DetailPagePedido() {
   const navigate = useNavigate();
 
   // Estado para armazenar os detalhes do pedido

@@ -21,17 +21,17 @@ export default function Header() {
           {/* Menu (Desktop) */}
           <div className="hidden lg:flex flex-1 items-center justify-end text-white">
             <ul className="flex gap-2 mr-16 mt-[-7px] text-[20px]">
-              <Link to="/lista-pedidos">
+              <Link to="/Pedidos">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Pedidos
                 </button>
               </Link>
-              <Link to="/cadastro">
+              <Link to="/Cadastro">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-1 py-2">
                   Cadastros
                 </button>
               </Link>
-              <Link to="/relatorio">
+              <Link to="/Dashboard">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Relatório
                 </button>
@@ -41,35 +41,44 @@ export default function Header() {
                   Retirada
                 </button>
               </Link>
-              <Link to="/meu-perfil">
+              <Link to="/Meu_Perfil">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  <img src="/myUser.svg" className="h-[32px] w-[32px] rounded-full" alt="User" />
+                  <img
+                    src="/myUser.svg"
+                    className="h-[32px] w-[32px] rounded-full"
+                    alt="User"
+                  />
                 </button>
-            </Link>
+              </Link>
             </ul>
           </div>
 
           {/* Botão do Menu - (Mobile) */}
           <button
             className="block lg:hidden text-white text-[30px] z-50"
-            onClick={handleClick}>
+            onClick={handleClick}
+          >
             {click ? <FaTimes /> : <CiMenuFries />}
           </button>
 
           {/* Menu - (Mobile) */}
-          <div className={`${ click ? "block" : "hidden" } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`} >
+          <div
+            className={`${
+              click ? "block" : "hidden"
+            } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`}
+          >
             <ul className="text-center text-white text-xl">
-              <Link to="/lista-pedidos">
+              <Link to="/Pedidos">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Pedidos
                 </li>
               </Link>
-              <Link to="/cadastro">
+              <Link to="/Cadastro">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Cadastros
                 </li>
               </Link>
-              <Link to="/relatorio">
+              <Link to="/Dashboard">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Relatório
                 </li>
@@ -79,7 +88,7 @@ export default function Header() {
                   Retirada
                 </li>
               </Link>
-              <Link to="/meu-perfil">
+              <Link to="/Meu_Perfil">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Meu Perfil
                 </li>
@@ -93,38 +102,79 @@ export default function Header() {
       <div className={`${click ? "hidden" : "block"}`}>
         {/* Conteúdo da Home (Cards) */}
         <div className="bg-white">
-          <div className="container" style={{
-              maxWidth: "2000px", height: "70vh",  margin: "0px auto",  textAlign: "center",  position: "relative",  top: "20vh", }} >
-            <div style={{  display: "grid",  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",  gap: "20px",  position: "relative",  top: "5vh",  }} >
-              {/* CARDS */}             
-                {/* Card 1 - Lista Pedidos */}
-                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                  <Link to={"/lista-pedidos"}>
-                      <img src="/listaPedidos.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Proteinas"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Pedidos</h2>
-                  </Link>
-                </div>
-                {/* Card 2 - Cadastro */}
-                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                  <Link to={"/cadastro"}>
-                      <img src="/cadastro.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Mantimentos"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Cadastros</h2>
-                  </Link>
-                </div>
-                {/* Card 3 - Relatorios */}
-                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                  <Link to={"/relatorio"}>
-                      <img src="/relatorio.svg" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Relatorios"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Relatórios</h2>
-                  </Link>
-                </div>
-                {/* Card 4 - Retirada */}
-                <div className="card bg-[#F6F6F6] border border-black  rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                    <Link to={"/retirada"}>
-                      <img src="/retirada.svg"className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Voltar"/>
-                      <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Retirada</h2>
-                  </Link>
-                </div>                    
+          <div
+            className="container"
+            style={{
+              maxWidth: "2000px",
+              height: "70vh",
+              margin: "0px auto",
+              textAlign: "center",
+              position: "relative",
+              top: "20vh",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                gap: "20px",
+                position: "relative",
+                top: "5vh",
+              }}
+            >
+              {/* CARDS DESKTOP */}
+              {/* Card 1 - Lista Pedidos */}
+              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <Link to={"/Pedidos"}>
+                  <img
+                    src="/listaPedidos.svg"
+                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
+                    alt="Proteinas"
+                  />
+                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
+                    Pedidos
+                  </h2>
+                </Link>
+              </div>
+              {/* Card 2 - Cadastro */}
+              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <Link to={"/Cadastro"}>
+                  <img
+                    src="/cadastro.svg"
+                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
+                    alt="Cadastros"
+                  />
+                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
+                    Cadastros
+                  </h2>
+                </Link>
+              </div>
+              {/* Card 3 - Relatorios */}
+              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <Link to={"/Dashboard"}>
+                  <img
+                    src="/relatorio.svg"
+                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
+                    alt="Relatorios"
+                  />
+                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
+                    Relatórios
+                  </h2>
+                </Link>
+              </div>
+              {/* Card 4 - Retirada */}
+              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <Link to={"/Retirada"}>
+                  <img
+                    src="/retirada.svg"
+                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
+                    alt="Retirada"
+                  />
+                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
+                    Retirada
+                  </h2>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
