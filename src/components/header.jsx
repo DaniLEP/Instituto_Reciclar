@@ -26,12 +26,12 @@ export default function Header() {
                   Pedidos
                 </button>
               </Link>
-              <Link to="/cadastro">
+              <Link to="/Cadastro">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-1 py-2">
                   Cadastros
                 </button>
               </Link>
-              <Link to="/relatorio">
+              <Link to="/Dashboard">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Relatório
                 </button>
@@ -41,7 +41,7 @@ export default function Header() {
                   Retirada
                 </button>
               </Link>
-              <Link to="/meu-perfil">
+              <Link to="/Meu_Perfil">
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   <img
                     src="/myUser.svg"
@@ -73,12 +73,12 @@ export default function Header() {
                   Pedidos
                 </li>
               </Link>
-              <Link to="/cadastro">
+              <Link to="/Cadastro">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Cadastros
                 </li>
               </Link>
-              <Link to="/relatorio">
+              <Link to="/Dashboard">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Relatório
                 </li>
@@ -88,7 +88,7 @@ export default function Header() {
                   Retirada
                 </li>
               </Link>
-              <Link to="/meu-perfil">
+              <Link to="/Meu_Perfil">
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Meu Perfil
                 </li>

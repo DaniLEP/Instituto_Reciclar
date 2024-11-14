@@ -1,4 +1,4 @@
-import  OrdersPage from '../components/OrdersPage'
+import PaginaPedidos from '../components/PagePedidos';
 export default function ListaPedidos() {
         return (
         <>
@@ -9,7 +9,7 @@ export default function ListaPedidos() {
                             Lista de Pedidos
                         </span>
 
-                        <OrdersPage />
+                        <PaginaPedidos />
                     </div>
                 </div>
             </>

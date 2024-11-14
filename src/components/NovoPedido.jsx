@@ -309,7 +309,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
-const ShoppingListPage = () => {
+const NovoPedido = () => {
   const [sku, setSku] = useState('');
   const [product, setProduct] = useState('');
   const [supplier, setSupplier] = useState('');
@@ -544,11 +544,15 @@ const styles = {
     borderBottom: "1px solid #ddd"
   },
   actionButton: {
-    marginRight: '10px'
+    marginRight: '10px',
+    background: '#00009c',
+    color: 'white',
+    padding: '10px',
+    borderRadius: '10%'
   },
   returnButton: {
     padding: "12px 20px",
-    background: "#00DD62",
+    background: "#F20DE7",
     color: "#fff",
     borderRadius: "12px",
     cursor: "pointer",
@@ -566,4 +570,4 @@ const styles = {
   },
 };
 
-export default ShoppingListPage;
+export default NovoPedido;

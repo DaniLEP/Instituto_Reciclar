@@ -32,12 +32,15 @@ const productsData = generateProducts(50);
 
 const Estoque = () => {
     const [sku, setSku] = useState('');
+    const [productName, setProductName] = useState('');
     const [product, setProduct] = useState(null);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSearch = () => {
-        const foundProduct = productsData.find(item => item.sku === sku);
+        const foundProduct = productsData.find(
+            item => item.sku === sku || item.name.toLowerCase().includes(productName.toLowerCase())
+        );
         if (foundProduct) {
             setProduct(foundProduct);
             setError('');
@@ -48,11 +51,12 @@ const Estoque = () => {
     };
 
     const voltar = () => {
-        navigate('/relatorio');
+        navigate('/Dashboard');
     };
 
     const handleBack = () => {
         setSku('');
+        setProductName('');
         setProduct(null);
         setError('');
     };
@@ -74,6 +78,13 @@ const Estoque = () => {
                         value={sku}
                         onChange={(e) => setSku(e.target.value)}
                         placeholder="Digite o SKU"
+                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
+                    />
+                    <input
+                        type="text"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                        placeholder="Digite Produto"
                         style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
                     />
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -107,7 +118,7 @@ const Estoque = () => {
                     </div>
                 )}
                 
-                <h2>Produtos no Estoque</h2>
+                <h2 style={{textAlign: 'center', fontSize: '20px'}}>Produtos no Estoque</h2>
                 <div style={{ overflowX: 'auto', marginTop: '20px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
@@ -138,28 +149,13 @@ const Estoque = () => {
                         </tbody>
                     </table>
                 </div>
+                <button
+                    onClick={voltar}
+                    style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#F20DE7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                    Voltar
+                </button>
             </div>
-            <button
-                type="button"
-                onClick={voltar}
-                style={{
-                    padding: '10px 20px',
-                    border: 'none',
-                    backgroundColor: '#F20DE7',
-                    color: '#fff',
-                    borderRadius: '4px',
-                    marginTop: '10px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.3s ease',
-                    display: 'block',
-                    width: '100%',
-                    maxWidth: '200px',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                }}
-            >
-                Voltar
-            </button>
         </div>
     );
 };

@@ -1,43 +1,37 @@
-
-
-// export default Refeicoes;
-
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
-export default function OrdersPage() {
-  const navigate = useNavigate();
+export default function PaginaPedidos() {
 
   // Função para redirecionar para a página de lista de compras
-  const goToReceitaCadastro = () => {
-    navigate('/cad-cardapio');
-  };
+  const navigate = useNavigate()
+
+  const goToShoppingList = () =>  navigate('/Cadastro_Produtos');
 
   // Função para visualizar o status dos pedidos
   const goToOrderStatus = () => {
-    navigate('/status-ref'); // Rota para a página de status dos pedidos
+    navigate('/Status_Pedido'); // Rota para a página de status dos pedidos
   };
 
   return (
     <div className="orders-page">
-      <h1 className="title">Cadastro de Ref. Servidas</h1>
 
       <div className="card-container">
         {/* Cartão 1 - Novo Pedido */}
-        <div onClick={goToReceitaCadastro} className="card">
+        <div onClick={goToShoppingList} className="card">
           <img src="/plus.svg" alt="Novo Pedido" className="card-icon" />
-          <h2 className="card-title">Fazer Nova Refeição</h2>
+          <h2 className="card-title">Fazer Novo Pedido</h2>
         </div>
 
         {/* Cartão 2 - Status do Pedido */}
         <div onClick={goToOrderStatus} className="card">
           <img src="/status.svg" alt="Status do Pedido" className="card-icon" />
-          <h2 className="card-title">Status de Refeição</h2>
+          <h2 className="card-title">Status do Pedido</h2>
         </div>
 
         {/* Cartão 3 - Voltar */}
         <div className="card">
-          <Link to="/cadastro">
+          <Link to="/Home">
             <img src="/return.svg" alt="Voltar" className="card-icon" />
           </Link>
           <h2 className="card-title">Voltar</h2>
@@ -179,5 +173,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-

@@ -11,36 +11,35 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
   }
-   
 
   @media (max-width: 768px) {
-   #return{
-    position: absolute;
-    top: 0vh
-    background: none;
-    border: none;
-    right: 1vh; 
-  }
+    #return{
+      position: absolute;
+      top: 0;
+      background: none;
+      border: none;
+      right: 1vh; 
+    }
   }
 `;
 
 const Container = styled.div`
-  max-width: 1000px;
+  max-width: 750px;
   margin: 50px auto;
-  padding: 20px;
+  padding: 15px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 
   @media (max-width: 768px) {
-    padding: 15px;
+    padding: 10px;
     margin: 20px;
   }
 `;
 
 const Title = styled.h1`
   text-align: center;
-  font-size: 36px;
+  font-size: 28px;
   color: #ffffff;
   margin-bottom: 20px;
 `;
@@ -57,11 +56,11 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   margin-bottom: 10px;
   border: 2px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 14px;
   transition: border-color 0.3s;
 
   &:focus {
@@ -72,11 +71,11 @@ const Input = styled.input`
 
 const Select = styled.select`
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   margin-bottom: 10px;
   border: 2px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 14px;
   transition: border-color 0.3s;
 
   &:focus {
@@ -86,7 +85,7 @@ const Select = styled.select`
 `;
 
 const Button = styled.button`
-  padding: 12px 20px;
+  padding: 10px 18px;
   background: #F20DE7;
   color: #fff;
   border-radius: 12px;
@@ -105,8 +104,11 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  overflow-x: auto;
+  display: block;
 
   @media (max-width: 768px) {
+    width: 100%;
     display: block;
     overflow-x: auto;
     white-space: nowrap;
@@ -115,17 +117,21 @@ const Table = styled.table`
 
 const TableHead = styled.th`
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 8px;
   background-color: #f2f2f2;
+  font-weight: bold;
+  text-align: center;
 `;
 
 const TableData = styled.td`
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 8px;
+  text-align: center;
 `;
 
 const ActionButton = styled(Button)`
   margin-left: 10px;
+  padding: 6px 10px;
 `;
 
 const NoDataMessage = styled.p`
@@ -133,6 +139,32 @@ const NoDataMessage = styled.p`
   color: #666;
   margin-top: 20px;
 `;
+
+const VoltarButton = styled.button`
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #F20DE7;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #d10ccf;
+  }
+
+  @media (max-width: 768px) {
+    top: 10px;
+    left: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+`;
+
 
 function CadProdutos() {
   const [sku, setSku] = useState('');
@@ -146,13 +178,22 @@ function CadProdutos() {
   const [totalPrice, setTotalPrice] = useState('');
   const [type, setType] = useState('');
   const [products, setProducts] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   const handleSave = () => {
     if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && totalPrice && type) {
       const newProduct = { sku, name, supplier, unit, quantity, dateAdded, expiryDate, unitPrice, totalPrice, type };
-      setProducts([...products, newProduct]);
 
-      // Limpa os campos após adicionar o produto
+      if (editingIndex !== null) {
+        const updatedProducts = [...products];
+        updatedProducts[editingIndex] = newProduct;
+        setProducts(updatedProducts);
+        setEditingIndex(null); // Reset editing mode after saving
+      } else {
+        setProducts([...products, newProduct]);
+      }
+
+      // Limpa os campos após adicionar/editar o produto
       resetForm();
     }
   };
@@ -168,6 +209,21 @@ function CadProdutos() {
     setUnitPrice('');
     setTotalPrice('');
     setType('');
+  };
+
+  const handleEdit = (index) => {
+    const productToEdit = products[index];
+    setSku(productToEdit.sku);
+    setName(productToEdit.name);
+    setSupplier(productToEdit.supplier);
+    setUnit(productToEdit.unit);
+    setQuantity(productToEdit.quantity);
+    setDateAdded(productToEdit.dateAdded);
+    setExpiryDate(productToEdit.expiryDate);
+    setUnitPrice(productToEdit.unitPrice);
+    setTotalPrice(productToEdit.totalPrice);
+    setType(productToEdit.type);
+    setEditingIndex(index); // Set the product as being edited
   };
 
   const handleRemove = (index) => {
@@ -272,14 +328,13 @@ function CadProdutos() {
           <Label>Tipo de Produto:</Label>
           <Select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">Selecione o tipo</option>
-            <option value="proteina">Proteína</option>
-            <option value="mantimento">Mantimento</option>
-            <option value="hortalicas">Hortaliças</option>
-            <option value="doacoes">Doações Recebidas</option>
+            <option value="Proteína">Proteína</option>
+            <option value="Mantimento">Mantimento</option>
+            <option value="Hortaliça">Hortaliça</option>
           </Select>
         </FormGroup>
 
-        <Button onClick={handleSave}>Adicionar Produto</Button>
+        <Button onClick={handleSave}>Salvar Produto</Button>
 
         {products.length > 0 ? (
           <Table>
@@ -312,6 +367,7 @@ function CadProdutos() {
                   <TableData>{product.totalPrice}</TableData>
                   <TableData>{product.type}</TableData>
                   <TableData>
+                    <ActionButton onClick={() => handleEdit(index)}>Editar</ActionButton>
                     <ActionButton onClick={() => handleRemove(index)}>Remover</ActionButton>
                   </TableData>
                 </tr>
@@ -321,12 +377,8 @@ function CadProdutos() {
         ) : (
           <NoDataMessage>Nenhum produto cadastrado.</NoDataMessage>
         )}
-        
-        <Link to={'/cadastro'}>
-          <button type="button" id="return" style={{ position: "absolute", top: "0vh", background: "none", border:"none", right:"30vh" }}>
-            <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-          </button>
-        </Link>
+
+        <VoltarButton as={Link} to="/Cadastro">Voltar</VoltarButton>
       </Container>
     </>
   );

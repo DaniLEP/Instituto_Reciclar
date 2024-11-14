@@ -30,7 +30,7 @@ export default function RelatorioAnual() {
   };
 
   const voltar = () => {
-    navigate('/relatorio');
+    navigate('/Dashboard');
   };
 
   const gerarGrafico = (dados) => {
@@ -61,6 +61,11 @@ export default function RelatorioAnual() {
       },
       options: {
         responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
       }
     });
     
@@ -68,13 +73,13 @@ export default function RelatorioAnual() {
   };
 
   return (
-    <div style={{ background: "#00009C", display: "flex", flexDirection: "column", alignItems: "center", margin: "0", padding: "20px", minHeight: "100vh", overflow: "hidden" }}>
-      <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "5px 0", boxSizing: "border-box" }}>
+    <div style={{ background: "#00009c", display: "flex", flexDirection: "column", alignItems: "center", margin: "0", padding: "40px", minHeight: "100vh", overflow: "hidden" }}>
+      <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "20px 0", boxSizing: "border-box" }}>
         <h1 className='text-center text-black text-[35px]'>Relatório Periódico</h1>
         
-        <form id="consultaForm" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+        <form id="consultaForm" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
-            <label htmlFor="dataInicio" style={{ fontWeight: "bold", margin: "8px 18px" }}>Data Início:</label>
+            <label htmlFor="dataInicio" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Data Início:</label>
             <input
               type="date"
               id="dataInicio"
@@ -82,9 +87,9 @@ export default function RelatorioAnual() {
               value={dataInicio}
               onChange={(e) => setDataInicio(e.target.value)}
               required
-              style={{ padding: "5px", marginRight: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
+              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
             />
-            <label htmlFor="dataFim" style={{ fontWeight: "bold", margin: "8px 18px" }}>Data Fim:</label>
+            <label htmlFor="dataFim" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Data Fim:</label>
             <input
               type="date"
               id="dataFim"
@@ -92,19 +97,19 @@ export default function RelatorioAnual() {
               value={dataFim}
               onChange={(e) => setDataFim(e.target.value)}
               required
-              style={{ padding: "5px", marginRight: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
+              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
             />
           </div>
           
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "20px" }}>
-            <label htmlFor="tipoProduto" style={{ fontWeight: "bold", margin: "8px 18px" }}>Tipo de Produto:</label>
+            <label htmlFor="tipoProduto" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Tipo de Produto:</label>
             <select
               id="tipoProduto"
               name="tipoProduto"
               value={tipoProduto}
               onChange={(e) => setTipoProduto(e.target.value)}
               required
-              style={{ padding: "5px", marginRight: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
+              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
             >
               <option value="">Selecione</option>
               <option value="Proteína">Proteína</option>
@@ -115,54 +120,50 @@ export default function RelatorioAnual() {
             </select>
           </div>
           
-          <button type="submit" style={{ padding: "10px 20px", border: "none", backgroundColor: "#F20DE7", color: "#fffcfc", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>Consultar</button>
+          <button type="submit" style={{ padding: "12px 30px", border: "none", backgroundColor: "#6200ea", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>Consultar</button>
         </form>
 
-        <div className="chart-container" style={{ margin: "45px auto", textAlign: "center", width: "80%", maxWidth: "600px", height: "300px" }}>
+        <div className="chart-container" style={{ margin: "30px auto", textAlign: "center", width: "90%", maxWidth: "700px", height: "400px" }}>
           <canvas id="chartProdutos"></canvas>
         </div>
 
-        <div className="button-container" style={{ margin: "20px 0" }}>
-          <button id="downloadExcel" onClick={handleExportExcel} style={{ padding: "10px 20px", border: "none", backgroundColor: "#F20DE7", color: "#fffcfc", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
+        <div className="button-container" style={{ margin: "30px 0" }}>
+          <button id="downloadExcel" onClick={handleExportExcel} style={{ padding: "12px 30px", border: "none", backgroundColor: "#8E44AD", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>
             Exportar em Excel
           </button>
         </div>
 
-        {/* Tabela com estilo visual aprimorado */}
-        <div style={{ overflowX: "auto", margin: "20px 0" }}>
+        <div style={{ overflowX: "auto", margin: "30px 0" }}>
           <table id="tabelaResultados" style={{ width: "100%", borderCollapse: "collapse", fontSize: "16px" }}>
             <thead>
-              <tr style={{ backgroundColor: "#00009C", color: "#fff", textAlign: "center" }}>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>SKU</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade Consumida</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Unitário</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Total</th>
-                <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Valor Gasto no Período</th>
+              <tr style={{ backgroundColor: "#6200ea", color: "#fff", textAlign: "center" }}>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>SKU</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Tipo</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Quantidade Consumida</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Unitário</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Total</th>
+                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Gasto no Período</th>
               </tr>
             </thead>
             <tbody>
               {dadosTabela.map((item, index) => (
                 <tr key={index} style={{ textAlign: "center", backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.tipo}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.quantidade}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.quantidadeConsumida}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorUnitario}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorTotal}</td>
-                  <td style={{ padding: "8px", borderBottom: "1px solid #ddd" }}>{item.valorGasto}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.tipo}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantidade}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantidadeConsumida}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorUnitario}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorTotal}</td>
+                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorGasto}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Botão de voltar estilizado */}
-      <button type="button" onClick={voltar} style={{ padding: "10px 20px", border: "none", backgroundColor: "#F20DE7", color: "#fff", borderRadius: "4px", position: "relative", top: "20px", left: "20px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
-        Voltar
-      </button>
+        <button onClick={voltar} style={{ padding: "12px 30px", border: "none", backgroundColor: "#f20de7", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>Voltar</button>
+      </div>
     </div>
   );
 }

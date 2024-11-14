@@ -150,7 +150,7 @@ const BackButton = styled(Link)`
   }
 `;
 
-function ProductEntry() {
+function EntradaProdutos() {
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [valor, setValor] = useState('');
@@ -301,4 +301,4 @@ function ProductEntry() {
   );
 }
 
-export default ProductEntry;
+export default EntradaProdutos;

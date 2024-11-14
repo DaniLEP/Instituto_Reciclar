@@ -4,7 +4,8 @@ import * as XLSX from 'xlsx';
 import Chart from 'chart.js/auto';
 
 export default function RelatorioRetirada() {
-  const [dataConsulta, setDataConsulta] = useState('');
+  const [dataInicial, setDataInicial] = useState('');
+  const [dataFinal, setDataFinal] = useState('');
   const [dadosTabela, setDadosTabela] = useState([]);
   const [chart, setChart] = useState(null);
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function RelatorioRetirada() {
   };
 
   const voltar = () => {
-    navigate('/relatorio');
+    navigate('/Dashboard');
   };
 
   const gerarGrafico = (dados) => {
@@ -44,17 +45,66 @@ export default function RelatorioRetirada() {
         datasets: [{
           label: 'Quantidade Retirada',
           data: dados.map(dado => dado.quantidadeRetirada),
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
+          backgroundColor: dados.map(() => 'rgba(54, 162, 235, 0.6)'),
+          borderColor: dados.map(() => 'rgba(54, 162, 235, 1)'),
+          borderWidth: 2,
+          hoverBackgroundColor: 'rgba(54, 162, 235, 0.8)',
+          hoverBorderColor: 'rgba(54, 162, 235, 1)',
+          borderRadius: 8,
         }]
       },
       options: {
         responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
+        animation: {
+          duration: 1000,
+          easing: 'easeInOutQuad',
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                size: 16,
+              },
+            },
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            callbacks: {
+              label: function(tooltipItem) {
+                return `${tooltipItem.dataset.label}: ${tooltipItem.raw} unidades`;
+              }
+            }
           }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              font: {
+                size: 14,
+                weight: 'bold',
+              },
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)',
+            },
+            ticks: {
+              font: {
+                size: 14,
+                weight: 'bold',
+              },
+            },
+          },
         }
       }
     });
@@ -64,72 +114,79 @@ export default function RelatorioRetirada() {
 
   return (
     <>
-      <div style={{ background: "#00009C", display: "flex", flexDirection: "column", alignItems: "center", margin: "0", padding: "20px", minHeight: "100vh", overflow: "hidden" }}>
-        <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "5px 0" }}>
-          <h1 className='text-center text-black text-[35px]'>Relatório de Produtos Retirados</h1>
+      <div style={{ backgroundColor: '#00009c', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', minHeight: '100vh' }}>
+        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)', width: '100%', maxWidth: '1200px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '36px', color: '#2C3E50', marginBottom: '20px' }}>Relatório de Produtos Retirados</h1>
           
-          <form id="consultaForm" onSubmit={handleSubmit} style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-            <label htmlFor="dataConsulta" style={{ fontWeight: "bold", margin: "8px 18px" }}>Selecione a Data:</label>
-            <input
-              type="date"
-              id="dataConsulta"
-              name="dataConsulta"
-              value={dataConsulta}
-              onChange={(e) => setDataConsulta(e.target.value)}
-              required
-              style={{ padding: "5px", marginRight: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-            <button type="submit" style={{ padding: "10px 20px", marginRight: "10px", border: "none", backgroundColor: "#F20DE7", color: "#fffcfc", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>Consultar</button>
+          <form id="consultaForm" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <label htmlFor="dataInicial" style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2C3E50', fontSize: '16px' }}>Data Inicial:</label>
+              <input
+                type="date"
+                id="dataInicial"
+                name="dataInicial"
+                value={dataInicial}
+                onChange={(e) => setDataInicial(e.target.value)}
+                required
+                style={{ padding: '10px', marginBottom: '10px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '16px' }}
+              />
+
+              <label htmlFor="dataFinal" style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2C3E50', fontSize: '16px' }}>Data Final:</label>
+              <input
+                type="date"
+                id="dataFinal"
+                name="dataFinal"
+                value={dataFinal}
+                onChange={(e) => setDataFinal(e.target.value)}
+                required
+                style={{ padding: '10px', marginBottom: '10px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '16px' }}
+              />
+              
+              <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#8E44AD', color: '#fff', borderRadius: '8px', cursor: 'pointer', border: 'none', transition: 'background-color 0.3s ease' }}>Consultar</button>
+            </div>
           </form>
 
-          <div className="chart-container" style={{ margin: "45px 67vh", textAlign: "center", width: "57vh", height: "31vh" }}>
-            <canvas id="chartProdutos"></canvas>
+          <div style={{ margin: '40px 0', textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
+            <canvas id="chartProdutos" style={{ width: '100%', maxWidth: '800px' }}></canvas>
           </div>
 
-          <div className="button-container">
-            <button id="downloadExcel" onClick={handleExportExcel} style={{ padding: "10px 20px", marginRight: "10px", border: "none", backgroundColor: "#F20DE7", color: "#fffcfc", borderRadius: "4px", cursor: "pointer", transition: "background-color 0.3s ease" }}>
-              Exportar em Excel
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px' }}>
+            <button onClick={handleExportExcel} style={{ padding: '10px 20px', backgroundColor: '#8E44AD', color: '#fff', borderRadius: '8px', cursor: 'pointer', border: 'none', transition: 'background-color 0.3s ease' }}>Exportar para Excel</button>
+            <button onClick={voltar} style={{ padding: '10px 20px', backgroundColor: '#F20DE7', color: '#fff', borderRadius: '8px', cursor: 'pointer', border: 'none', transition: 'background-color 0.3s ease' }}>Voltar</button>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table id="tabelaResultados" style={{ width: "100%", borderCollapse: "collapse", margin: "20px 0", fontSize: "16px" }}>
-              <thead>
-                <tr style={{ backgroundColor: "#00009C", color: "#fff", textAlign: "center" }}>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>SKU</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Tipo de Produto</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Produto</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Fornecedor</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade Total</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Unidade de Medida</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Estoque Atual</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Quantidade Retirada</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Data de Retirada</th>
-                  <th style={{ padding: "12px 8px", borderBottom: "1px solid #ddd" }}>Nome do Retirante</th>
+          <div style={{ width: '100%', overflowX: 'auto'}}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px'}}>
+              <thead style={{background: 'black'}}>
+                <tr>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>SKU</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Tipo de Produto</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Produto</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Fornecedor</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Quantidade</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Unidade de Medida</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Quantidade Retirada</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Data da Retirada</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '1px solid #ddd', backgroundColor: '#f2f2f2' }}>Nome do Retirante</th>
                 </tr>
               </thead>
               <tbody>
                 {dadosTabela.map((dado, index) => (
-                  <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff", textAlign: "center" }}>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.sku}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.tipoProduto}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.produto}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.fornecedor}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.quantidade}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.unidadeMedida}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.estoqueAtual}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.quantidadeRetirada}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.dataRetirada}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{dado.nomeRetirante}</td>
+                  <tr key={index}>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.sku}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.tipoProduto}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.produto}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.fornecedor}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.quantidade}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.unidadeMedida}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.quantidadeRetirada}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.dataRetirada}</td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center' }}>{dado.nomeRetirante}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          <button type="button" id="return" onClick={voltar} style={{ position: "absolute", top: "5vh", background: "none", border: "none" }}>
-            <img src="/return.svg" alt="Voltar" style={{ width: "50px", height: "50px" }} />
-          </button>
         </div>
       </div>
     </>
