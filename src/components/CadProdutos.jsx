@@ -1,6 +1,23 @@
-import { useState } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import styled, { createGlobalStyle } from 'styled-components';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, set, push, get, remove, update } from 'firebase/database';
+
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -10,16 +27,6 @@ const GlobalStyle = createGlobalStyle`
     color: #333;
     margin: 0;
     padding: 0;
-  }
-
-  @media (max-width: 768px) {
-    #return{
-      position: absolute;
-      top: 0;
-      background: none;
-      border: none;
-      right: 1vh; 
-    }
   }
 `;
 
@@ -165,10 +172,10 @@ const VoltarButton = styled.button`
   }
 `;
 
-
 function CadProdutos() {
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
+  const [marca, setMarca] = useState('');
   const [supplier, setSupplier] = useState('');
   const [unit, setUnit] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -180,9 +187,22 @@ function CadProdutos() {
   const [products, setProducts] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const productsRef = ref(db, 'CadastroProdutos');
+      const snapshot = await get(productsRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const loadedProducts = Object.values(data);
+        setProducts(loadedProducts);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const handleSave = () => {
     if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && totalPrice && type) {
-      const newProduct = { sku, name, supplier, unit, quantity, dateAdded, expiryDate, unitPrice, totalPrice, type };
+      const newProduct = { sku, name, marca,supplier, unit, quantity, dateAdded, expiryDate, unitPrice, totalPrice, type };
 
       if (editingIndex !== null) {
         const updatedProducts = [...products];
@@ -190,6 +210,8 @@ function CadProdutos() {
         setProducts(updatedProducts);
         setEditingIndex(null); // Reset editing mode after saving
       } else {
+        const newProductRef = push(ref(db, 'CadastroProdutos'));
+        set(newProductRef, newProduct);
         setProducts([...products, newProduct]);
       }
 
@@ -201,6 +223,7 @@ function CadProdutos() {
   const resetForm = () => {
     setSku('');
     setName('');
+    setMarca('');
     setSupplier('');
     setUnit('');
     setQuantity('');
@@ -215,6 +238,7 @@ function CadProdutos() {
     const productToEdit = products[index];
     setSku(productToEdit.sku);
     setName(productToEdit.name);
+    setName(productToEdit.marca);
     setSupplier(productToEdit.supplier);
     setUnit(productToEdit.unit);
     setQuantity(productToEdit.quantity);
@@ -227,6 +251,9 @@ function CadProdutos() {
   };
 
   const handleRemove = (index) => {
+    const productToRemove = products[index];
+    const productRef = ref(db, `CadastroProdutos/${productToRemove.sku}`);
+    remove(productRef);
     const filteredProducts = products.filter((_, i) => i !== index);
     setProducts(filteredProducts);
   };
@@ -252,6 +279,16 @@ function CadProdutos() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="Digite o nome do produto"
+          />
+        </FormGroup>
+        
+        <FormGroup>
+          <Label>Marca:</Label>
+          <Input
+            type="text"
+            value={marca}
+            onChange={(e) => setMarca(e.target.value)}
             placeholder="Digite o nome do produto"
           />
         </FormGroup>
@@ -305,27 +342,27 @@ function CadProdutos() {
         </FormGroup>
 
         <FormGroup>
-          <Label>Valor Unitário:</Label>
+          <Label>Preço Unitário:</Label>
           <Input
             type="number"
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
-            placeholder="Digite o valor unitário"
+            placeholder="Digite o preço unitário"
           />
         </FormGroup>
 
         <FormGroup>
-          <Label>Valor Total:</Label>
+          <Label>Preço Total:</Label>
           <Input
             type="number"
             value={totalPrice}
             onChange={(e) => setTotalPrice(e.target.value)}
-            placeholder="Digite o valor total"
+            placeholder="Digite o preço total"
           />
         </FormGroup>
 
         <FormGroup>
-          <Label>Tipo de Produto:</Label>
+          <Label>Tipo:</Label>
           <Select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">Selecione o tipo</option>
             <option value="Proteína">Proteína</option>
@@ -334,7 +371,7 @@ function CadProdutos() {
           </Select>
         </FormGroup>
 
-        <Button onClick={handleSave}>Salvar Produto</Button>
+        <Button onClick={handleSave}>{editingIndex !== null ? 'Atualizar Produto' : 'Salvar Produto'}</Button>
 
         {products.length > 0 ? (
           <Table>
@@ -342,14 +379,10 @@ function CadProdutos() {
               <tr>
                 <TableHead>SKU</TableHead>
                 <TableHead>Nome</TableHead>
+                <TableHead>Marca</TableHead>
                 <TableHead>Fornecedor</TableHead>
-                <TableHead>Unidade</TableHead>
                 <TableHead>Quantidade</TableHead>
-                <TableHead>Data de Cadastro</TableHead>
-                <TableHead>Data de Vencimento</TableHead>
-                <TableHead>Valor Unitário</TableHead>
-                <TableHead>Valor Total</TableHead>
-                <TableHead>Tipo</TableHead>
+                <TableHead>Preço Total</TableHead>
                 <TableHead>Ações</TableHead>
               </tr>
             </thead>
@@ -358,27 +391,21 @@ function CadProdutos() {
                 <tr key={index}>
                   <TableData>{product.sku}</TableData>
                   <TableData>{product.name}</TableData>
+                  <TableData>{product.marca}</TableData>
                   <TableData>{product.supplier}</TableData>
-                  <TableData>{product.unit}</TableData>
                   <TableData>{product.quantity}</TableData>
-                  <TableData>{product.dateAdded}</TableData>
-                  <TableData>{product.expiryDate}</TableData>
-                  <TableData>{product.unitPrice}</TableData>
                   <TableData>{product.totalPrice}</TableData>
-                  <TableData>{product.type}</TableData>
                   <TableData>
                     <ActionButton onClick={() => handleEdit(index)}>Editar</ActionButton>
-                    <ActionButton onClick={() => handleRemove(index)}>Remover</ActionButton>
+                    <ActionButton onClick={() => handleRemove(index)}>Excluir</ActionButton>
                   </TableData>
                 </tr>
               ))}
             </tbody>
           </Table>
         ) : (
-          <NoDataMessage>Nenhum produto cadastrado.</NoDataMessage>
+          <NoDataMessage>Nenhum produto cadastrado</NoDataMessage>
         )}
-
-        <VoltarButton as={Link} to="/Cadastro">Voltar</VoltarButton>
       </Container>
     </>
   );

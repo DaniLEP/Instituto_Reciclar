@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, set, update, remove, onValue } from 'firebase/database';
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -150,9 +152,26 @@ const BackButton = styled(Link)`
   }
 `;
 
+// Inicialização do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbProdutos = ref(db, 'EntradaProdutos');
+
 function EntradaProdutos() {
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
+  const [marca, setMarca] = useState('');
   const [valor, setValor] = useState('');
   const [type, setType] = useState('');
   const [date, setDate] = useState('');
@@ -160,23 +179,53 @@ function EntradaProdutos() {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
+  const navigate = useNavigate(); // Navegação após salvar
+
+  // Função para formatar o valor em R$
+  const formatCurrency = (value) => {
+    return `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
+  };
+
+  // Carregar os produtos do Firebase
+  useEffect(() => {
+    onValue(dbProdutos, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const loadedProducts = Object.keys(data).map((key) => ({
+          ...data[key],
+          id: key,
+        }));
+        setProducts(loadedProducts);
+      }
+    });
+  }, []);
+
   const handleSave = () => {
-    if (sku && name && valor && type && date) {
-      const newProduct = { sku, name, valor,type, date };
+    if (sku && name && marca && valor && type && date) {
+      const newProduct = { sku, name, marca, valor, type, date };
 
       if (isEditing) {
         const updatedProducts = [...products];
         updatedProducts[editIndex] = newProduct;
-        setProducts(updatedProducts);
-        setIsEditing(false);
-        setEditIndex(null);
+
+        const productRef = ref(db, 'EntradaProdutos/' + updatedProducts[editIndex].id);
+        update(productRef, newProduct).then(() => {
+          setProducts(updatedProducts);
+          setIsEditing(false);
+          setEditIndex(null);
+          navigate('/cadastro'); // Redireciona após salvar
+        });
       } else {
-        setProducts([...products, newProduct]);
+        const newProductRef = ref(db, 'EntradaProdutos/' + new Date().getTime());
+        set(newProductRef, newProduct).then(() => {
+          navigate('/cadastro'); // Redireciona após salvar
+        });
       }
 
       // Limpa os campos após adicionar ou editar o produto
       setSku('');
       setName('');
+      setMarca('');
       setValor('');
       setType('');
       setDate('');
@@ -187,6 +236,7 @@ function EntradaProdutos() {
     const productToEdit = products[index];
     setSku(productToEdit.sku);
     setName(productToEdit.name);
+    setMarca(productToEdit.marca);
     setValor(productToEdit.valor);
     setType(productToEdit.type);
     setDate(productToEdit.date);
@@ -195,13 +245,11 @@ function EntradaProdutos() {
   };
 
   const handleRemove = (index) => {
-    const filteredProducts = products.filter((_, i) => i !== index);
-    setProducts(filteredProducts);
-  };
-
-  const handleStoreProducts = () => {
-    console.log('Produtos guardados:', products);
-    // Lógica para armazenar os produtos (API ou localStorage)
+    const productToRemove = products[index];
+    const productRef = ref(db, 'EntradaProdutos/' + productToRemove.id);
+    remove(productRef).then(() => {
+      setProducts(products.filter((_, i) => i !== index));
+    });
   };
 
   return (
@@ -233,28 +281,35 @@ function EntradaProdutos() {
           />
         </FormGroup>
         <FormGroup>
+          <Label>Marca do Produto:</Label>
+          <Input
+            type="text"
+            value={marca}
+            onChange={(e) => setMarca(e.target.value)}
+            placeholder="Digite a marca do produto"
+          />
+        </FormGroup>
+        <FormGroup>
           <Label>Valor:</Label>
           <Input
             type="number"
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            placeholder="Digite o valor"
+            placeholder="Digite o valor do produto"
           />
         </FormGroup>
-
         <FormGroup>
-          <Label>Tipo de Produto:</Label>
+          <Label>Tipo:</Label>
           <Select value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="">Selecione o tipo</option>
-            <option value="proteina">Proteína</option>
-            <option value="mantimento">Mantimento</option>
-            <option value="hortalicas">Hortaliças</option>
-            <option value="diversos">Diversos</option>
+            <option value="">Selecione um tipo</option>
+            <option value="Proteína">Proteína</option>
+            <option value="Mantimento">Mantimento</option>
+            <option value="Hortaliças">Hortaliças</option>
           </Select>
         </FormGroup>
 
         <FormGroup>
-          <Label>Data de Retirada:</Label>
+          <Label>Data de Cadastro:</Label>
           <Input
             type="date"
             value={date}
@@ -262,40 +317,43 @@ function EntradaProdutos() {
           />
         </FormGroup>
 
-        <Button onClick={handleSave}>{isEditing ? 'Atualizar Produto' : 'Salvar Produto'}</Button>
+        <Button onClick={handleSave}>
+          {isEditing ? 'Salvar Alterações' : 'Adicionar Produto'}
+        </Button>
 
-        {products.length > 0 && (
-          <>
-            <Table>
-              <thead>
-                <tr>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Data de Cadastro</TableHead>
-                  <TableHead>Ações</TableHead>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product, index) => (
-                  <tr key={index}>
-                    <TableData>{product.sku}</TableData>
-                    <TableData>{product.name}</TableData>
-                    <TableData>{product.valor}</TableData>
-                    <TableData>{product.type}</TableData>
-                    <TableData>{product.date}</TableData>
-                    <TableData>
-                      <ActionButton onClick={() => handleEdit(index)}>Editar</ActionButton>
-                      <RemoveButton onClick={() => handleRemove(index)}>Remover</RemoveButton>
-                    </TableData>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <Button onClick={handleStoreProducts}>Guardar Produtos</Button>
-          </>
-        )}
+        <Table>
+          <thead>
+            <tr>
+              <TableHead>SKU</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Marca</TableHead>
+              <TableHead>Valor</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Data</TableHead>
+              <TableHead>Ações</TableHead>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product, index) => (
+              <tr key={product.id}>
+                <TableData>{product.sku}</TableData>
+                <TableData>{product.name}</TableData>
+                <TableData>{product.marca}</TableData>
+                <TableData>{formatCurrency(product.valor)}</TableData>
+                <TableData>{product.type}</TableData>
+                <TableData>{product.date}</TableData>
+                <TableData>
+                  <ActionButton onClick={() => handleEdit(index)}>
+                    Editar
+                  </ActionButton>
+                  <RemoveButton onClick={() => handleRemove(index)}>
+                    Remover
+                  </RemoveButton>
+                </TableData>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       </Container>
     </>
   );

@@ -8,8 +8,6 @@ import ErrorPage from './components/ErrorPage.jsx'
 import LoginForm from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import ListaPedidos from './pages/ListaPedidos.jsx'
-import Cadastro from './pages/Cadastro.jsx'
-import ShoppingListPage from './components/NovoPedido.jsx'
 import StatusPedido from './components/StatusPedido.jsx'
 import EditarProduto from './components//EditarProduto.jsx'
 import CadastroFornecedor from './components/CadastroFornecedor.jsx'
@@ -26,6 +24,8 @@ import RelatorioAnual from './components/RelatorioAnual.jsx'
 import Retirada from './pages/Retirada.jsx'
 import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
 import Profile from './components/perfil.jsx'
+import NovoPedido from './components/NovoPedido.jsx'
+import Cadastro from './pages/Cadastro.jsx'
 
 
 const router = createBrowserRouter ([
@@ -63,14 +63,14 @@ const router = createBrowserRouter ([
       // PAGINAS DA LISTA DE PEDIDO
       {
         path: "/Cadastro_Produtos",
-        element: <ShoppingListPage />,
+        element: <NovoPedido />,
       },
       {
         path: "/Status_Pedido",
         element: <StatusPedido/>,
       },
       {
-        path: "/Editar_Produto",
+        path: "/Editar_Produto/:id",
         element: <EditarProduto />,
       },
       // PAGINAS DO CARDS CADASTROS

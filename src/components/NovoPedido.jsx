@@ -1,573 +1,249 @@
-// import { useState} from 'react';
-// import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import firebase from "firebase/compat/app";
+import "firebase/compat/database";
 
-// const ShoppingListPage = () => {
-//   const [sku, setSku] = useState('');
-//   const [product, setProduct] = useState('');
-//   const [supplier, setSupplier] = useState('');
-//   const [quantity, setQuantity] = useState(1);
-//   const [categoria, setCategoria] = useState('');
-//   const [notes, setNotes] = useState('');
-//   const [shoppingList, setShoppingList] = useState([]);
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [currentIndex, setCurrentIndex] = useState(null);
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+};
 
-//   // Função para adicionar ou editar um produto
-//   const handleAddOrEditProduct = () => {
-//     const newItem = { sku, product, supplier, quantity, categoria, notes };
+// Inicializar o Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
-//     if (isEditing) {
-//       // Atualiza o item existente na lista
-//       const updatedList = shoppingList.map((item, index) =>
-//         index === currentIndex ? newItem : item
-//       );
-//       setShoppingList(updatedList);
-//       setIsEditing(false);
-//       setCurrentIndex(null);
-//     } else {
-//       // Adiciona um novo item à lista
-//       setShoppingList([...shoppingList, newItem]);
-//     }
+// Referência ao banco de dados
+const dbProdutos = firebase.database().ref("Pedidos");
 
-//     // Limpa os campos após adicionar/editar
-//     resetFields();
-//   };
+const Pedido = () => {
+  const [formData, setFormData] = useState({
+    sku: "",
+    fornecedor: "",
+    marca: "",
+    produto: "",
+    quantidade: "",
+    categoria: "proteina", // Definindo a categoria como 'proteina' por padrão
+    observacoes: "",
+  });
+  const [pedidos, setPedidos] = useState([]);
 
-//   // Função para remover um produto
-//   const handleRemoveProduct = (index) => {
-//     const updatedList = shoppingList.filter((_, i) => i !== index);
-//     setShoppingList(updatedList);
-//   };
+  // Função para buscar dados do Firebase
+  const fetchPedidos = () => {
+    dbProdutos.on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const lista = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+        setPedidos(lista);
+      } else {
+        setPedidos([]);
+      }
+    });
+  };
 
-//   // Função para iniciar a edição de um produto
-//   const handleEditProduct = (index) => {
-//     const item = shoppingList[index];
-//     setSku(item.sku);
-//     setProduct(item.product);
-//     setSupplier(item.supplier);
-//     setQuantity(item.quantity);
-//     setCategoria(item.categoria);
-//     setNotes(item.notes);
-//     setIsEditing(true);
-//     setCurrentIndex(index);
-//   };
+  useEffect(() => {
+    fetchPedidos();
+  }, []);
 
-//   // Função para resetar os campos do formulário
-//   const resetFields = () => {
-//     setSku('');
-//     setProduct('');
-//     setSupplier('');
-//     setQuantity(1);
-//     setCategoria(1);
-//     setNotes('');
-//   };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-//   return (
-//     <div style={styles.container}>
-//       <h1 style={styles.title}>Novo Pedido</h1>
-//       <div style={styles.formContainer}>
-//         {/* Formulário para adicionar ou editar produtos */}
-//         <div style={styles.form}>
-//           <input
-//             type="text"
-//             placeholder="Sku"
-//             value={sku}
-//             onChange={(e) => setSku(e.target.value)}
-//             style={styles.input}
-//           />
-//           <input
-//             type="text"
-//             placeholder="Produto"
-//             value={product}
-//             onChange={(e) => setProduct(e.target.value)}
-//             style={styles.input}
-//           />
-//           <input
-//             type="text"
-//             placeholder="Fornecedor"
-//             value={supplier}
-//             onChange={(e) => setSupplier(e.target.value)}
-//             style={styles.input}
-//           />
-//           <input
-//             type="number"
-//             placeholder="Quantidade"
-//             value={quantity}
-//             onChange={(e) => setQuantity(Number(e.target.value))}
-//             min="1"
-//             style={styles.input}
-//           />
-//             <input
-//             type="text"
-//             placeholder="Categoria"
-//             value={categoria}
-//             onChange={(e) => setCategoria(e.target.value)}
-//             min="1"
-//             style={styles.input}          
-//           />
-//           <input
-//             type="text"
-//             placeholder="Observações"
-//             value={notes}
-//             onChange={(e) => setNotes(e.target.value)}
-//             style={styles.input}
-//           />
-//           <button onClick={handleAddOrEditProduct} style={styles.button}>
-//             {isEditing ? 'Salvar Alterações' : 'Adicionar Produto'}
-//           </button>
-//         </div>
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-//         {/* Exibindo a lista de produtos */}
-//         <h2 style={styles.productListTitle}>Produtos Adicionados</h2>
-//         {shoppingList.length === 0 ? (
-//           <p style={styles.emptyMessage}>Nenhum produto adicionado.</p>
-//         ) : (
-//           <div style={styles.tableContainer}>
-//             <table style={styles.table}>
-//               <thead>
-//                 <tr>
-//                   {['Sku', 'Produto', 'Fornecedor',  'Observações', 'Categoria', 'Ações'].map((header) => (
-//                     <th key={header} style={styles.tableHeader}>{header}</th>
-//                   ))}
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {shoppingList.map((item, index) => (
-//                   <tr key={index}>
-//                     <td style={styles.tableData}>{item.sku}</td>
-//                     <td style={styles.tableData}>{item.product}</td>
-//                     <td style={styles.tableData}>{item.supplier}</td>
-//                     <td style={styles.tableData}>{item.quantity}</td>
-//                     <td style={styles.tableData}>{item.categoria}</td>
-//                     <td style={styles.tableData}>{item.notes}</td>
-//                     <td style={styles.tableData}>
-//                       <button onClick={() => handleEditProduct(index)} style={styles.actionButton}>Editar</button>
-//                       <button onClick={() => handleRemoveProduct(index)} style={styles.actionButton}>Remover</button>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-//       </div>
-//       <Link to={'/Pedidos'}>
-//         <button type="button" id="return" style={styles.returnButton}>Voltar</button>
-//       </Link>
-//       <style >{`
-//         #return:hover img {
-//           transform: scale(1.1);
-//         }
-        
-//         @media (max-width: 768px) {
-//           #return {
-//             top: 15vh; /* Ajusta a posição do botão de voltar em telas menores */
-//             right: 5vh;
-//           }
+    // Enviar os dados para o Firebase
+    dbProdutos.push(formData)
+      .then(() => {
+        alert("Pedido realizado com sucesso!");
+        setFormData({
+          sku: "",
+          fornecedor: "",
+          marca: "",
+          produto: "",
+          quantidade: "",
+          categoria: "proteina",
+          observacoes: "",
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao fazer pedido:", error);
+        alert("Erro ao realizar pedido. Tente novamente.");
+      });
+  };
 
-//           h1 {
-//             font-size: 2rem;
-//           }
-
-//           h2 {
-//             font-size: 1.5rem;
-//           }
-
-//           table {
-//             font-size: 0.8rem; /* Ajusta o tamanho da fonte da tabela em telas menores */
-//           }
-
-//           input, button {
-//             font-size: 14px; /* Ajusta o tamanho da fonte dos inputs e botões em telas menores */
-//           }
-//         }
-        
-//         @media (max-width: 480px) {
-//           input {
-//             flex: 1 1 100%; /* Faz os inputs ocuparem toda a largura da tela em dispositivos muito pequenos */
-//           }
-
-//           button {
-//             width: 100%; /* Faz o botão ocupar toda a largura da tela em dispositivos muito pequenos */
-//           }
-
-//             returnButton: {
-//             padding: "12px 20px",
-//             position: "relative",
-//             right: "-1%",
-//             top: "1vh",
-//             background: "#F20DE7",
-//             color: "#fff",
-//             borderRadius: "12px",
-//             cursor: "pointer",
-//             border: "none",
-//             transition: "background-color 0.3s ease",
-//             whiteSpace: "nowrap"
-//           }
-
-//         }
-//       `}</style>
-//     </div>
-//   );
-// };
-
-// // Estilos do componente
-// const styles = {
-//   container: {
-//     background: "#00009c",
-//     padding: '20px',
-//     color: "white",
-//     minHeight: '100vh'
-//   },
-//   title: {
-//     textAlign: "center",
-//     fontSize: "2.5rem",
-//     fontWeight: "bold"
-//   },
-//   formContainer: {
-//     maxWidth: "1100px",
-//     margin: "0 auto",
-//     backgroundColor: "#fff",
-//     padding: "20px",
-//     borderRadius: "8px",
-//     color: "black",
-//     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-//     overflowX: "auto"
-//   },
-//   form: {
-//     marginBottom: '20px',
-//     display: 'flex',
-//     flexWrap: 'wrap',
-//     justifyContent: 'space-between',
-//     gap: '10px'
-//   },
-//   input: {
-//     flex: "1 1 20%",
-//     padding: "10px",
-//     border: "1px solid rgb(115 113 113)",
-//     borderRadius: "12px",
-//     fontSize: "16px"
-//   },
-//   button: {
-//     padding: "12px 20px",
-//     background: "#F20DE7",
-//     color: "#fff",
-//     borderRadius: "12px",
-//     cursor: "pointer",
-//     border: "none",
-//     transition: "background-color 0.3s ease",
-//     whiteSpace: "nowrap"
-//   },
-//   productListTitle: {
-//     textAlign: 'center',
-//     fontSize: '20px'
-//   },
-//   emptyMessage: {
-//     textAlign: "center"
-//   },
-//   tableContainer: {
-//     overflowX: 'auto'
-//   },
-//   table: {
-//     marginTop: "5vh",
-//     width: '100%',
-//     backgroundColor: "#00009C",
-//     color: "#fff",
-//     borderCollapse: "collapse",
-//     textAlign: "center"
-//   },
-//   tableHeader: {
-//     padding: "10px",
-//     borderBottom: "1px solid #ddd"
-//   },
-//   tableData: {
-//     padding: "10px",
-//     borderBottom: "1px solid #ddd"
-//   },
-//   actionButton: {
-//     marginRight: '10px'
-//   },
-//   returnButton: {
-//     padding: "12px 20px",
-//     position: "relative",
-//     right: "-8%",
-//     top: "1vh",
-//     background: "#F20DE7",
-//     color: "#fff",
-//     borderRadius: "12px",
-//     cursor: "pointer",
-//     border: "none",
-//     transition: "background-color 0.3s ease",
-//     whiteSpace: "nowrap"
-//   },
-// };
-
-// export default ShoppingListPage;
-
-
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import * as XLSX from 'xlsx';
-
-const NovoPedido = () => {
-  const [sku, setSku] = useState('');
-  const [product, setProduct] = useState('');
-  const [supplier, setSupplier] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [categoria, setCategoria] = useState('');
-  const [notes, setNotes] = useState('');
-  const [shoppingList, setShoppingList] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(null);
-
-  const handleAddOrEditProduct = () => {
-    const newItem = { sku, product, supplier, quantity, categoria, notes };
-
-    if (isEditing) {
-      const updatedList = shoppingList.map((item, index) =>
-        index === currentIndex ? newItem : item
-      );
-      setShoppingList(updatedList);
-      setIsEditing(false);
-      setCurrentIndex(null);
-    } else {
-      setShoppingList([...shoppingList, newItem]);
+  // Função para excluir um pedido
+  const handleDelete = (id) => {
+    if (window.confirm("Você tem certeza que deseja excluir este pedido?")) {
+      dbProdutos.child(id)
+        .remove()
+        .then(() => {
+          alert("Pedido excluído com sucesso!");
+        })
+        .catch((error) => {
+          console.error("Erro ao excluir pedido:", error);
+          alert("Erro ao excluir pedido. Tente novamente.");
+        });
     }
-    resetFields();
-  };
-
-  const handleRemoveProduct = (index) => {
-    const updatedList = shoppingList.filter((_, i) => i !== index);
-    setShoppingList(updatedList);
-  };
-
-  const handleEditProduct = (index) => {
-    const item = shoppingList[index];
-    setSku(item.sku);
-    setProduct(item.product);
-    setSupplier(item.supplier);
-    setQuantity(item.quantity);
-    setCategoria(item.categoria);
-    setNotes(item.notes);
-    setIsEditing(true);
-    setCurrentIndex(index);
-  };
-
-  const resetFields = () => {
-    setSku('');
-    setProduct('');
-    setSupplier('');
-    setQuantity(1);
-    setCategoria('');
-    setNotes('');
-  };
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(shoppingList);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Lista de Compras');
-    XLSX.writeFile(workbook, 'Lista_de_Compras.xlsx');
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Novo Pedido</h1>
-      <div style={styles.formContainer}>
-        <div style={styles.form}>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+      <h2>Pedido</h2>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "10px" }}>
+          <label>SKU:</label>
           <input
             type="text"
-            placeholder="Sku"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            style={styles.input}
+            name="sku"
+            value={formData.sku}
+            onChange={handleChange}
+            required
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
           />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Fornecedor:</label>
           <input
             type="text"
-            placeholder="Produto"
-            value={product}
-            onChange={(e) => setProduct(e.target.value)}
-            style={styles.input}
+            name="fornecedor"
+            value={formData.fornecedor}
+            onChange={handleChange}
+            required
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
           />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Marca:</label>
           <input
             type="text"
-            placeholder="Fornecedor"
-            value={supplier}
-            onChange={(e) => setSupplier(e.target.value)}
-            style={styles.input}
+            name="marca"
+            value={formData.marca}
+            onChange={handleChange}
+            required
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
           />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Produto:</label>
+          <input
+            type="text"
+            name="produto"
+            value={formData.produto}
+            onChange={handleChange}
+            required
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Quantidade:</label>
           <input
             type="number"
-            placeholder="Quantidade"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            min="1"
-            style={styles.input}
+            name="quantidade"
+            value={formData.quantidade}
+            onChange={handleChange}
+            required
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
           />
-          <input
-            type="text"
-            placeholder="Categoria"
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-            style={styles.input}          
-          />
-          <input
-            type="text"
-            placeholder="Observações"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            style={styles.input}
-          />
-          <button onClick={handleAddOrEditProduct} style={styles.button}>
-            {isEditing ? 'Salvar Alterações' : 'Adicionar Produto'}
-          </button>
         </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Categoria:</label>
+          <select
+            name="categoria"
+            value={formData.categoria}
+            onChange={handleChange}
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          >
+            <option value="proteina">Proteína</option>
+            <option value="mantimento">Mantimento</option>
+            <option value="hortalicas">Hortaliças</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Observações:</label>
+          <textarea
+            name="observacoes"
+            value={formData.observacoes}
+            onChange={handleChange}
+            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          />
+        </div>
+        <button
+          type="submit"
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007BFF",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Enviar Pedido
+        </button>
+      </form>
 
-        <h2 style={styles.productListTitle}>Produtos Adicionados</h2>
-        {shoppingList.length === 0 ? (
-          <p style={styles.emptyMessage}>Nenhum produto adicionado.</p>
-        ) : (
-          <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  {['Sku', 'Produto', 'Fornecedor', 'Quantidade', 'Categoria', 'Observações', 'Ações'].map((header) => (
-                    <th key={header} style={styles.tableHeader}>{header}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {shoppingList.map((item, index) => (
-                  <tr key={index}>
-                    <td style={styles.tableData}>{item.sku}</td>
-                    <td style={styles.tableData}>{item.product}</td>
-                    <td style={styles.tableData}>{item.supplier}</td>
-                    <td style={styles.tableData}>{item.quantity}</td>
-                    <td style={styles.tableData}>{item.categoria}</td>
-                    <td style={styles.tableData}>{item.notes}</td>
-                    <td style={styles.tableData}>
-                      <button onClick={() => handleEditProduct(index)} style={styles.actionButton}>Editar</button>
-                      <button onClick={() => handleRemoveProduct(index)} style={styles.actionButton}>Remover</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      <button onClick={exportToExcel} style={styles.exportButton}>Exportar para Excel</button>
-      <Link to={'/Pedidos'}>
-        <button type="button" id="return" style={styles.returnButton}>Voltar</button>
-      </Link>
+      <h3 style={{ marginTop: "30px" }}>Pedidos Realizados</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Produto</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Fornecedor</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Marca</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Quantidade</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Categoria</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pedidos.map((pedido) => (
+            <tr key={pedido.id}>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {pedido.produto}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {pedido.fornecedor}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {pedido.marca}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {pedido.quantidade}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {pedido.categoria}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                <button
+                  onClick={() => handleDelete(pedido.id)}
+                  style={{
+                    padding: "5px 10px",
+                    backgroundColor: "#FF5733",
+                    color: "#fff",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-// Estilos do componente
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    background: "#00009c",
-    padding: '20px',
-    color: "white",
-    minHeight: '100vh'
-  },
-  title: {
-    textAlign: "center",
-    fontSize: "2.5rem",
-    fontWeight: "bold",
-    marginBottom: "20px"
-  },
-  formContainer: {
-    width: "100%",
-    maxWidth: "900px",
-    backgroundColor: "#fff",
-    padding: "20px",
-    borderRadius: "8px",
-    color: "black",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    marginBottom: "20px"
-  },
-  form: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: '10px'
-  },
-  input: {
-    flex: "1 1 calc(50% - 20px)",
-    minWidth: "250px",
-    padding: "10px",
-    border: "1px solid rgb(115 113 113)",
-    borderRadius: "12px",
-    fontSize: "16px"
-  },
-  button: {
-    width: "100%",
-    padding: "12px 20px",
-    background: "#F20DE7",
-    color: "#fff",
-    borderRadius: "12px",
-    cursor: "pointer",
-    border: "none",
-    marginTop: "10px"
-  },
-  productListTitle: {
-    textAlign: 'center',
-    fontSize: '20px',
-    marginTop: "20px"
-  },
-  emptyMessage: {
-    textAlign: "center"
-  },
-  tableContainer: {
-    overflowX: 'auto'
-  },
-  table: {
-    marginTop: "20px",
-    width: '100%',
-    backgroundColor: "white",
-    color: "black",
-    borderCollapse: "collapse",
-    textAlign: "center"
-  },
-  tableHeader: {
-    padding: "10px",
-    borderBottom: "1px solid #F20DE7",
-    background: "#F20DE7",
-    color: "white"
-  },
-  tableData: {
-    padding: "10px",
-    borderBottom: "1px solid #ddd"
-  },
-  actionButton: {
-    marginRight: '10px',
-    background: '#00009c',
-    color: 'white',
-    padding: '10px',
-    borderRadius: '10%'
-  },
-  returnButton: {
-    padding: "12px 20px",
-    background: "#F20DE7",
-    color: "#fff",
-    borderRadius: "12px",
-    cursor: "pointer",
-    border: "none",
-    marginTop: "20px"
-  },
-  exportButton: {
-    padding: '10px 20px',
-    background: "#00DD62",
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    marginTop: '20px',
-  },
-};
-
-export default NovoPedido;
+export default Pedido;
