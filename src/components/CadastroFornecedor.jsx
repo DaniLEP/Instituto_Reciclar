@@ -1,12 +1,25 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, set, push, update, remove, get } from 'firebase/database';
+
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+};
+
+// Inicializando o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 const CadastroFornecedor = () => {
-  const [fornecedores, setFornecedores] = useState([
-    { produtos: 'Arroz', empresa: 'Fornecedor A', cnpj: '12.345.678/0001-90', contato: 'João Silva', telefone: '(11) 99999-9999', email: 'contato@fornecedora.com' },
-    { produtos: 'Feijão', empresa: 'Fornecedor B', cnpj: '98.765.432/0001-10', contato: 'Maria Oliveira', telefone: '(21) 98888-8888', email: 'maria@fornecedora.com' },
-    { produtos: 'Carne', empresa: 'Fornecedor C', cnpj: '23.456.789/0001-50', contato: 'Carlos Souza', telefone: '(31) 97777-7777', email: 'carlos@fornecedora.com' }
-  ]);
+  const [fornecedores, setFornecedores] = useState([]);
   const [novoFornecedor, setNovoFornecedor] = useState({
     produtos: '',
     empresa: '',
@@ -19,6 +32,8 @@ const CadastroFornecedor = () => {
   const [editando, setEditando] = useState(false);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
 
+  const navigate = useNavigate();
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setNovoFornecedor({ ...novoFornecedor, [name]: value });
@@ -26,17 +41,19 @@ const CadastroFornecedor = () => {
 
   const handleAddFornecedor = (event) => {
     event.preventDefault();
+    const fornecedoresRef = ref(db, 'CadastroFornecedores');
     if (editando) {
-      const fornecedoresAtualizados = fornecedores.map((fornecedor) =>
-        fornecedor === fornecedorSelecionado ? novoFornecedor : fornecedor
-      );
-      setFornecedores(fornecedoresAtualizados);
-      setEditando(false);
-      setFornecedorSelecionado(null);
+      const fornecedorRef = ref(db, 'CadastroFornecedores/' + fornecedorSelecionado.id);
+      update(fornecedorRef, novoFornecedor);
     } else {
-      setFornecedores([...fornecedores, novoFornecedor]);
+      const newFornecedorRef = push(fornecedoresRef);
+      set(newFornecedorRef, novoFornecedor);
     }
+
+    // Resetando o estado
     setNovoFornecedor({ produtos: '', empresa: '', cnpj: '', contato: '', telefone: '', email: '' });
+    setEditando(false);
+    setFornecedorSelecionado(null);
   };
 
   const handleEditFornecedor = (fornecedor) => {
@@ -46,15 +63,27 @@ const CadastroFornecedor = () => {
   };
 
   const handleDeleteFornecedor = (fornecedor) => {
-    const fornecedoresAtualizados = fornecedores.filter((item) => item !== fornecedor);
-    setFornecedores(fornecedoresAtualizados);
+    const fornecedorRef = ref(db, 'CadastroFornecedores/' + fornecedor.id);
+    remove(fornecedorRef);
   };
-
-  const navigate = useNavigate()
 
   const handleBack = () => {
     navigate('/Cadastro'); // Rota para a página de status dos pedidos
   };
+
+  // Obtendo fornecedores do Firebase
+  useEffect(() => {
+    const fornecedoresRef = ref(db, 'CadastroFornecedores');
+    get(fornecedoresRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const fornecedoresList = [];
+        snapshot.forEach((childSnapshot) => {
+          fornecedoresList.push({ id: childSnapshot.key, ...childSnapshot.val() });
+        });
+        setFornecedores(fornecedoresList);
+      }
+    });
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', backgroundColor: '#00009C', minHeight: '100vh', justifyContent: 'center' }}>
@@ -161,32 +190,22 @@ const CadastroFornecedor = () => {
                 <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>CNPJ</th>
                 <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Contato</th>
                 <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Telefone</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Email/Site</th>
+                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Email</th>
                 <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Ações</th>
               </tr>
             </thead>
             <tbody>
-              {fornecedores.map((fornecedor, index) => (
-                <tr key={index}>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.produtos}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.empresa}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.cnpj}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.contato}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.telefone}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>{fornecedor.email}</td>
-                  <td style={{ padding: '12px 20px', borderBottom: '1px solid #ddd', textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleEditFornecedor(fornecedor)}
-                      style={{ backgroundColor: '#F20de7', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9em', marginRight: '5px' }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDeleteFornecedor(fornecedor)}
-                      style={{ backgroundColor: 'red', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9em' }}
-                    >
-                      Excluir
-                    </button>
+              {fornecedores.map((fornecedor) => (
+                <tr key={fornecedor.id}>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.produtos}</td>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.empresa}</td>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.cnpj}</td>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.contato}</td>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.telefone}</td>
+                  <td style={{ padding: '12px 20px' }}>{fornecedor.email}</td>
+                  <td style={{ padding: '12px 20px', textAlign: 'center' }}>
+                    <button onClick={() => handleEditFornecedor(fornecedor)} style={{ backgroundColor: '#F20DE7', color: 'white', padding: '8px 12px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em' }}>Editar</button>
+                    <button onClick={() => handleDeleteFornecedor(fornecedor)} style={{ backgroundColor: '#F44336', color: 'white', padding: '8px 12px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', marginLeft: '10px' }}>Excluir</button>
                   </td>
                 </tr>
               ))}
