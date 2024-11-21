@@ -173,7 +173,7 @@ export default function Login() {
         (email === 'cleyson@reciclar.org.br' && password === '@R3c1cl4r@') ||
         (email === 'danilo.manzoli@reciclar.org.br' && password === '@R3c1cl4r@') ||
         (email === 'jaqueline@reciclar.org.br' && password === 'Reciclar123') ||
-        (email === 'mislene.lages@reciclar.org.br ' && password === 'Reciclar123')
+        (email === 'mislene.lages@reciclar.org.br' && password === 'Reciclar123')
       ) {
         alert('Login bem-sucedido!');
         setErrorMessage('');
