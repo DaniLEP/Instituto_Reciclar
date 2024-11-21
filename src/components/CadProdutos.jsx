@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import  { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, push, get, remove, update } from 'firebase/database';
+import { getDatabase, ref, set, push, get} from 'firebase/database';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -107,46 +106,6 @@ const Button = styled.button`
   }
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  overflow-x: auto;
-  display: block;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-`;
-
-const TableHead = styled.th`
-  border: 1px solid #ddd;
-  padding: 8px;
-  background-color: #f2f2f2;
-  font-weight: bold;
-  text-align: center;
-`;
-
-const TableData = styled.td`
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-`;
-
-const ActionButton = styled(Button)`
-  margin-left: 10px;
-  padding: 6px 10px;
-`;
-
-const NoDataMessage = styled.p`
-  text-align: center;
-  color: #666;
-  margin-top: 20px;
-`;
-
 const VoltarButton = styled.button`
   position: absolute;
   top: 15px;
@@ -182,14 +141,13 @@ function CadProdutos() {
   const [dateAdded, setDateAdded] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
-  const [totalPrice, setTotalPrice] = useState('');
-  const [type, setType] = useState('');
+  const [category, setCategory] = useState('');
   const [products, setProducts] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const productsRef = ref(db, 'CadastroProdutos');
+      const productsRef = ref(db, 'Estoque');
       const snapshot = await get(productsRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -201,8 +159,8 @@ function CadProdutos() {
   }, []);
 
   const handleSave = () => {
-    if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && totalPrice && type) {
-      const newProduct = { sku, name, marca,supplier, unit, quantity, dateAdded, expiryDate, unitPrice, totalPrice, type };
+    if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && category) {
+      const newProduct = { sku, name, marca,supplier, unit, quantity, dateAdded, expiryDate, unitPrice, category };
 
       if (editingIndex !== null) {
         const updatedProducts = [...products];
@@ -210,7 +168,7 @@ function CadProdutos() {
         setProducts(updatedProducts);
         setEditingIndex(null); // Reset editing mode after saving
       } else {
-        const newProductRef = push(ref(db, 'CadastroProdutos'));
+        const newProductRef = push(ref(db, 'Estoque'));
         set(newProductRef, newProduct);
         setProducts([...products, newProduct]);
       }
@@ -230,32 +188,7 @@ function CadProdutos() {
     setDateAdded('');
     setExpiryDate('');
     setUnitPrice('');
-    setTotalPrice('');
-    setType('');
-  };
-
-  const handleEdit = (index) => {
-    const productToEdit = products[index];
-    setSku(productToEdit.sku);
-    setName(productToEdit.name);
-    setName(productToEdit.marca);
-    setSupplier(productToEdit.supplier);
-    setUnit(productToEdit.unit);
-    setQuantity(productToEdit.quantity);
-    setDateAdded(productToEdit.dateAdded);
-    setExpiryDate(productToEdit.expiryDate);
-    setUnitPrice(productToEdit.unitPrice);
-    setTotalPrice(productToEdit.totalPrice);
-    setType(productToEdit.type);
-    setEditingIndex(index); // Set the product as being edited
-  };
-
-  const handleRemove = (index) => {
-    const productToRemove = products[index];
-    const productRef = ref(db, `CadastroProdutos/${productToRemove.sku}`);
-    remove(productRef);
-    const filteredProducts = products.filter((_, i) => i !== index);
-    setProducts(filteredProducts);
+    setCategory('');
   };
 
   return (
@@ -350,20 +283,9 @@ function CadProdutos() {
             placeholder="Digite o preço unitário"
           />
         </FormGroup>
-
-        <FormGroup>
-          <Label>Preço Total:</Label>
-          <Input
-            type="number"
-            value={totalPrice}
-            onChange={(e) => setTotalPrice(e.target.value)}
-            placeholder="Digite o preço total"
-          />
-        </FormGroup>
-
         <FormGroup>
           <Label>Tipo:</Label>
-          <Select value={type} onChange={(e) => setType(e.target.value)}>
+          <Select value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">Selecione o tipo</option>
             <option value="Proteína">Proteína</option>
             <option value="Mantimento">Mantimento</option>
@@ -371,41 +293,7 @@ function CadProdutos() {
           </Select>
         </FormGroup>
 
-        <Button onClick={handleSave}>{editingIndex !== null ? 'Atualizar Produto' : 'Salvar Produto'}</Button>
-
-        {products.length > 0 ? (
-          <Table>
-            <thead>
-              <tr>
-                <TableHead>SKU</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead>Fornecedor</TableHead>
-                <TableHead>Quantidade</TableHead>
-                <TableHead>Preço Total</TableHead>
-                <TableHead>Ações</TableHead>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product, index) => (
-                <tr key={index}>
-                  <TableData>{product.sku}</TableData>
-                  <TableData>{product.name}</TableData>
-                  <TableData>{product.marca}</TableData>
-                  <TableData>{product.supplier}</TableData>
-                  <TableData>{product.quantity}</TableData>
-                  <TableData>{product.totalPrice}</TableData>
-                  <TableData>
-                    <ActionButton onClick={() => handleEdit(index)}>Editar</ActionButton>
-                    <ActionButton onClick={() => handleRemove(index)}>Excluir</ActionButton>
-                  </TableData>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        ) : (
-          <NoDataMessage>Nenhum produto cadastrado</NoDataMessage>
-        )}
+        <Button onClick={handleSave}>Salvar Produto</Button>
       </Container>
     </>
   );

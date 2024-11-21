@@ -1,163 +1,160 @@
+
+import { useState, useEffect } from 'react';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { initializeApp } from 'firebase/app';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
-// Função auxiliar para gerar datas aleatórias dentro de um intervalo
-const generateRandomDate = (start, end) => {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+// Sua configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
 };
 
-// Gerar produtos fictícios com data de cadastro e data de vencimento
-const generateProducts = (count) => {
-    const products = [];
-    const today = new Date();
-    
-    for (let i = 1; i <= count; i++) {
-        const registerDate = generateRandomDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30), today);
-        const expiryDate = generateRandomDate(today, new Date(today.getFullYear(), today.getMonth() + 6, today.getDate())); // Vencimento até 6 meses no futuro
-
-        products.push({
-            sku: `SKU${i.toString().padStart(4, '0')}`, // SKU formatado como SKU0001, SKU0002, etc.
-            name: `Produto ${i}`,
-            type: i % 3 === 0 ? 'proteína' : i % 3 === 1 ? 'mantimento' : 'hortaliças',
-            quantity: Math.floor(Math.random() * 100) + 1, // Quantidade entre 1 e 100
-            price: (Math.random() * 100).toFixed(2), // Preço aleatório entre 0 e 100
-            registerDate: registerDate,
-            expiryDate: expiryDate,
-        });
-    }
-    return products;
-};
-
-const productsData = generateProducts(50);
+// Inicializando o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbProdutos = ref(db, 'Estoque');
 
 const Estoque = () => {
-    const [sku, setSku] = useState('');
-    const [productName, setProductName] = useState('');
-    const [product, setProduct] = useState(null);
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+  const [sku, setSku] = useState('');
+  const [productName, setProductName] = useState('');
+  const [productsData, setProductsData] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-    const handleSearch = () => {
-        const foundProduct = productsData.find(
-            item => item.sku === sku || item.name.toLowerCase().includes(productName.toLowerCase())
-        );
-        if (foundProduct) {
-            setProduct(foundProduct);
-            setError('');
-        } else {
-            setProduct(null);
-            setError('Produto não encontrado.');
-        }
-    };
+  // Buscar produtos do Firebase
+  useEffect(() => {
+    onValue(dbProdutos, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const products = Object.keys(data).map(key => ({
+          sku: key,
+          ...data[key]
+        }));
+        setProductsData(products);
+        setFilteredProducts(products); // Inicialmente, exibe todos os produtos
+      }
+    });
+  }, []);
 
-    const voltar = () => {
-        navigate('/Dashboard');
-    };
-
-    const handleBack = () => {
-        setSku('');
-        setProductName('');
-        setProduct(null);
-        setError('');
-    };
-
-    // Função para calcular dias de consumo
-    const calculateConsumptionDays = (registerDate, expiryDate) => {
-        const diffTime = Math.abs(expiryDate - registerDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converter de milissegundos para dias
-        return diffDays;
-    };
-
-    return (
-        <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#f5f5f5' }}>
-            <div style={{ maxWidth: '90%', margin: 'auto', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' }}>
-                <h1>Consulta de Estoque</h1>
-                <div style={{ marginBottom: '20px', width: '100%' }}>
-                    <input
-                        type="text"
-                        value={sku}
-                        onChange={(e) => setSku(e.target.value)}
-                        placeholder="Digite o SKU"
-                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
-                    />
-                    <input
-                        type="text"
-                        value={productName}
-                        onChange={(e) => setProductName(e.target.value)}
-                        placeholder="Digite Produto"
-                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                        <button
-                            onClick={handleSearch}
-                            style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
-                        >
-                            Consultar
-                        </button>
-                        {product && (
-                            <button
-                                onClick={handleBack}
-                                style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                                Limpar
-                            </button>
-                        )}
-                    </div>
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                {product && (
-                    <div style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
-                        <p><strong>SKU:</strong> {product.sku}</p>
-                        <p><strong>Nome:</strong> {product.name}</p>
-                        <p><strong>Tipo:</strong> {product.type}</p>
-                        <p><strong>Quantidade:</strong> {product.quantity}</p>
-                        <p><strong>Valor Total:</strong> R$ {product.price}</p>
-                        <p><strong>Data de Cadastro:</strong> {product.registerDate.toLocaleDateString()}</p>
-                        <p><strong>Data de Vencimento:</strong> {product.expiryDate.toLocaleDateString()}</p>
-                        <p><strong>Dias de Consumo:</strong> {calculateConsumptionDays(product.registerDate, product.expiryDate)} dias</p>
-                    </div>
-                )}
-                
-                <h2 style={{textAlign: 'center', fontSize: '20px'}}>Produtos no Estoque</h2>
-                <div style={{ overflowX: 'auto', marginTop: '20px' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>SKU</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Nome</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Tipo</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Quantidade</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Valor Total</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Cadastro</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Vencimento</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Dias de Consumo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productsData.map((item) => (
-                                <tr key={item.sku}>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.sku}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.name}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.type}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.quantity}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>R$ {item.price}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.registerDate.toLocaleDateString()}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.expiryDate.toLocaleDateString()}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{calculateConsumptionDays(item.registerDate, item.expiryDate)} dias</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                <button
-                    onClick={voltar}
-                    style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#F20DE7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    Voltar
-                </button>
-            </div>
-        </div>
+  const handleSearch = () => {
+    const filtered = productsData.filter(
+      (item) =>
+        item.sku.includes(sku) ||
+        item.name.toLowerCase().includes(productName.toLowerCase())
     );
+    if (filtered.length > 0) {
+      setFilteredProducts(filtered);
+      setError('');
+    } else {
+      setFilteredProducts([]);
+      setError('Produto não encontrado.');
+    }
+  };
+
+  const handleBack = () => {
+    setSku('');
+    setProductName('');
+    setFilteredProducts(productsData); // Resetando o filtro para exibir todos os produtos
+    setError('');
+  };
+
+  const calculateConsumptionDays = (registerDate, expiryDate) => {
+    // Garantir que as datas sejam convertidas para objetos Date
+    const registerDateObj = new Date(registerDate);
+    const expiryDateObj = new Date(expiryDate);
+
+    const diffTime = Math.abs(expiryDateObj - registerDateObj);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converter de milissegundos para dias
+  };
+
+  const voltar = () => {
+    navigate('/Dashboard');
+  };
+
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#f5f5f5' }}>
+      <div style={{ maxWidth: '90%', margin: 'auto', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' }}>
+        <h1>Consulta de Estoque</h1>
+        <div style={{ marginBottom: '20px', width: '100%' }}>
+          <input
+            type="text"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            placeholder="Digite o SKU"
+            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
+          />
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="Digite Produto"
+            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <button
+              onClick={handleSearch}
+              style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
+            >
+              Consultar
+            </button>
+            {filteredProducts.length > 0 && (
+              <button
+                onClick={handleBack}
+                style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {filteredProducts.length > 0 && (
+          <div style={{ overflowX: 'auto', marginTop: '20px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>SKU</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Nome</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Tipo</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Quantidade</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Valor Unitário</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Cadastro</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Data de Vencimento</th>
+                  <th style={{ border: '1px solid #ccc', padding: '10px', backgroundColor: '#f2f2f2' }}>Dias de Consumo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((item) => (
+                  <tr key={item.sku}>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.sku}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.name}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.category || 'N/A'}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>R$ {item.unitPrice}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{new Date(item.dateAdded).toLocaleDateString()}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{new Date(item.expiryDate).toLocaleDateString()}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '10px', textAlign: 'center' }}>{calculateConsumptionDays(item.dateAdded, item.expiryDate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div style={{ marginTop: '20px' }}>
+          <button onClick={voltar} style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
+            Voltar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Estoque;
