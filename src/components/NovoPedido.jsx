@@ -1,8 +1,258 @@
-import { useState, useEffect } from "react";
+// import { useState, useEffect } from "react";
+// import firebase from "firebase/compat/app";
+// import "firebase/compat/database";
+
+// // Configuração do Firebase
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+//   authDomain: "bancoestoquecozinha.firebaseapp.com",
+//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+//   projectId: "bancoestoquecozinha",
+//   storageBucket: "bancoestoquecozinha.firebasestorage.app",
+//   messagingSenderId: "71775149511",
+//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+// };
+
+// // Inicializar o Firebase
+// if (!firebase.apps.length) {
+//   firebase.initializeApp(firebaseConfig);
+// }
+
+// // Referência ao banco de dados
+// const dbProdutos = firebase.database().ref("Pedidos");
+
+// const Pedido = () => {
+//   const [formData, setFormData] = useState({
+//     sku: "",
+//     fornecedor: "",
+//     marca: "",
+//     produto: "",
+//     quantidade: "",
+//     categoria: "proteina", // Definindo a categoria como 'proteina' por padrão
+//     observacoes: "",
+//   });
+//   const [pedidos, setPedidos] = useState([]);
+
+//   // Função para buscar dados do Firebase
+//   const fetchPedidos = () => {
+//     dbProdutos.on("value", (snapshot) => {
+//       const data = snapshot.val();
+//       if (data) {
+//         const lista = Object.keys(data).map((key) => ({
+//           id: key,
+//           ...data[key],
+//         }));
+//         setPedidos(lista);
+//       } else {
+//         setPedidos([]);
+//       }
+//     });
+//   };
+
+//   useEffect(() => {
+//     fetchPedidos();
+//   }, []);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       [name]: value,
+//     }));
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+
+//     // Enviar os dados para o Firebase
+//     dbProdutos.push(formData)
+//       .then(() => {
+//         alert("Pedido realizado com sucesso!");
+//         setFormData({
+//           sku: "",
+//           fornecedor: "",
+//           marca: "",
+//           produto: "",
+//           quantidade: "",
+//           categoria: "proteina",
+//           observacoes: "",
+//         });
+//       })
+//       .catch((error) => {
+//         console.error("Erro ao fazer pedido:", error);
+//         alert("Erro ao realizar pedido. Tente novamente.");
+//       });
+//   };
+
+//   // Função para excluir um pedido
+//   const handleDelete = (id) => {
+//     if (window.confirm("Você tem certeza que deseja excluir este pedido?")) {
+//       dbProdutos.child(id)
+//         .remove()
+//         .then(() => {
+//           alert("Pedido excluído com sucesso!");
+//         })
+//         .catch((error) => {
+//           console.error("Erro ao excluir pedido:", error);
+//           alert("Erro ao excluir pedido. Tente novamente.");
+//         });
+//     }
+//   };
+
+//   return (
+//     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+//       <h2>Pedido</h2>
+//       <form onSubmit={handleSubmit}>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>SKU:</label>
+//           <input
+//             type="text"
+//             name="sku"
+//             value={formData.sku}
+//             onChange={handleChange}
+//             required
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Fornecedor:</label>
+//           <input
+//             type="text"
+//             name="fornecedor"
+//             value={formData.fornecedor}
+//             onChange={handleChange}
+//             required
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Marca:</label>
+//           <input
+//             type="text"
+//             name="marca"
+//             value={formData.marca}
+//             onChange={handleChange}
+//             required
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Produto:</label>
+//           <input
+//             type="text"
+//             name="produto"
+//             value={formData.produto}
+//             onChange={handleChange}
+//             required
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Quantidade:</label>
+//           <input
+//             type="number"
+//             name="quantidade"
+//             value={formData.quantidade}
+//             onChange={handleChange}
+//             required
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Categoria:</label>
+//           <select
+//             name="categoria"
+//             value={formData.categoria}
+//             onChange={handleChange}
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           >
+//             <option value="proteina">Proteína</option>
+//             <option value="mantimento">Mantimento</option>
+//             <option value="hortalicas">Hortaliças</option>
+//           </select>
+//         </div>
+//         <div style={{ marginBottom: "10px" }}>
+//           <label>Observações:</label>
+//           <textarea
+//             name="observacoes"
+//             value={formData.observacoes}
+//             onChange={handleChange}
+//             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+//           />
+//         </div>
+//         <button
+//           type="submit"
+//           style={{
+//             padding: "10px 20px",
+//             backgroundColor: "#007BFF",
+//             color: "#fff",
+//             border: "none",
+//             cursor: "pointer",
+//           }}
+//         >
+//           Enviar Pedido
+//         </button>
+//       </form>
+
+//       <h3 style={{ marginTop: "30px" }}>Pedidos Realizados</h3>
+//       <table style={{ width: "100%", borderCollapse: "collapse" }}>
+//         <thead>
+//           <tr>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Produto</th>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Fornecedor</th>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Marca</th>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Quantidade</th>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Categoria</th>
+//             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Ações</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {pedidos.map((pedido) => (
+//             <tr key={pedido.id}>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 {pedido.produto}
+//               </td>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 {pedido.fornecedor}
+//               </td>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 {pedido.marca}
+//               </td>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 {pedido.quantidade}
+//               </td>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 {pedido.categoria}
+//               </td>
+//               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+//                 <button
+//                   onClick={() => handleDelete(pedido.id)}
+//                   style={{
+//                     padding: "5px 10px",
+//                     backgroundColor: "#FF5733",
+//                     color: "#fff",
+//                     border: "none",
+//                     cursor: "pointer",
+//                   }}
+//                 >
+//                   Excluir
+//                 </button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
+// export default Pedido;
+
+import { useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
+import { Link } from "react-router-dom";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -10,7 +260,7 @@ const firebaseConfig = {
   projectId: "bancoestoquecozinha",
   storageBucket: "bancoestoquecozinha.firebasestorage.app",
   messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
 // Inicializar o Firebase
@@ -19,7 +269,7 @@ if (!firebase.apps.length) {
 }
 
 // Referência ao banco de dados
-const dbProdutos = firebase.database().ref("Pedidos");
+const dbPedidos = firebase.database().ref("Pedidos");
 
 const Pedido = () => {
   const [formData, setFormData] = useState({
@@ -28,30 +278,20 @@ const Pedido = () => {
     marca: "",
     produto: "",
     quantidade: "",
-    categoria: "proteina", // Definindo a categoria como 'proteina' por padrão
+    valorUnitario: "",
+    data: "",
+    categoria: "proteina",
     observacoes: "",
   });
-  const [pedidos, setPedidos] = useState([]);
+  const [itens, setItens] = useState([]);
 
-  // Função para buscar dados do Firebase
-  const fetchPedidos = () => {
-    dbProdutos.on("value", (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const lista = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        setPedidos(lista);
-      } else {
-        setPedidos([]);
-      }
+  const formatCurrency = (value) => {
+    if (!value) return "";
+    return parseFloat(value).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     });
   };
-
-  useEffect(() => {
-    fetchPedidos();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,187 +301,412 @@ const Pedido = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleAddItem = () => {
+    if (
+      formData.sku &&
+      formData.produto &&
+      formData.quantidade &&
+      formData.fornecedor &&
+      formData.marca &&
+      formData.valorUnitario &&
+      formData.data
+    ) {
+      const valorTotal = (
+        parseFloat(formData.quantidade) * parseFloat(formData.valorUnitario)
+      ).toFixed(2);
 
-    // Enviar os dados para o Firebase
-    dbProdutos.push(formData)
-      .then(() => {
-        alert("Pedido realizado com sucesso!");
-        setFormData({
-          sku: "",
-          fornecedor: "",
-          marca: "",
-          produto: "",
-          quantidade: "",
-          categoria: "proteina",
-          observacoes: "",
-        });
-      })
-      .catch((error) => {
-        console.error("Erro ao fazer pedido:", error);
-        alert("Erro ao realizar pedido. Tente novamente.");
+      setItens((prevItens) => [...prevItens, { ...formData, valorTotal }]);
+
+      setFormData({
+        sku: "",
+        fornecedor: "",
+        marca: "",
+        produto: "",
+        quantidade: "",
+        valorUnitario: "",
+        data: "",
+        categoria: "proteina",
+        observacoes: "",
       });
-  };
-
-  // Função para excluir um pedido
-  const handleDelete = (id) => {
-    if (window.confirm("Você tem certeza que deseja excluir este pedido?")) {
-      dbProdutos.child(id)
-        .remove()
-        .then(() => {
-          alert("Pedido excluído com sucesso!");
-        })
-        .catch((error) => {
-          console.error("Erro ao excluir pedido:", error);
-          alert("Erro ao excluir pedido. Tente novamente.");
-        });
+    } else {
+      alert("Por favor, preencha todos os campos obrigatórios.");
     }
   };
 
+  const handleRemoveItem = (index) => {
+    setItens((prevItens) => prevItens.filter((_, i) => i !== index));
+  };
+
+  const handleSendPedido = () => {
+    if (itens.length === 0) {
+      alert("Adicione itens ao pedido antes de enviar.");
+      return;
+    }
+
+    dbPedidos
+      .push({ itens })
+      .then(() => {
+        alert("Pedido enviado com sucesso!");
+        setItens([]);
+      })
+      .catch((error) => {
+        console.error("Erro ao enviar pedido:", error);
+        alert("Erro ao enviar pedido. Tente novamente.");
+      });
+  };
+
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-      <h2>Pedido</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>SKU:</label>
-          <input
-            type="text"
-            name="sku"
-            value={formData.sku}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Fornecedor:</label>
-          <input
-            type="text"
-            name="fornecedor"
-            value={formData.fornecedor}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Marca:</label>
-          <input
-            type="text"
-            name="marca"
-            value={formData.marca}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Produto:</label>
-          <input
-            type="text"
-            name="produto"
-            value={formData.produto}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Quantidade:</label>
-          <input
-            type="number"
-            name="quantidade"
-            value={formData.quantidade}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Categoria:</label>
-          <select
-            name="categoria"
-            value={formData.categoria}
-            onChange={handleChange}
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          >
-            <option value="proteina">Proteína</option>
-            <option value="mantimento">Mantimento</option>
-            <option value="hortalicas">Hortaliças</option>
-          </select>
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Observações:</label>
-          <textarea
-            name="observacoes"
-            value={formData.observacoes}
-            onChange={handleChange}
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-        <button
-          type="submit"
+    <div
+      style={{
+        maxWidth: "2100px",
+        margin: "0 auto",
+        padding: "20px",
+        background: "#CFCFCF",
+        height: "100vh",
+      }}
+    >
+      <h2
+        style={{ textAlign: "center", fontFamily: "italic", fontSize: "50px" }}
+      >
+        Novo Pedido
+      </h2>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          position: "relative",
+          top: "10vh",
+        }}
+      >
+        <input
+          type="text"
+          name="sku"
+          placeholder="SKU"
+          value={formData.sku}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="text"
+          name="fornecedor"
+          placeholder="Fornecedor"
+          value={formData.fornecedor}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="text"
+          name="marca"
+          placeholder="Marca"
+          value={formData.marca}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="text"
+          name="produto"
+          placeholder="Produto"
+          value={formData.produto}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="number"
+          name="quantidade"
+          placeholder="Quantidade"
+          value={formData.quantidade}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="number"
+          step="0.01"
+          name="valorUnitario"
+          placeholder="Valor Unitário (R$)"
+          value={formData.valorUnitario}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <input
+          type="date"
+          name="data"
+          value={formData.data}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        />
+        <select
+          name="categoria"
+          value={formData.categoria}
+          onChange={handleChange}
+          style={{ flex: "1", minWidth: "200px", padding: "10px" }}
+        >
+          <option value="proteina">Proteína</option>
+          <option value="mantimento">Mantimento</option>
+          <option value="hortalicas">Hortaliças</option>
+        </select>
+        <textarea
+          name="observacoes"
+          placeholder="Observações"
+          value={formData.observacoes}
+          onChange={handleChange}
           style={{
-            padding: "10px 20px",
-            backgroundColor: "#007BFF",
-            color: "#fff",
+            flex: "1",
+            minWidth: "200px",
+            padding: "10px",
+            height: "80px",
+          }}
+        ></textarea>
+        <button
+          onClick={handleAddItem}
+          style={{
+            flex: "1",
+            minWidth: "200px",
+            padding: "10px",
+            backgroundColor: "#007bff",
+            color: "white",
             border: "none",
             cursor: "pointer",
           }}
         >
-          Enviar Pedido
+          Adicionar Item
         </button>
-      </form>
-
-      <h3 style={{ marginTop: "30px" }}>Pedidos Realizados</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      </div>
+      {/* 
+      <table
+        style={{
+          width: "120%",
+          borderCollapse: "collapse",
+          marginTop: "20px",
+          background: "#F20DE7",
+          color: "white"
+        }}
+      >
         <thead>
-          <tr>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Produto</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Fornecedor</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Marca</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Quantidade</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Categoria</th>
+          <tr>            
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              SKU
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Fornecedor
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Marca
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Produto
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Quantidade
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Valor Unitário
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Valor Total
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Data do Pedido
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+              Categoria
+            </th>
             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Ações</th>
           </tr>
         </thead>
-        <tbody>
-          {pedidos.map((pedido) => (
-            <tr key={pedido.id}>
+        <tbody style={{background: "white", color: "black", textAlign: 'center'}}>
+          {itens.map((item, index) => (
+            <tr key={index}>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {pedido.produto}
+                {item.sku}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {pedido.fornecedor}
+                {item.fornecedor}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {pedido.marca}
+                {item.marca}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {pedido.quantidade}
+                {item.produto}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {pedido.categoria}
+                {item.quantidade}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {formatCurrency(item.valorUnitario)}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {formatCurrency(item.valorTotal)}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.data}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.categoria}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                 <button
-                  onClick={() => handleDelete(pedido.id)}
+                  onClick={() => handleRemoveItem(index)}
                   style={{
                     padding: "5px 10px",
-                    backgroundColor: "#FF5733",
-                    color: "#fff",
+                    backgroundColor: "#dc3545",
+                    color: "white",
                     border: "none",
                     cursor: "pointer",
                   }}
                 >
-                  Excluir
+                  Remover
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table> */}
+
+      <div
+        style={{
+          overflowX: "auto",
+          maxWidth: "130%",
+          position: "relative",
+          top: "10vh",
+        }}
+      >
+        <table
+          style={{
+            width: "120%",
+            borderCollapse: "collapse",
+            marginTop: "20px",
+            background: "#F20DE7",
+            color: "white",
+          }}
+        >
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>SKU</th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Fornecedor
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Marca
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Produto
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Quantidade
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Valor Unitário
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Valor Total
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Data do Pedido
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Categoria
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            style={{ background: "white", color: "black", textAlign: "center" }}
+          >
+            {itens.map((item, index) => (
+              <tr key={index}>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.sku}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.fornecedor}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.marca}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.produto}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.quantidade}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {formatCurrency(item.valorUnitario)}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {formatCurrency(item.valorTotal)}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.data}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {item.categoria}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  <button
+                    onClick={() => handleEditItem(index)}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#ffc107",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                      marginRight: "5px",
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleRemoveItem(index)}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Remover
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button
+        onClick={handleSendPedido}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+          marginTop: "80px",
+          display: "block",
+          marginLeft: "auto",
+        }}
+      >
+        Enviar Pedido
+      </button>
+      <Link to={"/Pedidos"}>
+        <button
+          style={{
+            padding: "10px 20px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+          marginTop: "-40px",
+          display: "block",
+
+          }}
+        >
+          Voltar
+        </button>
+      </Link>
     </div>
   );
 };
