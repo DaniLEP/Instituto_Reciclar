@@ -1,3 +1,7 @@
+Documentação do Projeto: Sistema de Controle de Entrada e Saída de Alimentos
+
+_________________________________________________________________________
+
 Objetivo do Projeto
 
 O projeto foi desenvolvido para facilitar a gestão de entrada e saída de alimentos da cozinha do Instituto Reciclar, automatizando processos e otimizando o trabalho de Controle e Estoque. Esse sistema foi criado para uso interno, permitindo maior organização, economia de tempo e precisão nas operações.
@@ -18,7 +22,7 @@ Status do Pedido: Exibe os pedidos criados e permite edição dos itens por meio
 
 _________________________________________________________________________
 
-Cadastro: 
+Cadastro
 
 Página dedicada ao gerenciamento de cadastros de produtos e fornecedores.
 
@@ -42,6 +46,7 @@ Relatórios
 Página para geração de relatórios detalhados com opções de consulta personalizada.
 
 Sub Funcionalidades:
+
 Estoque: Permite ao usuário consultar os produtos disponíveis no sistema e acessar informações sobre o estoque.
 
 Relatório de Refeições Servidas: Mostra os dados das refeições servidas em um período selecionado.
@@ -50,7 +55,11 @@ Relatório Periódico: Exibe dados de produtos removidos ou atualizados durante 
 
 Relatório de Retiradas: Detalha os produtos retirados do estoque em um período escolhido pelo usuário.
 
-Retirada: Gerencia a retirada de produtos do estoque. Inclui: Consulta por Nome ou SKU do produto.
+_________________________________________________________________________
+
+Retirada
+
+Gerencia a retirada de produtos do estoque. Inclui: Consulta por Nome ou SKU do produto.
 
 Seleção de Data e Categoria do produto (Proteína, Mantimento ou Hortaliça).
 
@@ -72,16 +81,22 @@ API: Conexão com o Firebase para interação entre frontend e banco de dados.
 Firebase: Banco de dados em nuvem para armazenamento seguro e eficiente.
 
 _________________________________________________________________________
+
+
 Como Rodar o Projeto
 
 Instalação das Dependências
 
 Execute o seguinte comando no terminal para instalar as dependências do Node.js:
+
  npm install
 
 _________________________________________________________________________
 
 Execução em Ambiente Local
+
 Para iniciar o projeto no ambiente local, utilize o comando:
+
 npm run dev
+
 
