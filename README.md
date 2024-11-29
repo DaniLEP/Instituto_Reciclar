@@ -72,12 +72,16 @@ Tecnologias Utilizadas:
 
 Frontend:
 React: Biblioteca para construção de interfaces e componentes do projeto.
+
 Chart.js: Biblioteca para criação de gráficos interativos.
+
 CSS Inline e Tailwind CSS: Ferramentas para estilização da interface.
 
 Backend:
 Node.js: Ambiente de execução para JavaScript no servidor.
+
 API: Conexão com o Firebase para interação entre frontend e banco de dados.
+
 Firebase: Banco de dados em nuvem para armazenamento seguro e eficiente.
 
 _________________________________________________________________________
@@ -89,7 +93,7 @@ Instalação das Dependências
 
 Execute o seguinte comando no terminal para instalar as dependências do Node.js:
 
- npm install
+npm install
 
 _________________________________________________________________________
 
