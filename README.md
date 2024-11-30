@@ -1,106 +1,128 @@
-Documentação do Projeto: Sistema de Controle de Entrada e Saída de Alimentos
+# Documentação do Projeto: Sistema de Controle de Entrada e Saída de Alimentos
 
-_________________________________________________________________________
+## Objetivo do Projeto
 
-Objetivo do Projeto
+O projeto foi desenvolvido para facilitar a gestão de entrada e saída de alimentos da cozinha do Instituto Reciclar, automatizando processos e otimizando o trabalho de controle e estoque. Este sistema foi criado para uso interno, permitindo maior organização, economia de tempo e precisão nas operações.
 
-O projeto foi desenvolvido para facilitar a gestão de entrada e saída de alimentos da cozinha do Instituto Reciclar, automatizando processos e otimizando o trabalho de Controle e Estoque. Esse sistema foi criado para uso interno, permitindo maior organização, economia de tempo e precisão nas operações.
+---
 
-_________________________________________________________________________
+## Funcionalidades
 
-Funcionalidades:
-
-Pedidos
+### Pedidos
 
 Página destinada à criação e gerenciamento de pedidos.
 
-Sub Funcionalidades:
+#### Subfuncionalidades
 
-Novo Pedido: Permite realizar pedidos para fornecedores. O usuário pode consultar os produtos disponíveis, selecionar os itens necessários, e adicioná-los à solicitação. É possível incluir diversos itens em um único pedido.
+- **Novo Pedido**  
+  Permite realizar pedidos para fornecedores. O usuário pode consultar os produtos disponíveis, selecionar os itens necessários e adicioná-los à solicitação. É possível incluir diversos itens em um único pedido.
 
-Status do Pedido: Exibe os pedidos criados e permite edição dos itens por meio de um botão, que abre uma página específica para ajustes nos produtos adicionados.
+- **Status do Pedido**  
+  Exibe os pedidos criados e permite a edição dos itens por meio de um botão, que abre uma página específica para ajustes nos produtos adicionados.
 
-_________________________________________________________________________
+---
 
-Cadastro
+### Cadastro
 
 Página dedicada ao gerenciamento de cadastros de produtos e fornecedores.
 
-Sub Funcionalidades:
+#### Subfuncionalidades
 
-Cadastro de Produtos: Permite adicionar novos produtos ao estoque. Ideal para casos onde um item não está cadastrado no sistema e precisa ser incluído, seja em pequenas unidades ou em grandes volumes.
+- **Cadastro de Produtos**  
+  Permite adicionar novos produtos ao estoque. Ideal para casos em que um item não está cadastrado no sistema e precisa ser incluído, seja em pequenas unidades ou em grandes volumes.
 
-Entrada de Produtos: Gerencia a entrada de produtos no banco de dados. Possui:
+- **Entrada de Produtos**  
+  Gerencia a entrada de produtos no banco de dados. Possui:  
+  - **Botão Adicionar**  
+    Abre um formulário para registro do produto, enviando os dados ao banco de dados.  
+  - **Botão Remover**  
+    Exclui o produto do banco de dados.
 
-Botão Adicionar: Abre um formulário para registro do produto, enviando os dados ao banco de dados.
+- **Cadastro de Refeição Servida**  
+  Registra os ingredientes utilizados e organiza a contagem de refeições servidas por período, categorizando quem foi atendido.
 
-Botão Remover: Exclui o produto do banco de dados.
+- **Cadastro de Fornecedor**  
+  Permite o registro de novos fornecedores para atender às necessidades do sistema.
 
-Cadastro de Refeição Servida: Registra os ingredientes utilizados e organiza a contagem de refeições servidas por período, categorizando quem foi atendido.
+---
 
-Cadastro de Fornecedor: Permite o registro de novos fornecedores para atender às necessidades do sistema.
-_________________________________________________________________________
-
-Relatórios
+### Relatórios
 
 Página para geração de relatórios detalhados com opções de consulta personalizada.
 
-Sub Funcionalidades:
+#### Subfuncionalidades
 
-Estoque: Permite ao usuário consultar os produtos disponíveis no sistema e acessar informações sobre o estoque.
+- **Estoque**  
+  Permite ao usuário consultar os produtos disponíveis no sistema e acessar informações sobre o estoque.
 
-Relatório de Refeições Servidas: Mostra os dados das refeições servidas em um período selecionado.
+- **Relatório de Refeições Servidas**  
+  Mostra os dados das refeições servidas em um período selecionado.
 
-Relatório Periódico: Exibe dados de produtos removidos ou atualizados durante um período específico.
+- **Relatório Periódico**  
+  Exibe dados de produtos removidos ou atualizados durante um período específico.
 
-Relatório de Retiradas: Detalha os produtos retirados do estoque em um período escolhido pelo usuário.
+- **Relatório de Retiradas**  
+  Detalha os produtos retirados do estoque em um período escolhido pelo usuário.
 
-_________________________________________________________________________
+---
 
-Retirada
+### Retirada
 
-Gerencia a retirada de produtos do estoque. Inclui: Consulta por Nome ou SKU do produto.
+Gerencia a retirada de produtos do estoque.
 
-Seleção de Data e Categoria do produto (Proteína, Mantimento ou Hortaliça).
+#### Funcionalidades
 
-Registro detalhado das retiradas para controle preciso do estoque.
+- Consulta por nome ou SKU do produto.  
+- Seleção de data e categoria do produto (Proteína, Mantimento ou Hortaliça).  
+- Registro detalhado das retiradas para controle preciso do estoque.  
+- **Histórico de Retiradas**  
+  Página que registra todas as retiradas realizadas, oferecendo um histórico detalhado para manter o controle do estoque.
 
-Histórico de Retiradas: Página que registra todas as retiradas realizadas, oferecendo histórico detalhado para manter o controle do estoque.
-_________________________________________________________________________
+---
 
-Tecnologias Utilizadas:
+## Tecnologias Utilizadas
 
-Frontend:
-React: Biblioteca para construção de interfaces e componentes do projeto.
+### Frontend
 
-Chart.js: Biblioteca para criação de gráficos interativos.
+- **React**  
+  Biblioteca para construção de interfaces e componentes do projeto.
 
-CSS Inline e Tailwind CSS: Ferramentas para estilização da interface.
+- **Chart.js**  
+  Biblioteca para criação de gráficos interativos.
 
-Backend:
-Node.js: Ambiente de execução para JavaScript no servidor.
+- **CSS Inline e Tailwind CSS**  
+  Ferramentas para estilização da interface.
 
-API: Conexão com o Firebase para interação entre frontend e banco de dados.
+### Backend
 
-Firebase: Banco de dados em nuvem para armazenamento seguro e eficiente.
+- **Node.js**  
+  Ambiente de execução para JavaScript no servidor.
 
-_________________________________________________________________________
+### API
 
+- Conexão com o Firebase para interação entre frontend e banco de dados.
 
-Como Rodar o Projeto
+### Banco de Dados
 
-Instalação das Dependências
+- **Firebase**  
+  Banco de dados em nuvem para armazenamento seguro e eficiente.
+
+---
+
+## Como Executar o Projeto
+
+### Instalação das Dependências
 
 Execute o seguinte comando no terminal para instalar as dependências do Node.js:
 
+```bash
 npm install
+```
+---
 
-_________________________________________________________________________
-
-Execução em Ambiente Local
-
+### Execução em Ambiente Local
 Para iniciar o projeto no ambiente local, utilize o comando:
 
+```bash
 npm run dev
-
-
+```
