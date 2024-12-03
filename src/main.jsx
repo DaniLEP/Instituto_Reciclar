@@ -26,6 +26,7 @@ import HistoricoRetiradas from './components/HistoricoEstoque.jsx'
 import Profile from './components/perfil.jsx'
 import NovoPedido from './components/NovoPedido.jsx'
 import Cadastro from './pages/Cadastro.jsx'
+import Gerenciador from './components/GerenciadorProdutos.jsx'
 
 
 const router = createBrowserRouter ([
@@ -81,6 +82,10 @@ const router = createBrowserRouter ([
       {
         path: "/Cadastro_Geral",
         element: <CadProdutos />,
+      },
+      {
+        path: "/Gerenciador_Produtos",
+        element: <Gerenciador />,
       },
       {
         path: "/Entrada_Produtos",

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, push, get } from "firebase/database";
+import { useNavigate } from "react-router-dom"; // Importa o hook para navegação
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -45,7 +46,8 @@ const Container = styled.div`
 
 const Title = styled.h1`
   text-align: center;
-  font-size: 28px;
+  font-size: 48px;
+  font-weight: bold;
   color: #ffffff;
   margin-bottom: 20px;
 `;
@@ -70,7 +72,7 @@ const Input = styled.input`
   transition: border-color 0.3s;
 
   &:focus {
-    border-color: #00009C;
+    border-color: #00009c;
     outline: none;
   }
 `;
@@ -85,14 +87,14 @@ const Select = styled.select`
   transition: border-color 0.3s;
 
   &:focus {
-    border-color: #00009C;
+    border-color: #00009c;
     outline: none;
   }
 `;
 
 const Button = styled.button`
   padding: 10px 18px;
-  background: #F20DE7;
+  background: #f20de7;
   color: #fff;
   border-radius: 12px;
   cursor: pointer;
@@ -106,24 +108,33 @@ const Button = styled.button`
   }
 `;
 
+const BackButton = styled(Button)`
+  background: #ccc;
+  color: #000;
+  margin-top: 20px;
+
+  &:hover {
+    background-color: #aaa;
+  }
+`;
+
 function CadProdutos() {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [marca, setMarca] = useState("");
   const [supplier, setSupplier] = useState("");
   const [unit, setUnit] = useState("");
-  const [quantity, setQuantity] = useState("");
   const [dateAdded, setDateAdded] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [unitPrice, setUnitPrice] = useState("");
   const [category, setCategory] = useState("");
   const [products, setProducts] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
+  const navigate = useNavigate(); // Hook de navegação
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsRef = ref(db, "Estoque");
+        const productsRef = ref(db, "EntradaProdutos");
         const snapshot = await get(productsRef);
         if (snapshot.exists()) {
           const data = snapshot.val();
@@ -139,8 +150,23 @@ function CadProdutos() {
   }, []);
 
   const handleSave = () => {
-    if (sku && name && supplier && unit && quantity && dateAdded && expiryDate && unitPrice && category) {
-      const newProduct = { sku, name, marca, supplier, unit, quantity, dateAdded, expiryDate, unitPrice, category };
+    if (
+      sku &&
+      name &&
+      supplier &&
+      unit &&
+      dateAdded &&
+      category
+    ) {
+      const newProduct = {
+        sku,
+        name,
+        marca,
+        supplier,
+        unit,
+        dateAdded,
+        category,
+      };
       console.log("Dados a serem salvos:", newProduct);
 
       if (editingIndex !== null) {
@@ -149,13 +175,15 @@ function CadProdutos() {
         setProducts(updatedProducts);
         setEditingIndex(null);
       } else {
-        const newProductRef = push(ref(db, "Estoque"));
+        const newProductRef = push(ref(db, "EntradaProdutos"));
         set(newProductRef, newProduct)
           .then(() => {
             alert("Produto salvo com sucesso!");
             setProducts([...products, newProduct]);
           })
-          .catch((error) => alert("Erro ao salvar o produto: " + error.message));
+          .catch((error) =>
+            alert("Erro ao salvar o produto: " + error.message)
+          );
       }
 
       resetForm();
@@ -170,11 +198,12 @@ function CadProdutos() {
     setMarca("");
     setSupplier("");
     setUnit("");
-    setQuantity("");
     setDateAdded("");
-    setExpiryDate("");
-    setUnitPrice("");
     setCategory("");
+  };
+
+  const handleBack = () => {
+    navigate(-1); // Navega para a página anterior
   };
 
   return (
@@ -227,15 +256,7 @@ function CadProdutos() {
             placeholder="Digite a unidade de medida"
           />
         </FormGroup>
-        <FormGroup>
-          <Label>Quantidade:</Label>
-          <Input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Digite a quantidade"
-          />
-        </FormGroup>
+    
         <FormGroup>
           <Label>Data de Cadastro:</Label>
           <Input
@@ -244,26 +265,13 @@ function CadProdutos() {
             onChange={(e) => setDateAdded(e.target.value)}
           />
         </FormGroup>
+  
         <FormGroup>
-          <Label>Data de Vencimento:</Label>
-          <Input
-            type="date"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label>Preço Unitário:</Label>
-          <Input
-            type="number"
-            value={unitPrice}
-            onChange={(e) => setUnitPrice(e.target.value)}
-            placeholder="Digite o preço unitário"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label>Tipo:</Label>
-          <Select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <Label>Categoria:</Label>
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             <option value="">Selecione o tipo</option>
             <option value="Proteína">Proteína</option>
             <option value="Mantimento">Mantimento</option>
@@ -271,6 +279,7 @@ function CadProdutos() {
           </Select>
         </FormGroup>
         <Button onClick={handleSave}>Salvar Produto</Button>
+        <BackButton onClick={handleBack}>Voltar</BackButton>
       </Container>
     </>
   );
