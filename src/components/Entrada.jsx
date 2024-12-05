@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, update, onValue } from "firebase/database";
+import { getDatabase, ref, set, onValue } from "firebase/database";
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
@@ -158,7 +158,8 @@ function EntradaProdutos() {
   const [unitPrice, setUnitPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("");  
+  const [tipo, setTipo] = useState("");
   const [dateAdded, setDateAdded] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -193,6 +194,7 @@ function EntradaProdutos() {
       setSupplier(product.supplier);
       setUnit(product.unit);
       setCategory(product.category);
+      setTipo(product.tipo);
       setQuantity(product.quantity);
       setUnitPrice(product.unitPrice);
       setDateAdded(product.dateAdded);
@@ -223,6 +225,7 @@ function EntradaProdutos() {
         unit,
         quantity,
         category,
+        tipo,
         dateAdded,
         unitPrice: parseFloat(unitPrice),
         expiryDate,
@@ -243,7 +246,8 @@ function EntradaProdutos() {
       setSupplier("");
       setQuantity("");
       setUnitPrice("");
-      setCategory("");
+      setCategory("");      
+      setTipo("");
       setDateAdded("");
       setExpiryDate("");
     } else {
@@ -349,6 +353,25 @@ function EntradaProdutos() {
             <option value="Proteína">Proteína</option>
             <option value="Mantimento">Mantimento</option>
             <option value="Hortaliça">Hortaliça</option>
+            <option value="Doações">Doações</option>
+          </Select>
+        </FormGroup>
+        
+        <FormGroup>
+          <Label>Tipo:</Label>
+          <Select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+          >
+            <option value="">Selecione o tipo</option>
+            <option value="Frutas">Frutas</option>
+              <option value="Legumes">Legumes</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Bovina">Bovina</option>              
+              <option value="Ave">Ave</option>
+              <option value="Suína">Suína</option>
+              <option value="Pescado">Pescado</option>
+              <option value="Mercado">Mercado</option>
           </Select>
         </FormGroup>
 

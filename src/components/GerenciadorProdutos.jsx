@@ -272,6 +272,7 @@ function Gerenciador() {
               <th>Unidade de Medida</th>
               <th>Data Cadastrada</th>
               <th>Categoria</th>
+              <th>Tipo</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -285,6 +286,7 @@ function Gerenciador() {
                 <td>{product.unit}</td>
                 <td>{product.dateAdded}</td>
                 <td>{product.category}</td>
+                <td>{product.tipo}</td>
                 <td>
                   <Button onClick={() => openModal(product)}>Alterar</Button>
                 </td>
@@ -338,6 +340,23 @@ function Gerenciador() {
               <option value="Mantimento">Mantimento</option>
               <option value="Hortaliças">Hortaliças</option>
               <option value="Doações">Doações</option>
+            </select>
+
+            <label>Tipo:</label>
+            <select
+              name="tipo"
+              value={editingProduct.tipo || ""}
+              onChange={handleInputChange}
+            >
+              <option value="Frutas">Frutas</option>
+              <option value="Legumes">Legumes</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Bovina">Bovina</option>              
+              <option value="Ave">Ave</option>
+              <option value="Suína">Suína</option>
+              <option value="Pescado">Pescado</option>
+              <option value="Mercado">Mercado</option>
+
             </select>
             <Button onClick={handleUpdate}>Atualizar</Button>
             <CloseButton onClick={closeModal}>Fechar</CloseButton>

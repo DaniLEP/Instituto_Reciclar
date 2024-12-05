@@ -73,7 +73,7 @@ const TabelaPedidos = () => {
               <td style={{ padding: "8px", textAlign: "center" }}>{pedido.id}</td>
               <td style={{ padding: "8px", textAlign: "center" }}>{new Date(pedido.data).toLocaleDateString()}</td>
               <td style={{ padding: "8px", textAlign: "center" }}>{pedido.fornecedor}</td>
-              <td style={{ padding: "8px", textAlign: "center" }}>{pedido.categoria}</td>
+              <td style={{ padding: "8px", textAlign: "center" }}>{pedido.category}</td>
               <td style={{ padding: "8px", textAlign: "center" }}>R$ {pedido.valor || "0.00"}</td>
               <td style={{ textAlign: "center" }}>
                 <button style={{ padding: "5px 10px", backgroundColor: "#FFC107", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", margin: "0 5px" }} onClick={() => handleEdit(pedido.id)}>Editar</button>

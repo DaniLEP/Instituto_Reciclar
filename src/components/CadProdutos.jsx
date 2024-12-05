@@ -126,6 +126,7 @@ function CadProdutos() {
   const [unit, setUnit] = useState("");
   const [dateAdded, setDateAdded] = useState("");
   const [category, setCategory] = useState("");
+  const [tipo, setTipo] = useState("");
   const [products, setProducts] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
@@ -156,7 +157,8 @@ function CadProdutos() {
       supplier &&
       unit &&
       dateAdded &&
-      category
+      category &&
+      tipo
     ) {
       const newProduct = {
         sku,
@@ -166,6 +168,7 @@ function CadProdutos() {
         unit,
         dateAdded,
         category,
+        tipo,
       };
       console.log("Dados a serem salvos:", newProduct);
 
@@ -200,6 +203,7 @@ function CadProdutos() {
     setUnit("");
     setDateAdded("");
     setCategory("");
+    setTipo("");
   };
 
   const handleBack = () => {
@@ -272,10 +276,30 @@ function CadProdutos() {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="">Selecione o tipo</option>
+            <option value="">Selecione a categoria</option>
             <option value="Proteína">Proteína</option>
             <option value="Mantimento">Mantimento</option>
             <option value="Hortaliça">Hortaliça</option>
+            <option value="Doações">Doações</option>
+
+          </Select>
+          </FormGroup>
+
+          <FormGroup>
+          <Label>Tipo:</Label>
+          <Select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+          >
+            <option value="">Selecione o tipo</option>
+            <option value="Frutas">Frutas</option>
+              <option value="Legumes">Legumes</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Bovina">Bovina</option>              
+              <option value="Ave">Ave</option>
+              <option value="Suína">Suína</option>
+              <option value="Pescado">Pescado</option>
+              <option value="Mercado">Mercado</option>
           </Select>
         </FormGroup>
         <Button onClick={handleSave}>Salvar Produto</Button>
