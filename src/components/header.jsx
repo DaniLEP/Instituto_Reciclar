@@ -21,7 +21,7 @@ export default function Header() {
           {/* Menu (Desktop) */}
           <div className="hidden lg:flex flex-1 items-center justify-end text-white">
             <ul className="flex gap-2 mr-16 mt-[-7px] text-[20px]">
-              <Link to="/Pedidos">
+              <Link to="#"> {/*LINK EXATO "/Pedidos" */}
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Pedidos
                 </button>
@@ -41,7 +41,7 @@ export default function Header() {
                   Retirada
                 </button>
               </Link>
-              <Link to="/Meu_Perfil">
+              <Link to="#">{/*LINK EXATO "/Meu_Perfil" */}
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   <img
                     src="/myUser.svg"
@@ -68,7 +68,7 @@ export default function Header() {
             } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`}
           >
             <ul className="text-center text-white text-xl">
-              <Link to="/Pedidos">
+              <Link to="#">{/*LINK EXATO "/Pedidos" */}
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Pedidos
                 </li>
@@ -88,7 +88,7 @@ export default function Header() {
                   Retirada
                 </li>
               </Link>
-              <Link to="/Meu_Perfil">
+              <Link to="#">{/*LINK EXATO "/Meu_Perfil" */}
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Meu Perfil
                 </li>
@@ -125,7 +125,7 @@ export default function Header() {
               {/* CARDS DESKTOP */}
               {/* Card 1 - Lista Pedidos */}
               <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"/Pedidos"}>
+                <Link to={"#"}>{/*LINK EXATO '/Pedidos'*/}
                   <img
                     src="/listaPedidos.svg"
                     className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"

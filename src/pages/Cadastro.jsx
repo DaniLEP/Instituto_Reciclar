@@ -33,7 +33,7 @@ export default function Cadastro() {
             title="Fornecedor"
           />
           <Card
-            link="/Cadastro_Refeicoes"
+            link="#" ///Cadastro_Refeicoes link exato
             imgSrc="/ref.servidas.svg"
             title="Ref. Servidas"
           />

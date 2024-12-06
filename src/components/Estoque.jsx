@@ -241,6 +241,15 @@ const Estoque = () => {
                     backgroundColor: "#f2f2f2",
                   }}
                 >
+                  Tipo
+                </th>
+                <th
+                  style={{
+                    border: "1px solid #ccc",
+                    padding: "10px",
+                    backgroundColor: "#f2f2f2",
+                  }}
+                >
                   Quantidade
                 </th>
                 <th
@@ -328,6 +337,15 @@ const Estoque = () => {
                     }}
                   >
                     {item.category || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      border: "1px solid #ccc",
+                      padding: "10px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.tipo || "N/A"}
                   </td>
                   <td
                     style={{
