@@ -1,212 +1,265 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, get, push, update, remove } from "firebase/database";
+import { Link } from "react-router-dom";  // Importando o hook useNavigate
+
+
+
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 const RetiradaProdutos = () => {
-
-  // Dados fictícios para os produtos
-  const produtosData = [
-    { SKU: '1234', nome: 'Coxa de Frango', qtdeEstoque: 100, tipo: 'proteina', dataCadastro: '2023-06-01' },
-    { SKU: '5678', nome: 'Alface', qtdeEstoque: 50, tipo: 'hortaliças', dataCadastro: '2023-07-01' },
-    { SKU: '9101', nome: 'Arroz', qtdeEstoque: 200, tipo: 'mantimento', dataCadastro: '2023-08-01' },
-    // Adicione mais produtos conforme necessário
-  ];
-
-  // Estados do componente
-  const [nomeOuSKU, setNomeOuSKU] = useState('');
-  const [data, setData] = useState('');
-  const [tipoProduto, setTipoProduto] = useState('');
+  const [sku, setSku] = useState("");
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [retirante, setRetirante] = useState("");
+  const [data, setData] = useState("");
   const [produtos, setProdutos] = useState([]);
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-  const [quantidadeRetirada, setQuantidadeRetirada] = useState('');
-  const [retirante, setRetirante] = useState('');
-  const [mensagem, setMensagem] = useState('');
 
-  // Função para consultar produtos com base nos filtros
-  const handleConsulta = () => {
-    const resultado = produtosData.filter((produto) => {
-      const nomeOuSkuMatch = produto.SKU.includes(nomeOuSKU) || produto.nome.toLowerCase().includes(nomeOuSKU.toLowerCase());
-      const tipoMatch = tipoProduto ? produto.tipo === tipoProduto : true;
-      const dataMatch = data ? produto.dataCadastro === data : true;
-      return nomeOuSkuMatch && tipoMatch && dataMatch;
-    });
-    setProdutos(resultado);
-  };
-
-  // Função para selecionar o produto para retirada
-  const handleSelecionarProduto = (produto) => {
-    setProdutoSelecionado(produto);
-  };
-
-  // Função para retirar o produto
-  const handleRetirarProduto = () => {
-    if (!produtoSelecionado || !quantidadeRetirada || !retirante) {
-      setMensagem('Por favor, preencha todos os campos obrigatórios.');
-      return;
-    }
-
-    const quantidade = parseInt(quantidadeRetirada, 10);
-    if (quantidade <= 0 || quantidade > produtoSelecionado.qtdeEstoque) {
-      setMensagem('Quantidade inválida ou maior que o estoque disponível.');
-      return;
-    }
-
-    const produtoAtualizado = {
-      ...produtoSelecionado,
-      qtdeEstoque: produtoSelecionado.qtdeEstoque - quantidade,
+  useEffect(() => {
+    const fetchProdutos = async () => {
+      const produtosRef = ref(database, "Estoque");
+      const snapshot = await get(produtosRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setProdutos(Object.entries(data).map(([id, produto]) => ({ id, ...produto })));
+      }
     };
+    fetchProdutos();
+  }, []);
 
-    // Atualiza a lista de produtos com o novo estoque
-    setProdutos(produtos.map((produto) => (produto.SKU === produtoSelecionado.SKU ? produtoAtualizado : produto)));
-    
-    setMensagem(
-      `Produto ${produtoSelecionado.nome} retirado por ${retirante}. Quantidade retirada: ${quantidade}. Estoque restante: ${produtoAtualizado.qtdeEstoque}.`
-    );
-
-    // Limpar o formulário de retirada
-    setProdutoSelecionado(null);
-    setRetirante('');
-    setQuantidadeRetirada('');
+  const handleConsultar = () => {
+    const produto = produtos.find((p) => p.sku === sku);
+    if (produto) {
+      setName(produto.name);
+      setCategory(produto.category);
+      setTipo(produto.tipo);
+      setData(new Date().toLocaleString());
+    } else {
+      alert("Produto não encontrado!");
+      setName("");
+      setCategory("");
+      setData("");
+    }
   };
 
-  // Função de navegação para voltar
-  const navigate = useNavigate()
 
-  const handleVoltar = () => navigate ("/Retirada")
+
+  const handleRetirada = async () => {
+    if (!sku || !name || !category || !tipo || !quantity || !retirante || !data) {
+      alert("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    const produto = produtos.find((p) => p.sku === sku);
+    if (!produto) {
+      alert("Produto não encontrado!");
+      return;
+    }
+
+    if (produto.quantity < quantity) {
+      alert("Estoque insuficiente!");
+      return;
+    }
+
+    const novaQuantidade = produto.quantity - quantity;
+    const produtoRef = ref(database, `Estoque/${produto.id}`);
+
+    if (novaQuantidade === 0) {
+      await remove(produtoRef);
+      setProdutos((prevProdutos) => prevProdutos.filter((p) => p.id !== produto.id));
+    } else {
+      await update(produtoRef, { quantity: novaQuantidade });
+      setProdutos((prevProdutos) =>
+        prevProdutos.map((p) =>
+          p.id === produto.id ? { ...p, quantity: novaQuantidade } : p
+        )
+      );
+    }
+
+    const retiradaRef = ref(database, "Retiradas");
+    const retiradaData = { sku, name, category, tipo, quantity, retirante, data };
+    await push(retiradaRef, retiradaData);
+
+    alert(`Retirada registrada com sucesso por ${retirante}. Estoque atualizado.`);
+    setSku("");
+    setName("");
+    setCategory("");
+    setTipo("");
+    setQuantity("");
+    setRetirante("");
+    setData("");
+  };
 
   return (
-    <div className="bg-blue-800 min-h-screen flex flex-col items-center justify-center text-white">
-      <h1 className="text-4xl font-bold mb-6">Retirada de Produtos</h1>
-
-      <div className="max-w-4xl w-full bg-white p-8 rounded-lg shadow-xl">
-        {/* Botão de Voltar */}
-        <button
-          onClick={handleVoltar}
-          className="mb-4 px-6 py-2 bg-[#F20DE7] text-white rounded-lg hover:bg-['#8E44AD']"
-        >
-          Voltar
-        </button>
-
-        {/* Filtros de consulta */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-          <div>
-            <label className="block font-semibold mb-2 text-black">Nome ou SKU:</label>
-            <input
-              type="text"
-              value={nomeOuSKU}
-              onChange={(e) => setNomeOuSKU(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-2 text-black">Data:</label>
-            <input
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-black">Tipo de Produto:</label>
-            <select
-              value={tipoProduto}
-              onChange={(e) => setTipoProduto(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-            >
-              <option value="">Selecione</option>
-              <option value="proteina">Proteína</option>
-              <option value="mantimento">Mantimento</option>
-              <option value="hortaliças">Hortaliças</option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          onClick={handleConsulta}
-          disabled={!nomeOuSKU && !data && !tipoProduto}
-          className="w-full py-3 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700"
-        >
+    <div style={styles.container}>
+      <h1 style={styles.title}>Retirada de Produtos</h1>
+      <div style={styles.form}>
+        <input
+          type="text"
+          placeholder="SKU"
+          value={sku}
+          onChange={(e) => setSku(e.target.value)}
+          style={styles.input}
+        />
+        <button onClick={handleConsultar} style={styles.Consultabutton}>
           Consultar
         </button>
-
-        {/* Exibição dos produtos filtrados */}
-        {produtos.length > 0 && (
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full table-auto border-separate border-spacing-0">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">SKU</th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">Nome</th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">Tipo</th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">Estoque</th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {produtos.map((produto) => (
-                  <tr key={produto.SKU} className="hover:bg-gray-100">
-                    <td className="p-4 text-sm text-gray-800">{produto.SKU}</td>
-                    <td className="p-4 text-sm text-gray-800">{produto.nome}</td>
-                    <td className="p-4 text-sm text-gray-800">{produto.tipo}</td>
-                    <td className="p-4 text-sm text-gray-800">{produto.qtdeEstoque}</td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => handleSelecionarProduto(produto)}
-                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                      >
-                        Selecionar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Formulário de retirada */}
-        {produtoSelecionado && (
-          <div className="mt-8">
-            <h2 className="text-xl text-black font-semibold text-center mb-4">Retirar Produto</h2>
-            <div className="flex flex-col sm:flex-row sm:space-x-6 mb-6">
-              <div className="flex-1 mb-4 sm:mb-0">
-                <label className="block  font-semibold mb-2 text-black">Nome do Retirante:</label>
-                <input
-                  type="text"
-                  value={retirante}
-                  onChange={(e) => setRetirante(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block  font-semibold mb-2 text-black">Quantidade:</label>
-                <input
-                  type="number"
-                  value={quantidadeRetirada}
-                  onChange={(e) => setQuantidadeRetirada(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleRetirarProduto}
-              className="w-full py-3 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700"
-            >
-              Retirar
-            </button>
-          </div>
-        )}
-
-        {/* Mensagem de confirmação ou erro */}
-        {mensagem && (
-          <div className="mt-6 p-4 bg-green-100 text-green-800 rounded-lg text-center">
-            {mensagem}
-          </div>
-        )}
+        <input
+          type="text"
+          placeholder="Nome do Produto"
+          value={name}
+          readOnly
+          style={styles.inputReadOnly}
+        />
+        <input
+          type="text"
+          placeholder="Categoria"
+          value={category}
+          readOnly
+          style={styles.inputReadOnly}
+        />
+          <input
+          type="text"
+          placeholder="Tipo"
+          value={tipo}
+          readOnly
+          style={styles.inputReadOnly}
+        />
+        <input
+          type="number"
+          placeholder="Quantidade"
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+          style={styles.input}
+        />
+        <input
+          type="text"
+          placeholder="Retirante"
+          value={retirante}
+          onChange={(e) => setRetirante(e.target.value)}
+          style={styles.input}
+        />
+        <input
+          type="text"
+          placeholder="Data"
+          value={data}
+          readOnly
+          style={styles.inputReadOnly}
+        />
+        <button onClick={handleRetirada} style={styles.button}>
+          Registrar Retirada
+        </button>
+        <Link to={'/Retirada'}>
+        <button style={styles.voltarButton}>
+          Voltar
+        </button>
+        </Link>
       </div>
+
+
     </div>
   );
 };
 
+const styles = {
+  container: {
+    background: "#f4f4f9",
+    minHeight: "100vh",
+    padding: "20px",
+    color: "#333",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: "2rem",
+    color: "#2b2d42",
+    marginBottom: "20px",
+  },
+  form: {
+    background: "#ffffff",
+    borderRadius: "10px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    padding: "20px",
+    width: "100%",
+    maxWidth: "400px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  input: {
+    width: "90%",
+    padding: "10px",
+    marginBottom: "10px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    color: "#333",
+  },
+  inputReadOnly: {
+    width: "90%",
+    padding: "10px",
+    marginBottom: "10px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    background: "#f0f0f0",
+    color: "#888",
+  },
+  button: {
+    width: "90%",
+    padding: "10px",
+    background: "#F20DE7",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    transition: "background 0.3s",
+  },
+  Consultabutton: {
+    width: "90%",
+    padding: "10px",
+    background: "#00009c",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    transition: "background 0.3s",
+    marginBottom: '10px'
+  },
+  Voltarbutton: {
+    width: "90%",
+    padding: "10px",
+    color: "black",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    transition: "background 0.3s",
+    marginTop: '10px',
+  },
+  buttonHover: {
+    background: "#3b3d52",
+  },
+};
+
 export default RetiradaProdutos;
+
+
