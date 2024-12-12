@@ -41,7 +41,7 @@ export default function Header() {
                   Retirada
                 </button>
               </Link>
-              <Link to="#">{/*LINK EXATO "/Meu_Perfil" */}
+              <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   <img
                     src="/myUser.svg"
@@ -88,7 +88,7 @@ export default function Header() {
                   Retirada
                 </li>
               </Link>
-              <Link to="#">{/*LINK EXATO "/Meu_Perfil" */}
+              <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Meu Perfil
                 </li>
