@@ -13,14 +13,14 @@ export default function Header() {
         <div className="flex h-[77px] w-full items-center justify-between py-[20px] p-[96px] border-b">
           {/* Logo */}
           <div className="flex items-center flex-1">
-            <span className="w-[235px] ">
+            <span className="w-[230px] ">
               <img src="/logo.svg" alt="Logo-Instituto-Reciclar" />
             </span>
           </div>
 
           {/* Menu (Desktop) */}
-          <div className="hidden lg:flex flex-1 items-center justify-end text-white">
-            <ul className="flex gap-2 mr-16 mt-[-7px] text-[20px]">
+          <div className="hidden lg:flex tems-center justify-end text-white">
+            <ul className="flex  mr-98 mt-[-8px] text-[20px]">
               <Link to="#"> {/*LINK EXATO "/Pedidos" */}
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   Pedidos
@@ -41,11 +41,16 @@ export default function Header() {
                   Retirada
                 </button>
               </Link>
+              <Link to="/Verificacao_Usuario">
+                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
+                  Controle de Usuários
+                </button>
+              </Link>
               <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
                 <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
                   <img
                     src="/myUser.svg"
-                    className="h-[32px] w-[32px] rounded-full"
+                    className="h-10 w-full  rounded-full"
                     alt="User"
                   />
                 </button>
@@ -88,6 +93,11 @@ export default function Header() {
                   Retirada
                 </li>
               </Link>
+              <Link to="/Verificacao_Usuario">{/*LINK EXATO "/Meu_Perfil" */}
+                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
+                  Controle de Usuários
+                </li>
+              </Link>
               <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
                 <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
                   Meu Perfil
@@ -105,7 +115,7 @@ export default function Header() {
           <div
             className="container"
             style={{
-              maxWidth: "2000px",
+              maxWidth: "1450px",
               height: "70vh",
               margin: "0px auto",
               textAlign: "center",
@@ -172,6 +182,18 @@ export default function Header() {
                   />
                   <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
                     Retirada
+                  </h2>
+                </Link>
+              </div>
+              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <Link to={"/Verificacao_Usuario"}>
+                  <img
+                    src="/users-control.png"
+                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
+                    alt="Retirada"
+                  />
+                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
+                    Controle de Usuários
                   </h2>
                 </Link>
               </div>

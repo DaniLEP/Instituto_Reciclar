@@ -28,6 +28,7 @@ import NovoPedido from './components/NovoPedido.jsx'
 import Cadastro from './pages/Cadastro.jsx'
 import Gerenciador from './components/GerenciadorProdutos.jsx'
 import Registro from './pages/Registro.jsx'
+import AdminUsuarios from './components/Verificação.jsx'
 
 
 const router = createBrowserRouter ([
@@ -132,8 +133,12 @@ const router = createBrowserRouter ([
         element: <Profile />,
       },
       {
-        path: "/Resgistro_Usuario",
+        path: "/Registro_Usuario",
         element: <Registro />,
+      },
+      {
+        path: "/Verificacao_Usuario",
+        element: <AdminUsuarios />,
       },
     ],
   }

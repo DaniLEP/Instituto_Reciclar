@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, push, update, remove } from "firebase/database";
-import { Link } from "react-router-dom";  // Importando o hook useNavigate
-
-
+import { Link } from "react-router-dom";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -48,7 +46,7 @@ const RetiradaProdutos = () => {
       setName(produto.name);
       setCategory(produto.category);
       setTipo(produto.tipo);
-      setData(new Date().toLocaleString());
+      setData(formatarDataHora(new Date())); // Formato correto da data
     } else {
       alert("Produto não encontrado!");
       setName("");
@@ -56,8 +54,6 @@ const RetiradaProdutos = () => {
       setData("");
     }
   };
-
-
 
   const handleRetirada = async () => {
     if (!sku || !name || !category || !tipo || !quantity || !retirante || !data) {
@@ -105,6 +101,19 @@ const RetiradaProdutos = () => {
     setData("");
   };
 
+  // Função para formatar a data no estilo DD/MM/YYYY HH:mm:ss
+  const formatarDataHora = (timestamp) => {
+    const date = new Date(timestamp);
+    const dia = String(date.getDate()).padStart(2, "0");
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const ano = date.getFullYear();
+    const horas = String(date.getHours()).padStart(2, "0");
+    const minutos = String(date.getMinutes()).padStart(2, "0");
+    const segundos = String(date.getSeconds()).padStart(2, "0");
+
+    return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Retirada de Produtos</h1>
@@ -133,7 +142,7 @@ const RetiradaProdutos = () => {
           readOnly
           style={styles.inputReadOnly}
         />
-          <input
+        <input
           type="text"
           placeholder="Tipo"
           value={tipo}
@@ -165,13 +174,11 @@ const RetiradaProdutos = () => {
           Registrar Retirada
         </button>
         <Link to={'/Retirada'}>
-        <button style={styles.voltarButton}>
-          Voltar
-        </button>
+          <button style={styles.voltarButton}>
+            Voltar
+          </button>
         </Link>
       </div>
-
-
     </div>
   );
 };
@@ -244,7 +251,7 @@ const styles = {
     transition: "background 0.3s",
     marginBottom: '10px'
   },
-  Voltarbutton: {
+  voltarButton: {
     width: "90%",
     padding: "10px",
     color: "black",
@@ -255,11 +262,6 @@ const styles = {
     transition: "background 0.3s",
     marginTop: '10px',
   },
-  buttonHover: {
-    background: "#3b3d52",
-  },
 };
 
 export default RetiradaProdutos;
-
-
