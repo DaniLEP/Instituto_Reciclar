@@ -1,4 +1,3 @@
-
 // import React, { useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -54,7 +53,7 @@
 //         const user = userCredential.user;
 
 //         // Verifica se o usuário existe no banco de dados
-//         const userRef = ref(database, 'cadastroTeste/' + user.uid);
+//         const userRef = ref(database, 'novousuario/' + user.uid);
 //         get(userRef)
 //           .then((snapshot) => {
 //             if (snapshot.exists()) {
@@ -62,7 +61,7 @@
 //               alert('Login bem-sucedido!');
 //               setErrorMessage('');
 //               // Aqui salvamos os dados de login na tabela 'cadastroTeste'
-//               set(ref(database, 'cadastroTeste/' + user.uid), {
+//               set(ref(database, 'novousuario/' + user.uid), {
 //                 email: user.email,
 //                 uid: user.uid,
 //                 lastLogin: new Date().toISOString(),
@@ -204,7 +203,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, get } from 'firebase/database';
+import { getDatabase, ref, get, set } from 'firebase/database';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -251,17 +250,19 @@ export default function Login() {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
+        console.log('Usuário autenticado:', user);
 
         // Verifica se o usuário existe no banco de dados
-        const userRef = ref(database, 'cadastroTeste/' + user.uid);
+        const userRef = ref(database, 'novousuario/' + user.uid);
         get(userRef)
           .then((snapshot) => {
+            console.log('Dados do usuário:', snapshot.val());
             if (snapshot.exists()) {
               // Se os dados existirem, realiza o login
               alert('Login bem-sucedido!');
               setErrorMessage('');
               // Aqui salvamos os dados de login na tabela 'cadastroTeste'
-              set(ref(database, 'cadastroTeste/' + user.uid), {
+              set(ref(database, 'novousuario/' + user.uid), {
                 email: user.email,
                 uid: user.uid,
                 lastLogin: new Date().toISOString(),
@@ -276,10 +277,12 @@ export default function Login() {
             }
           })
           .catch((error) => {
+            console.log('Erro ao verificar dados do usuário:', error);
             setErrorMessage('Erro ao verificar dados do usuário: ' + error.message);
           });
       })
       .catch((error) => {
+        console.log('Erro ao realizar login:', error);
         setErrorMessage('E-mail ou senha incorretos.');
       })
       .finally(() => {

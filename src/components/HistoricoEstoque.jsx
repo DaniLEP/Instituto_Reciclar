@@ -37,7 +37,7 @@ const HistoricoRetiradas = () => {
         console.log('Não há dados disponíveis');
       }
     } catch (error) {
-      console.error('Erro ao ler dados do Firebase:', error);
+      console.error('Erro ao ler dados:', error);
     }
   };
 
@@ -53,8 +53,8 @@ const HistoricoRetiradas = () => {
 
   // Função para formatar a data e hora
   const formatarDataHora = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString('pt-BR', {
+    const data = new Date(timestamp);
+    return data.toLocaleString('pt-BR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -133,8 +133,7 @@ const HistoricoRetiradas = () => {
               <td style={{ padding: '12px' }}>{retirada.name}</td>
               <td style={{ padding: '12px' }}>{retirada.category}</td>
               <td style={{ padding: '12px' }}>{retirada.quantity}</td>
-              <td style={{ padding: '12px' }}>
-                {formatarDataHora(retirada.data)}
+              <td style={{ padding: '12px' }}>{formatarDataHora(retirada.data)}
               </td>
               <td style={{ padding: '12px' }}>{retirada.retirante}</td>
             </tr>
