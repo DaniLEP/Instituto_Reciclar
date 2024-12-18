@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getDatabase, ref, set, get, child } from 'firebase/database';
+import { getDatabase, ref, set,  } from 'firebase/database';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -60,34 +60,25 @@ export default function Registro() {
   
     setIsLoading(true);
   
+    const currentUser = auth.currentUser; // Salva o usuário atual
+  
     try {
-      // Verificar se o e-mail já está registrado no Realtime Database
-      const dbRef = ref(database);
-      const snapshot = await get(child(dbRef, 'novousuario'));
-      if (snapshot.exists()) {
-        const usuarios = snapshot.val();
-        const emailJaCadastrado = Object.values(usuarios).some(
-          (usuario) => usuario.email === email
-        );
-  
-        if (emailJaCadastrado) {
-          setErrorMessage('Este e-mail já está registrado.');
-          setIsLoading(false);
-          return;
-        }
-      }
-  
-      // Criar o usuário no Firebase Authentication
+      // Criar o novo usuário sem alterar a sessão do usuário atual
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-      const user = userCredential.user;
+      const newUser = userCredential.user;
   
       // Salvar dados no Realtime Database
-      await set(ref(database, 'novousuario/' + user.uid), {
+      await set(ref(database, 'novousuario/' + newUser.uid), {
         nome: nome,
         email: email,
         funcao: funcao,
-        uid: user.uid,
+        uid: newUser.uid,
       });
+  
+      // Restaurar o usuário atual
+      if (currentUser) {
+        await auth.updateCurrentUser(currentUser);
+      }
   
       setSuccessMessage('Usuário criado com sucesso!');
       setErrorMessage('');
