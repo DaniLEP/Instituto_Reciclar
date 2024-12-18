@@ -8,199 +8,102 @@ export default function Header() {
   const handleClick = () => setClick(!click);
 
   return (
-    <>
-      <nav>
-        <div className="flex h-[77px] w-full items-center justify-between py-[20px] p-[96px] border-b">
-          {/* Logo */}
-          <div className="flex items-center flex-1">
-            <span className="w-[230px] ">
-              <img src="/logo.svg" alt="Logo-Instituto-Reciclar" />
-            </span>
-          </div>
+    <nav className="bg-[#00009c] text-white shadow-md">
+      <div className="flex items-center justify-between h-[77px] px-6 lg:px-20">
+        {/* Logo */}
+        <div className="flex items-center">
+          <img src="/logo.svg" alt="Logo-Instituto-Reciclar" className="w-[200px]" />
+        </div>
 
-          {/* Menu (Desktop) */}
-          <div className="hidden lg:flex tems-center justify-end text-white">
-            <ul className="flex  mr-98 mt-[-8px] text-[20px]">
-              <Link to="#"> {/*LINK EXATO "/Pedidos" */}
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  Pedidos
-                </button>
-              </Link>
-              <Link to="/Cadastro">
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-1 py-2">
-                  Cadastros
-                </button>
-              </Link>
-              <Link to="/Dashboard">
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  Relatório
-                </button>
-              </Link>
-              <Link to="/retirada">
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  Retirada
-                </button>
-              </Link>
-              <Link to="/Verificacao_Usuario">
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  Controle de Usuários
-                </button>
-              </Link>
-              <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
-                <button className="inline-flex items-center text-white justify-center text-[16px] transition-colors focus-visible:outline-none hover:text-primary h-[48px] px-4 py-2">
-                  <img
-                    src="/myUser.svg"
-                    className="h-10 w-full  rounded-full"
-                    alt="User"
-                  />
-                </button>
-              </Link>
-            </ul>
-          </div>
+        {/* Menu (Desktop) */}
+        <div className="hidden lg:flex items-center space-x-6">
+          <Link to="#" className="hover:text-[#00FF62] transition">
+            Pedidos
+          </Link>
+          <Link to="/Cadastro" className="hover:text-[#00FF62] transition">
+            Cadastros
+          </Link>
+          <Link to="/Dashboard" className="hover:text-[#00FF62] transition">
+            Relatório
+          </Link>
+          <Link to="/retirada" className="hover:text-[#00FF62] transition">
+            Retirada
+          </Link>
+          <Link to="/Verificacao_Usuario" className="hover:text-[#00FF62] transition">
+            Controle de Usuários
+          </Link>
+          <Link to="/Meu_Perfil">
+            <img
+              src="/myUser.svg"
+              alt="User"
+              className="h-10 w-10 rounded-full border-2 border-white hover:border-[#00FF62] transition"
+            />
+          </Link>
+        </div>
 
-          {/* Botão do Menu - (Mobile) */}
-          <button
-            className="block lg:hidden text-white text-[30px] z-50"
+        {/* Menu Hamburguer (Mobile) */}
+        <button
+          className="lg:hidden text-[30px] z-50"
+          onClick={handleClick}
+        >
+          {click ? <FaTimes /> : <CiMenuFries />}
+        </button>
+      </div>
+
+      {/* Menu (Mobile) */}
+      <div
+        className={`${
+          click ? "translate-x-0" : "translate-x-full"
+        } fixed top-0 right-0 w-[70%] h-screen bg-[#00009c] shadow-lg z-40 transition-transform duration-300 ease-in-out`}
+      >
+        <div className="flex flex-col items-center pt-10 space-y-6 text-lg">
+          <Link
+            to="#"
+            className="hover:text-[#00FF62] transition"
             onClick={handleClick}
           >
-            {click ? <FaTimes /> : <CiMenuFries />}
-          </button>
-
-          {/* Menu - (Mobile) */}
-          <div
-            className={`${
-              click ? "block" : "hidden"
-            } lg:hidden absolute top-0 left-0 w-full h-screen bg-[#00009c] flex flex-col items-center justify-center transition-all duration-300 ease-in-out z-40`}
+            Pedidos
+          </Link>
+          <Link
+            to="/Cadastro"
+            className="hover:text-[#00FF62] transition"
+            onClick={handleClick}
           >
-            <ul className="text-center text-white text-xl">
-              <Link to="#">{/*LINK EXATO "/Pedidos" */}
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Pedidos
-                </li>
-              </Link>
-              <Link to="/Cadastro">
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Cadastros
-                </li>
-              </Link>
-              <Link to="/Dashboard">
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Relatório
-                </li>
-              </Link>
-              <Link to="/retirada">
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Retirada
-                </li>
-              </Link>
-              <Link to="/Verificacao_Usuario">{/*LINK EXATO "/Meu_Perfil" */}
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Controle de Usuários
-                </li>
-              </Link>
-              <Link to="/Meu_Perfil">{/*LINK EXATO "/Meu_Perfil" */}
-                <li className="my-4 py-4 border-b border-[#00FF62] hover:bg-white hover:text-black hover:rounded">
-                  Meu Perfil
-                </li>
-              </Link>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      {/* Overlay cobrindo o conteúdo da home */}
-      <div className={`${click ? "hidden" : "block"}`}>
-        {/* Conteúdo da Home (Cards) */}
-        <div className="bg-white">
-          <div
-            className="container"
-            style={{
-              maxWidth: "1450px",
-              height: "70vh",
-              margin: "0px auto",
-              textAlign: "center",
-              position: "relative",
-              top: "20vh",
-            }}
+            Cadastros
+          </Link>
+          <Link
+            to="/Dashboard"
+            className="hover:text-[#00FF62] transition"
+            onClick={handleClick}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "20px",
-                position: "relative",
-                top: "5vh",
-              }}
-            >
-              {/* CARDS DESKTOP */}
-              {/* Card 1 - Lista Pedidos */}
-              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"#"}>{/*LINK EXATO '/Pedidos'*/}
-                  <img
-                    src="/listaPedidos.svg"
-                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                    alt="Proteinas"
-                  />
-                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                    Pedidos
-                  </h2>
-                </Link>
-              </div>
-              {/* Card 2 - Cadastro */}
-              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"/Cadastro"}>
-                  <img
-                    src="/cadastro.svg"
-                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                    alt="Cadastros"
-                  />
-                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                    Cadastros
-                  </h2>
-                </Link>
-              </div>
-              {/* Card 3 - Relatorios */}
-              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"/Dashboard"}>
-                  <img
-                    src="/relatorio.svg"
-                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                    alt="Relatorios"
-                  />
-                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                    Relatórios
-                  </h2>
-                </Link>
-              </div>
-              {/* Card 4 - Retirada */}
-              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"/Retirada"}>
-                  <img
-                    src="/retirada.svg"
-                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                    alt="Retirada"
-                  />
-                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                    Retirada
-                  </h2>
-                </Link>
-              </div>
-              <div className="card bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-                <Link to={"/Verificacao_Usuario"}>
-                  <img
-                    src="/users-control.png"
-                    className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                    alt="Retirada"
-                  />
-                  <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                    Controle de Usuários
-                  </h2>
-                </Link>
-              </div>
-            </div>
-          </div>
+            Relatório
+          </Link>
+          <Link
+            to="/retirada"
+            className="hover:text-[#00FF62] transition"
+            onClick={handleClick}
+          >
+            Retirada
+          </Link>
+          <Link
+            to="/Verificacao_Usuario"
+            className="hover:text-[#00FF62] transition"
+            onClick={handleClick}
+          >
+            Controle de Usuários
+          </Link>
+          <Link
+            to="/Meu_Perfil"
+            onClick={handleClick}
+          >
+            <img
+              src="/myUser.svg"
+              alt="User"
+              className="h-16 w-16 rounded-full border-2 border-white hover:border-[#00FF62] transition"
+            />
+          </Link>
         </div>
       </div>
-    </>
+    </nav>
   );
 }

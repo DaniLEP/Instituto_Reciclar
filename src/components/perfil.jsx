@@ -20,6 +20,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
+
 export default function Perfil() {
   const [usuario, setUsuario] = useState(null);
   const navigate = useNavigate();
@@ -41,7 +42,6 @@ export default function Perfil() {
     fetchUserData();
   }, [navigate]);
 
-  // Função para fazer o logout
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -52,80 +52,112 @@ export default function Perfil() {
   };
 
   if (!usuario) {
-    return <div>Carregando...</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          fontFamily: "'Roboto', sans-serif",
+          fontSize: "18px",
+          color: "#333",
+        }}
+      >
+        Carregando...
+      </div>
+    );
   }
 
   return (
     <div
       style={{
-        fontFamily: "'Roboto', sans-serif",
-        backgroundColor: "#00009c",
+        background: "linear-gradient(135deg, #4c6ef5, #15aabf)",
+        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "100vh",
-        margin: 0,
+        fontFamily: "'Roboto', sans-serif",
         padding: "20px",
-        boxSizing: "border-box",
       }}
     >
       <div
         style={{
           backgroundColor: "#ffffff",
-          padding: "40px",
-          borderRadius: "10px",
-          boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-          width: "90%",
+          borderRadius: "12px",
+          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.2)",
+          width: "100%",
           maxWidth: "400px",
-          boxSizing: "border-box",
+          padding: "30px",
+          textAlign: "center",
+          transition: "transform 0.3s",
         }}
+        onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
         <img
           src="/Reciclar_LOGO.png"
           alt="Logo da Reciclar"
           style={{
-            width: "150px",
+            width: "100px",
             margin: "0 auto 20px",
           }}
         />
-        <h2
+        <h1
           style={{
-            color: "#333333",
-            marginBottom: "20px",
-            fontSize: "22px",
-            fontWeight: "bold",
+            fontSize: "24px",
+            color: "#2c3e50",
+            marginBottom: "10px",
+            fontWeight: "600",
           }}
         >
-          Perfil de {usuario.nome} 
-        </h2>
-
-        <div style={{ marginBottom: "20px" }}>
+          Olá, {usuario.nome}!
+        </h1>
+        <p style={{ color: "#666", fontSize: "16px", marginBottom: "20px" }}>
+          Confira seus dados abaixo:
+        </p>
+        <div
+          style={{
+            textAlign: "left",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+            padding: "20px",
+            marginBottom: "20px",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <p>
-            <strong>E-mail:</strong> {usuario.email}
+            <strong>Email:</strong> {usuario.email}
           </p>
           <p>
             <strong>Função:</strong> {usuario.funcao}
           </p>
         </div>
 
-      
-        <Link to={"/Home"}>
+        <Link to="/Home">
           <button
-            type="submit"
             style={{
               width: "100%",
               padding: "12px",
-              backgroundColor: "#00009c",
-              border: "none",
-              borderRadius: "5px",
-              color: "white",
+              borderRadius: "8px",
+              background:
+                "linear-gradient(135deg, #4c6ef5 0%, #228be6 100%)",
+              color: "#fff",
               fontSize: "16px",
               fontWeight: "bold",
+              border: "none",
               cursor: "pointer",
-              transition: "background-color 0.3s ease",
-              marginTop: "10px",
+              transition: "all 0.3s ease",
+              marginBottom: "10px",
             }}
+            onMouseOver={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg, #3b5bdb 0%, #1971c2 100%)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg, #4c6ef5 0%, #228be6 100%)")
+            }
           >
             Voltar
           </button>
@@ -135,16 +167,23 @@ export default function Perfil() {
           style={{
             width: "100%",
             padding: "12px",
-            backgroundColor: "#F20DE7",
-            border: "none",
-            borderRadius: "5px",
-            color: "white",
+            borderRadius: "8px",
+            background: "linear-gradient(135deg, #f03e3e, #e03131)",
+            color: "#fff",
             fontSize: "16px",
             fontWeight: "bold",
+            border: "none",
             cursor: "pointer",
-            transition: "background-color 0.3s ease",
-            marginTop: '10px'
+            transition: "all 0.3s ease",
           }}
+          onMouseOver={(e) =>
+            (e.target.style.background =
+              "linear-gradient(135deg, #c92a2a, #a51111)")
+          }
+          onMouseOut={(e) =>
+            (e.target.style.background =
+              "linear-gradient(135deg, #f03e3e, #e03131)")
+          }
         >
           Sair
         </button>
