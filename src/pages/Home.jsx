@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/header.jsx";
 import { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth} from "firebase/auth";
 import { getDatabase, ref, get } from "firebase/database";
 
 // Configuração do Firebase

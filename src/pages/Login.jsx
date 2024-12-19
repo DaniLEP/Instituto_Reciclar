@@ -243,8 +243,7 @@ export default function Login() {
               width: "100%",
               padding: "12px",
               borderRadius: "8px",
-              background:
-                "linear-gradient(135deg, #4c6ef5 0%, #228be6 100%)",
+              background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
               color: "#fff",
               fontSize: "16px",
               fontWeight: "bold",
