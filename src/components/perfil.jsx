@@ -99,7 +99,7 @@ export default function Perfil() {
           src="/Reciclar_LOGO.png"
           alt="Logo da Reciclar"
           style={{
-            width: "100px",
+            width: "200px",
             margin: "0 auto 20px",
           }}
         />
