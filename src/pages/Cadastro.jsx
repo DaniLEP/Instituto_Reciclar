@@ -2,15 +2,20 @@ import { Link } from "react-router-dom";
 
 export default function Cadastro() {
   return (
-    <div className="bg-[#00009c] min-h-screen flex items-center justify-center">
-      <div
-        className=" mx-auto p-6  rounded-lg shadow-lg"
-        style={{ maxWidth: "700px" }}
-      >
-        <h1 className="text-[3rem] font-bold font-[ChakraPetch] text-white  text-center mb-10">
+    <div style={{
+      minHeight: "100vh",
+      padding: "20px 0",
+      display: 'flex', // Adicionado display flex
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: "linear-gradient(135deg, rgb(20, 111, 223) 0%, rgb(13, 46, 110) 100%)",
+    }}
+  >
+      <div>
+        <h1 className="text-[5rem] font-bold text-white space-x-6 text-center mb-4">
           Cadastro
         </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Cards */}
           <Card
             link="/Cadastro_Geral"
@@ -21,7 +26,7 @@ export default function Cadastro() {
             link="/Gerenciador_Produtos"
             imgSrc="/Gerenciador.png"
             title="Produtos Cadastrados"
-          />
+          />  
           <Card
             link="/Entrada_Produtos"
             imgSrc="/entrada.svg"

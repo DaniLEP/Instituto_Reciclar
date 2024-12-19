@@ -110,7 +110,7 @@ export default function Registro() {
   return (
     <div style={{
       fontFamily: "'Roboto', sans-serif",
-      backgroundColor: '#00009c',
+      background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -128,7 +128,9 @@ export default function Registro() {
         width: '90%',
         maxWidth: '400px',
         boxSizing: 'border-box',
-      }}>
+      }}
+      onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}>
         <img src="/Reciclar_LOGO.png" alt="Logo da Reciclar" style={{
           width: '150px',
           margin: '0 auto 20px',
@@ -281,23 +283,29 @@ export default function Registro() {
               color: '#333333',
             }}
           />
-          <button
+            <button
             type="submit"
             style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#F20DE7',
-              border: 'none',
-              borderRadius: '5px',
-              color: 'white',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease',
-              marginTop: '10px'
+              width: "100%",
+              padding: "12px",
+              borderRadius: "8px",
+              background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
+              color: "#fff",
+              fontSize: "16px",
+              fontWeight: "bold",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              marginTop: "10px",
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = '#C00BBE')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = '#F20DE7')}
+            onMouseOver={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg,rgb(87, 77, 236) 0%,rgb(28, 20, 141) 100%)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg,rgb(155, 49, 191) 0%,rgb(230, 34, 227) 100%)")
+            }
             disabled={isLoading}
           >
             {isLoading ? 'Carregando...' : 'Criar Conta'}
@@ -306,18 +314,27 @@ export default function Registro() {
           <button
             type="submit"
             style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#00FF62',
-              border: 'none',
-              borderRadius: '5px',
-              color: 'white',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease',
-              marginTop: '10px'
+              width: "100%",
+              padding: "12px",
+              borderRadius: "8px",
+              background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
+              color: "#fff",
+              fontSize: "16px",
+              fontWeight: "bold",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              marginTop: "10px",
             }}
+
+            onMouseOver={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg,rgb(87, 77, 236) 0%,rgb(28, 20, 141) 100%)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.background =
+                "linear-gradient(135deg,rgb(155, 49, 191) 0%,rgb(230, 34, 227) 100%)")
+            }
           >
           Voltar
           </button>

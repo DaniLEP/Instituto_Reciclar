@@ -58,8 +58,8 @@ export default function Header() {
       {/* Menu (Mobile) */}
       <div
         className={`${
-          click ? "translate-x-0" : "translate-x-full"
-        } fixed top-0 right-0 w-[70%] h-screen bg-[#00009c] shadow-lg z-40 transition-transform duration-300 ease-in-out`}
+          click ? "translate-x-1" : "translate-x-full"
+        } fixed top-0 right-0 w-[70%] h-screen bg-[#00009c] shadow-lg z-40 transition-transform duration-200 ease-in-out`}
       >
         <div className="flex flex-col items-center pt-10 space-y-6 text-lg">
           <Link

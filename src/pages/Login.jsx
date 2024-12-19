@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
@@ -64,7 +64,7 @@ export default function Login() {
             console.log("Dados do usuário:", snapshot.val());
             if (snapshot.exists()) {
               // Se os dados existirem, realiza o login
-              alert("Login bem-sucessido, bem-vindo!");
+              alert("Login bem-sucedido, bem-vindo!");
               setErrorMessage("");
               navigate("/Home"); // Redireciona para a página Home
             } else {
