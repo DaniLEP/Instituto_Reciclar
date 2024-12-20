@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import Header from "../components/header.jsx";
+import Header from "../../components/Header/Header.jsx";
 import { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth} from "firebase/auth";
@@ -98,7 +98,7 @@ export default function Home() {
         {/* HEADER */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgb(20, 111, 223) 0%, rgb(13, 46, 110) 100%)"
+            background: "linear-gradient(135deg, #6a11cb, #2575fc)",
             /* "#0D2E6E"- ESCURO  "#146FDF"- CLARO  */
           }}
         >
@@ -109,7 +109,7 @@ export default function Home() {
         {/* Conteúdo da Home (Cards) */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgb(20, 111, 223) 0%, rgb(13, 46, 110) 100%)",
+            background: "linear-gradient(135deg, #6a11cb, #2575fc)",
             minHeight: "100vh",
             padding: "20px 0",
             marginBottom: "50px"
@@ -170,7 +170,7 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             padding: "10px 20px",
-            background: "linear-gradient(135deg, rgb(20, 111, 223) 0%, rgb(13, 46, 110) 100%)",
+            background: "linear-gradient(135deg, #6a11cb, #2575fc)",
             borderTop: "3px solid #ddd",
             fontSize: "14px",
             color: "white",

@@ -16,8 +16,8 @@ export default function ListaPedidos() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background:
-            "linear-gradient(135deg, rgb(20, 111, 223) 0%, rgb(13, 46, 110) 100%)",
+          background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+
         }}
       >
         <div className="container mx-auto px-4 text-center">
