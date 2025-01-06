@@ -8,7 +8,7 @@ import ErrorPage from './components/Error/ErrorPage.jsx'
 import LoginForm from './pages/Login/Login.jsx'
 import Home from './pages/Home_Page/Home.jsx'
 import ListaPedidos from './pages/List_Order_Page/ListaPedidos.jsx'
-import StatusPedido from './components/Status_Order/StatusPedido.jsx'
+// import StatusPedido from './components/Status_Order/StatusPedido.jsx'
 import EditarProduto from './components/Edit/Edit_Product/EditarProduto.jsx'
 import CadastroFornecedor from './components/Supplier_Registration/CadastroFornecedor.jsx'
 import Relatorio from './pages/Dashboard/Relatorio.jsx'
@@ -29,6 +29,7 @@ import Cadastro from './pages/Register_Product/Cadastro.jsx'
 import Gerenciador from './components/Product Manager/GerenciadorProdutos.jsx'
 import Registro from './pages/User_Registration/Registro_Usuario.jsx'
 import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
+import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
 
 
 const router = createBrowserRouter ([
@@ -70,7 +71,7 @@ const router = createBrowserRouter ([
       },
       {
         path: "/Status_Pedido",
-        element: <StatusPedido/>,
+        // element: <StatusPedido/>,
       },
       {
         path: "/Editar_Produto/:id",
@@ -80,6 +81,10 @@ const router = createBrowserRouter ([
       {
         path: "/Cadastro_Fornecedor",
         element: <CadastroFornecedor />,
+      },
+      {
+        path: "/Visualizar_Fornecedores",
+        element: <VisualizarFornecedores />,
       },
       {
         path: "/Cadastro_Geral",

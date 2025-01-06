@@ -1,220 +1,268 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, push, update, remove, get } from 'firebase/database';
+import React, { useState } from "react";
+import { getDatabase, ref, push } from "firebase/database";
+import { initializeApp, getApps } from "firebase/app";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
   projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  storageBucket: "bancoestoquecozinha.appspot.com",
   messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
-// Inicializando o Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+if (!getApps().length) {
+  initializeApp(firebaseConfig);
+}
+const db = getDatabase();
 
-const CadastroFornecedor = () => {
-  const [fornecedores, setFornecedores] = useState([]);
-  const [novoFornecedor, setNovoFornecedor] = useState({
-    produtos: '',
-    empresa: '',
-    cnpj: '',
-    contato: '',
-    telefone: '',
-    email: ''
+const CadastroFornecedores = () => {
+  const navigate = useNavigate(); // Instância do navigate
+
+  const [formData, setFormData] = useState({
+    cnpj: "",
+    razaoSocial: "",
+    endereco: "",
+    numero: "",
+    bairro: "",
+    cep: "",
+    municipio: "",
+    uf: "",
+    pais: "Brasil",
+    complemento: "",
+    contato: "",
+    telefone: "",
+    email: "",
+    grupo: "Mantimentos",
   });
 
-  const [editando, setEditando] = useState(false);
-  const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
 
-  const navigate = useNavigate();
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setNovoFornecedor({ ...novoFornecedor, [name]: value });
-  };
-
-  const handleAddFornecedor = (event) => {
-    event.preventDefault();
-    const fornecedoresRef = ref(db, 'CadastroFornecedores');
-    if (editando) {
-      const fornecedorRef = ref(db, 'CadastroFornecedores/' + fornecedorSelecionado.id);
-      update(fornecedorRef, novoFornecedor);
-    } else {
-      const newFornecedorRef = push(fornecedoresRef);
-      set(newFornecedorRef, novoFornecedor);
+    if (name === "cep" && value.length === 8) {
+      fetchAddress(value);
     }
-
-    // Resetando o estado
-    setNovoFornecedor({ produtos: '', empresa: '', cnpj: '', contato: '', telefone: '', email: '' });
-    setEditando(false);
-    setFornecedorSelecionado(null);
   };
 
-  const handleEditFornecedor = (fornecedor) => {
-    setNovoFornecedor(fornecedor);
-    setEditando(true);
-    setFornecedorSelecionado(fornecedor);
+  const fetchAddress = async (cep) => {
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        toast.error("CEP não encontrado.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        });
+        return;
+      }
+
+      setFormData((prevData) => ({
+        ...prevData,
+        endereco: data.logradouro || "",
+        bairro: data.bairro || "",
+        municipio: data.localidade || "",
+        uf: data.uf || "",
+      }));
+
+      toast.success("Endereço preenchido automaticamente!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+    } catch (error) {
+      toast.error("Erro ao buscar o CEP.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+    }
   };
 
-  const handleDeleteFornecedor = (fornecedor) => {
-    const fornecedorRef = ref(db, 'CadastroFornecedores/' + fornecedor.id);
-    remove(fornecedorRef);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const fornecedoresRef = ref(db, "CadastroFornecedores");
+    push(fornecedoresRef, formData)
+      .then(() => {
+        toast.success("Fornecedor cadastrado com sucesso!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        });
+        setFormData({
+          cnpj: "",
+          razaoSocial: "",
+          endereco: "",
+          numero: "",
+          bairro: "",
+          cep: "",
+          municipio: "",
+          uf: "",
+          pais: "Brasil",
+          complemento: "",
+          contato: "",
+          telefone: "",
+          email: "",
+          grupo: "Mantimentos",
+        });
+      })
+      .catch((error) =>
+        toast.error("Erro ao cadastrar fornecedor: " + error.message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        })
+      );
   };
 
   const handleBack = () => {
-    navigate('/Cadastro'); // Rota para a página de status dos pedidos
+    navigate(-1); // Navega para a página anterior
   };
 
-  // Obtendo fornecedores do Firebase
-  useEffect(() => {
-    const fornecedoresRef = ref(db, 'CadastroFornecedores');
-    get(fornecedoresRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const fornecedoresList = [];
-        snapshot.forEach((childSnapshot) => {
-          fornecedoresList.push({ id: childSnapshot.key, ...childSnapshot.val() });
-        });
-        setFornecedores(fornecedoresList);
-      }
-    });
-  }, []);
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', backgroundColor: '#00009C', minHeight: '100vh', justifyContent: 'center' }}>
-      <div style={{ width: '100%', textAlign: 'left', marginBottom: '20px' }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+        background: "linear-gradient(to bottom, #1E90FF, #00009C)",
+        minHeight: "100vh",
+        color: "white",
+      }}
+    >
+      <h2
+        style={{
+          fontSize: "2.5rem",
+          marginBottom: "20px",
+          textAlign: "center",
+          animation: "fadeIn 1s ease-in-out",
+        }}
+      >
+        Cadastro de Fornecedores
+      </h2>
+      <form
+        id="supplier-form"
+        onSubmit={handleSubmit}
+        style={{
+          backgroundColor: "white",
+          color: "#333",
+          padding: "30px",
+          borderRadius: "10px",
+          width: "90%",
+          maxWidth: "600px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "15px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
+          animation: "slideIn 1s ease-in-out",
+        }}
+      >
+        {[
+          { label: "CNPJ", name: "cnpj" },
+          { label: "Razão Social", name: "razaoSocial" },
+          { label: "CEP", name: "cep" },
+          { label: "Endereço", name: "endereco" },
+          { label: "Número", name: "numero" },
+          { label: "Complemento", name: "complemento" },
+          { label: "Bairro", name: "bairro" },
+          { label: "Município", name: "municipio" },
+          { label: "UF", name: "uf" },
+          { label: "País", name: "pais" },
+          { label: "Contato", name: "contato" },
+          { label: "Telefone", name: "telefone" },
+          { label: "E-mail", name: "email" },
+          { label: "Grupo", name: "grupo" },
+        ].map((field) => (
+          <div key={field.name} style={{ display: "flex", flexDirection: "column" }}>
+            <label htmlFor={field.name} style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
+              {field.label}:
+            </label>
+            <input
+              type="text"
+              id={field.name}
+              name={field.name}
+              value={formData[field.name]}
+              onChange={handleInputChange}
+              style={{
+                padding: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+                fontSize: "1rem",
+              }}
+              disabled={
+                ["endereco", "bairro", "municipio", "uf"].includes(field.name) &&
+                field.name !== "cep"
+              }
+            />
+          </div>
+        ))}
         <button
+          type="submit"
+          style={{
+            padding: "12px",
+            background: "#2196F3",
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
+        >
+          Cadastrar
+        </button>
+        <button
+          type="button"
           onClick={handleBack}
-          style={{ backgroundColor: '#F20DE7', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1em' }}
+          style={{
+            padding: "12px",
+            background: "#F20DE7",
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            transition: "background 0.3s ease",
+          }}
         >
           Voltar
         </button>
-      </div>
-
-      <h2 style={{ color: 'white', fontSize: '3em', marginBottom: '20px' }}>Cadastro de Fornecedores</h2>
-
-      <form onSubmit={handleAddFornecedor} style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%', maxWidth: '600px', backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555' }}>
-          Produtos:
-          <input
-            type="text"
-            name="produtos"
-            value={novoFornecedor.produtos}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555' }}>
-          Empresa:
-          <input
-            type="text"
-            name="empresa"
-            value={novoFornecedor.empresa}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555' }}>
-          CNPJ:
-          <input
-            type="text"
-            name="cnpj"
-            value={novoFornecedor.cnpj}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555' }}>
-          Contato:
-          <input
-            type="text"
-            name="contato"
-            value={novoFornecedor.contato}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555' }}>
-          Telefone/WhatsApp:
-          <input
-            type="tel"
-            name="telefone"
-            value={novoFornecedor.telefone}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <label style={{ fontWeight: 'bold', fontSize: '1em', color: '#555', gap: '10px' }}>
-          Email/Site:
-          <input
-            type="email"
-            name="email"
-            value={novoFornecedor.email}
-            onChange={handleInputChange}
-            style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1em', marginTop: '5px' }}
-            required
-          />
-        </label>
-
-        <button
-          type="submit"
-          style={{ backgroundColor: '#F20DE7', color: 'white', padding: '12px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1.1em', textAlign: 'center', fontWeight: 'bold' }}
-        >
-          {editando ? 'Salvar Alterações' : 'Cadastrar Fornecedor'}
-        </button>
       </form>
-
-      <div style={{ width: '100%', maxWidth: '800px', marginTop: '30px' }}>
-        <h3 style={{ textAlign: 'center', color: 'white', fontSize: '2em', marginBottom: '15px' }}>Lista de Fornecedores</h3>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '200%', borderCollapse: 'collapse', backgroundColor: 'white' }}>
-            <thead>
-              <tr>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Produtos</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Empresa</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>CNPJ</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Contato</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Telefone</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Email</th>
-                <th style={{ backgroundColor: '#2196F3', color: 'white', padding: '12px 20px', fontSize: '1em' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fornecedores.map((fornecedor) => (
-                <tr key={fornecedor.id}>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.produtos}</td>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.empresa}</td>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.cnpj}</td>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.contato}</td>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.telefone}</td>
-                  <td style={{ padding: '12px 20px' }}>{fornecedor.email}</td>
-                  <td style={{ padding: '12px 20px', textAlign: 'center' }}>
-                    <button onClick={() => handleEditFornecedor(fornecedor)} style={{ backgroundColor: '#F20DE7', color: 'white', padding: '8px 12px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em' }}>Editar</button>
-                    <button onClick={() => handleDeleteFornecedor(fornecedor)} style={{ backgroundColor: '#F44336', color: 'white', padding: '8px 12px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', marginLeft: '10px' }}>Excluir</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ToastContainer />
     </div>
   );
 };
 
-export default CadastroFornecedor;
+export default CadastroFornecedores;
