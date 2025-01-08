@@ -1,466 +1,8 @@
-// import React, { useState, useEffect, useRef } from "react";
-// import { initializeApp } from "firebase/app";
-// import { getAuth, onAuthStateChanged } from "firebase/auth";
-// import emailjs from "emailjs-com";
-// import { get, ref, getDatabase } from "firebase/database";
-// import { useNavigate } from "react-router-dom";  // Importa o hook useNavigate
-
-// // Configuração do Firebase
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-//   authDomain: "bancoestoquecozinha.firebaseapp.com",
-//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-//   projectId: "bancoestoquecozinha",
-//   storageBucket: "bancoestoquecozinha.firebasestorage.app",
-//   messagingSenderId: "71775149511",
-//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-// };
-
-// // Inicializar o Firebase
-  // const app = initializeApp(firebaseConfig);
-  // const auth = getAuth(app);
-  // const db = getDatabase(app);
-
-// const NovoPedido = () => {
-//   const [usuario, setUsuario] = useState(null);
-//   const [pedido, setPedido] = useState({
-//     nomeProduto: "",
-//     quantidade: 0,
-//     emailCliente: "",
-//     itens: [],
-//     observacoes: "",
-//     sku: "",
-//     categoria: "",
-//     tipo: "",
-//     fornecedor: "",
-//     marca: "",
-//   });
-//   const [produtos, setProdutos] = useState([]);
-//   const formRef = useRef(null); // Referência para o formulário
-//   const navigate = useNavigate(); // Usando o useNavigate para navegação
-
-//   // Obter o usuário atual
-//   const getCurrentUser = () => {
-//     onAuthStateChanged(auth, (user) => {
-//       if (user) {
-//         setUsuario(user);
-//       } else {
-//         setUsuario(null);
-//       }
-//     });
-//   };
-
-//   useEffect(() => {
-//     getCurrentUser();
-//     fetchProdutos(); // Carregar dados de produtos da tabela de EntradaProdutos
-//   }, []);
-
-//   // Função para consultar os produtos na tabela de EntradaProdutos
-//   const fetchProdutos = async () => {
-//     const produtosRef = ref(db, "EntradaProdutos");
-//     const snapshot = await get(produtosRef);
-//     if (snapshot.exists()) {
-//       const produtosData = snapshot.val();
-//       const produtosArray = Object.keys(produtosData).map((key) => ({
-//         id: key,
-//         ...produtosData[key],
-//       }));
-//       setProdutos(produtosArray);
-//     } else {
-//       console.log("Nenhum produto encontrado.");
-//     }
-//   };
-
-//   // Função para enviar e-mail usando EmailJS
-//   const sendEmail = (e) => {
-//     e.preventDefault(); // Prevenir comportamento padrão do formulário
-
-//     if (usuario) {
-//       emailjs
-//         .sendForm(
-//           "service_rp90jwa", // Substitua pelo seu Service ID
-//           "template_5r0j6rk", // Substitua pelo seu Template ID
-//           formRef.current, // Referência do formulário
-//           "dv6W3rFP0pSLY4ACq" // Substitua pelo seu User Token
-//         )
-//         .then(
-//           (result) => {
-//             console.log("E-mail enviado com sucesso:", result.text);
-//             alert("Pedido enviado com sucesso!");
-//             setPedido({
-//               nomeProduto: "",
-//               quantidade: 0,
-//               emailCliente: "",
-//               itens: [],
-//               observacoes: "",
-//               sku: "",
-//               categoria: "",
-//               tipo: "",
-//               fornecedor: "",
-//               marca: "",
-//             }); // Resetar o pedido
-//           },
-//           (error) => {
-//             console.error("Erro ao enviar o e-mail:", error.text);
-//             alert("Erro ao enviar o pedido. Tente novamente.");
-//           }
-//         );
-//     } else {
-//       alert("Você precisa estar logado para enviar o pedido.");
-//     }
-//   };
-
-//   // Função para lidar com alterações nos inputs
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setPedido((prevPedido) => ({
-//       ...prevPedido,
-//       [name]: value,
-//     }));
-
-//     // Quando o SKU for alterado, buscar o produto correspondente
-//     if (name === "sku" && value) {
-//       const produtoSelecionado = produtos.find(
-//         (produto) => produto.sku === value
-//       );
-//       if (produtoSelecionado) {
-//         setPedido((prevPedido) => ({
-//           ...prevPedido,
-//           nomeProduto: produtoSelecionado.name,
-//           fornecedor: produtoSelecionado.supplier,
-//           marca: produtoSelecionado.marca,
-//           categoria: produtoSelecionado.categoria,
-//           tipo: produtoSelecionado.tipoProduto,
-//         }));
-//       } else {
-//         setPedido((prevPedido) => ({
-//           ...prevPedido,
-//           nomeProduto: "",
-//           fornecedor: "",
-//           marca: "",
-//           categoria: "",
-//           tipo: "",
-//         }));
-//       }
-//     }
-//   };
-
-//   // Adicionar itens ao pedido
-//   const addItem = () => {
-//     if (pedido.sku && pedido.quantidade > 0) {
-//       const produtoSelecionado = produtos.find(
-//         (produto) => produto.sku === pedido.sku
-//       );
-//       if (produtoSelecionado) {
-//         setPedido((prevPedido) => ({
-//           ...prevPedido,
-//           itens: [
-//             ...prevPedido.itens,
-//             {
-//               sku: pedido.sku,
-//               nomeProduto: produtoSelecionado.name,
-//               fornecedor: produtoSelecionado.supplier,
-//               marca: produtoSelecionado.marca,
-//               quantidade: pedido.quantidade,
-//               tipoProduto: produtoSelecionado.tipoProduto,
-//               categoria: produtoSelecionado.categoria,
-//               observacoes: pedido.observacoes,
-//             },
-//           ],
-//           sku: "",
-//           quantidade: 0,
-//           observacoes: "",
-//         }));
-//       } else {
-//         alert("Produto não encontrado.");
-//       }
-//     } else {
-//       alert("Preencha o SKU e a quantidade.");
-//     }
-//   };
-
-//   // Função para excluir um item
-//   const deleteItem = (index) => {
-//     const updatedItems = pedido.itens.filter((_, i) => i !== index);
-//     setPedido((prevPedido) => ({
-//       ...prevPedido,
-//       itens: updatedItems,
-//     }));
-//   };
-
-//   // Função para editar um item
-//   const editItem = (index) => {
-//     const itemToEdit = pedido.itens[index];
-//     setPedido((prevPedido) => ({
-//       ...prevPedido,
-//       sku: itemToEdit.sku,
-//       quantidade: itemToEdit.quantidade,
-//       observacoes: itemToEdit.observacoes,
-//     }));
-//     deleteItem(index); // Remover o item da lista para edição
-//   };
-
-//   return (
-//     <div style={styles.container}>
-//       <h1 style={{textAlign: 'center', fontSize:'48px', fontWeight: 'bold'}}>Novo Pedido +</h1>
-//       {usuario ? (
-//         <div style={styles.formContainer}>
-//           <p style={styles.welcomeText}>Bem-vindo, {usuario.email}</p>
-//           <form ref={formRef} onSubmit={sendEmail}>
-//             <div style={styles.formGroup}>
-//               <label>SKU</label>
-//               <input
-//                 type="text"
-//                 name="sku"
-//                 value={pedido.sku}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//                 placeholder="Digite o SKU do produto"
-//               />
-//             </div>
-//             <div style={styles.formGroup}>
-//               <label>Nome do Produto</label>
-//               <input
-//                 type="text"
-//                 name="nomeProduto"
-//                 value={pedido.nomeProduto}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//                 placeholder="Nome do produto"
-//                 disabled
-//               />
-//             </div>
-//             <div style={styles.formGroup}>
-//               <label>Fornecedor:</label>
-//               <input
-//                 type="text"
-//                 name="fornecedor"
-//                 value={pedido.fornecedor}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//                 placeholder="Fornecedor"
-//                 disabled
-//               />
-//             </div>
-//             <div style={styles.formGroup}>
-//               <label>Marca:</label>
-//               <input
-//                 type="text"
-//                 name="marca"
-//                 value={pedido.marca}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//                 placeholder="Marca"
-//                 disabled
-//               />
-//             </div>
-//             <div style={styles.formGroup}>
-//               <label>Quantidade</label>
-//               <input
-//                 type="number"
-//                 name="quantidade"
-//                 value={pedido.quantidade}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//                 placeholder="Digite a quantidade"
-//               />
-//             </div>
-
-//             <div style={styles.formGroup}>
-//               <label>Categoria do produto:</label>
-//               <select
-//                 name="categoria"
-//                 value={pedido.categoria}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//               >
-//                 <option value="">Selecione a categoria</option>
-//                 <option value="Proteína">Proteína</option>
-//                 <option value="Mantimento">Mantimento</option>
-//                 <option value="Hortaliça">Hortaliça</option>
-//                 <option value="Doações">Doações</option>
-//               </select>
-//             </div>
-
-//             <div style={styles.formGroup}>
-//               <label>Tipo do produto:</label>
-//               <select
-//                 name="tipo"
-//                 value={pedido.tipo}
-//                 onChange={handleChange}
-//                 style={styles.input}
-//               >
-//                 <option value="">Selecione o tipo</option>
-//                 <option value="Frutas">Frutas</option>
-//                 <option value="Legumes">Legumes</option>
-//                 <option value="Verduras">Verduras</option>
-//                 <option value="Bovina">Bovina</option>
-//                 <option value="Ave">Ave</option>
-//                 <option value="Suína">Suína</option>
-//                 <option value="Pescado">Pescado</option>
-//                 <option value="Mercado">Mercado</option>
-//               </select>
-//             </div>
-
-//             <div style={styles.formGroup}>
-//               <label>Observações</label>
-//               <textarea
-//                 name="observacoes"
-//                 value={pedido.observacoes}
-//                 onChange={handleChange}
-//                 style={styles.textarea}
-//                 placeholder="Observações adicionais"
-//               />
-//             </div>
-//             <button type="button" onClick={addItem} style={styles.button}>
-//               Adicionar Item
-//             </button>
-//             <button type="submit" style={styles.button}>
-//               Enviar Pedido
-//             </button>
-//           </form>
-//           <div style={styles.itemsList}>
-//             <h3>Itens no Pedido:</h3>
-//             <ul>
-//               {pedido.itens.map((item, index) => (
-//                 <li key={index}>
-//                   {item.nomeProduto} - {item.quantidade} - {item.supplier} unidades
-//                   <button onClick={() => editItem(index)} style={styles.editButton} onMouseOver={(e) =>
-//               (e.target.style.background =
-//                "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }
-//             onMouseOut={(e) =>
-//               (e.target.style.background =
-//                 "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }>
-//                     Editar
-//                   </button>
-//                   <button onClick={() => deleteItem(index)} style={styles.deleteButton} onMouseOver={(e) =>
-//               (e.target.style.background =
-//                "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }
-//             onMouseOut={(e) =>
-//               (e.target.style.background =
-//              "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }>
-//                     Excluir
-//                   </button>
-//                 </li>
-//               ))}
-//             </ul>
-//           </div>
-//           {/* Botão de Voltar */}
-//           <button onClick={() => navigate(-1)} style={styles.button} onMouseOver={(e) =>
-//               (e.target.style.background =
-//                "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }
-//             onMouseOut={(e) =>
-//               (e.target.style.background =
-//                "linear-gradient(135deg, #6a11cb, #2575fc)")
-//             }>
-//             Voltar
-//           </button>
-//         </div>
-//       ) : (
-//         <p style={styles.errorText}>Você precisa estar logado para fazer um pedido.</p>
-//       )}
-//     </div>
-//   );
-// };
-
-// // Estilos (para melhor aparência)
-// const styles = {
-//   container: {
-//     background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-//     color: "#fff",
-//     padding: "20px",
-//     minHeight: "100vh",
-//   },
-//   formContainer: {
-//     maxWidth: "900px",
-//     margin: "0 auto",
-//     background: "#fff",
-//     padding: "20px",
-//     borderRadius: "8px",
-//     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-//     color: "#333",
-//   },
-//   welcomeText: {
-//     fontSize: "18px",
-//     marginBottom: "10px",
-//   },
-//   formGroup: {
-//     marginBottom: "15px",
-//   },
-//   input: {
-//     width: "100%",
-//     padding: "10px",
-//     borderRadius: "4px",
-//     border: "1px solid #ccc",
-//     fontSize: "16px",
-//   },
-//   textarea: {
-//     width: "100%",
-//     padding: "10px",
-//     borderRadius: "4px",
-//     border: "1px solid #ccc",
-//     fontSize: "16px",
-//     minHeight: "100px",
-//   },
-//     button: {
-//       background: "linear-gradient(135deg, #6a11cb, #2575fc)",    color: "#fff",
-//       padding: "10px 20px",
-//       border: "none",
-//       borderRadius: "4px",
-//       cursor: "pointer",
-//       fontSize: "16px",
-//       marginRight: "10px",
-//       transition: "background-color 0.3s ease", // Transição de cor para efeitos visuais mais suaves
-//       "&:hover": {
-//         background: "linear-gradient(135deg, #2575fc, #6a11cb)",  // Efeito de gradiente ao passar o mouse
-//       }
-//     },
-//     editButton: {
-//       backgroundColor: "#f39c12",
-//       color: "#fff",
-//       padding: "5px 10px",
-//       border: "none",
-//       borderRadius: "4px",
-//       cursor: "pointer",
-//       marginLeft: "5px",
-//       transition: "background-color 0.3s ease", // Transição de cor para efeitos visuais mais suaves
-//       "&:hover": {backgroundColor: "#e67e22",}, // Cor de fundo ao passar o mouse 
-//     },
-//     deleteButton: {
-//       backgroundColor: "#e74c3c",
-//       color: "#fff",
-//       padding: "5px 10px",
-//       border: "none",
-//       borderRadius: "4px",
-//       cursor: "pointer",
-//       marginLeft: "5px",
-//       transition: "background-color 0.3s ease", // Transição de cor para efeitos visuais mais suaves
-//       "&:hover": {
-//         backgroundColor: "#c0392b", // Cor de fundo ao passar o mouse
-//       },
-//     },
-
-//   itemsList: {
-//     marginTop: "20px",
-//   },
-//   errorText: {
-//     color: "#e74c3c",
-//     textAlign: "center",
-//     fontSize: "18px",
-//   },
-// };
-
-// export default NovoPedido;
-
-
 import { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, get } from 'firebase/database';
+import { ToastContainer, toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getDatabase, ref, get, push, set } from 'firebase/database';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -468,17 +10,17 @@ const firebaseConfig = {
   authDomain: "bancoestoquecozinha.firebaseapp.com",
   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
   projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  storageBucket: "bancoestoquecozinha.appspot.com",
   messagingSenderId: "71775149511",
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
 };
 
-// Inicializando o Firebase
-const app = initializeApp(firebaseConfig);
+// Inicializando o Firebase (só se não houver app inicializado)
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
 
 export default function NovoPedido() {
-  const [dataHoje, setDataHoje] = useState('');
+  const [dataSelecionada, setDataSelecionada] = useState('');
   const [numeroPedido, setNumeroPedido] = useState('');
   const [periodoInicio, setPeriodoInicio] = useState('');
   const [periodoFim, setPeriodoFim] = useState('');
@@ -487,17 +29,27 @@ export default function NovoPedido() {
   const [dadosFornecedor, setDadosFornecedor] = useState({
     razaoSocial: '',
     cnpj: '',
-    categoria: '',
+    grupo: '',
     contato: '',
     email: '',
     telefone: ''
   });
-  const [showModal, setShowModal] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const [productSelecionado, setProductSelecionado] = useState(null);
+  const [dadosProduct, setDadosProduct] = useState({
+    sku: '',
+    name: '',
+    tipo: '',
+    unidMedida: '',
+    quantidade: 1, // Adicionando o campo quantidade
+    observacao: '' // Adicionando o campo observação
+  });
+  const [showModalFornecedor, setShowModalFornecedor] = useState(false);
+  const [showModalProduto, setShowModalProduto] = useState(false);
+  const [itensPedido, setItensPedido] = useState([]); 
 
   useEffect(() => {
-    const hoje = new Date().toLocaleDateString();
-    setDataHoje(hoje);
-
     const numero = `PED${Math.floor(Math.random() * 1000000)}`;
     setNumeroPedido(numero);
 
@@ -505,14 +57,24 @@ export default function NovoPedido() {
       const fornecedoresRef = ref(db, 'CadastroFornecedores');
       const fornecedorSnapshot = await get(fornecedoresRef);
       if (fornecedorSnapshot.exists()) {
-        const fornecedorList = Object.values(fornecedorSnapshot.val());
-        setFornecedores(fornecedorList);
+        setFornecedores(Object.values(fornecedorSnapshot.val()));
       } else {
-        console.log("Nenhum fornecedor encontrado!");
+        toast.error("Nenhum fornecedor encontrado!");
+      }
+    };
+
+    const fetchProdutos = async () => {
+      const produtosRef = ref(db, 'EntradaProdutos');
+      const produtoSnapshot = await get(produtosRef);
+      if (produtoSnapshot.exists()) {
+        setProducts(Object.values(produtoSnapshot.val()));
+      } else {
+        toast.error("Nenhum produto encontrado!");
       }
     };
 
     fetchFornecedores();
+    fetchProdutos();
   }, []);
 
   const handleFornecedorSelect = (fornecedor) => {
@@ -520,21 +82,89 @@ export default function NovoPedido() {
     setDadosFornecedor({
       razaoSocial: fornecedor.razaoSocial,
       cnpj: fornecedor.cnpj,
-      categoria: fornecedor.categoria,
+      grupo: fornecedor.grupo,
       contato: fornecedor.contato,
       email: fornecedor.email,
       telefone: fornecedor.telefone
     });
-    setShowModal(false); // Fecha o modal após selecionar
+    setShowModalFornecedor(false);
+    toast.success("Fornecedor selecionado com sucesso!");
+  };
+
+  const handleProductSelect = (product) => {
+    setProductSelecionado(product);
+    setDadosProduct({
+      sku: product.sku,
+      name: product.name,
+      tipo: product.tipo,
+      marca: product.marca,
+      category: product.category,
+      unit: product.unit,
+      quantidade: " ", // Inicializando quantidade
+      observacao: '' // Inicializando observação
+    });
+    setShowModalProduto(false);
+    toast.success("Produto selecionado com sucesso!");
+  };
+
+  const handleAddProductToOrder = () => {
+    if (productSelecionado && dadosProduct.quantidade > 0) {
+      const item = {
+        ...dadosProduct,
+        quantidade: dadosProduct.quantidade,
+        observacao: dadosProduct.observacao
+      };
+      setItensPedido([...itensPedido, item]);
+      setProductSelecionado(null);
+      setDadosProduct({
+        sku: '',
+        name: '',
+        tipo: '',
+        unit: '',
+        marca: '',
+        category: '',
+        quantidade: 1,
+        observacao: ''
+      });
+      toast.info("Produto adicionado ao pedido.");
+    } else {
+      toast.error("Selecione um produto e insira a quantidade válida!");
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!periodoInicio || !periodoFim) {
-      alert('Por favor, selecione o período completo!');
+
+    if (!dataSelecionada || !periodoInicio || !periodoFim || !fornecedorSelecionado || itensPedido.length === 0) {
+      toast.error("Por favor, preencha todos os campos obrigatórios!");
       return;
     }
-    // Lógica para salvar o pedido
+
+    const pedido = {
+      numeroPedido,
+      dataPedido: dataSelecionada,
+      periodoInicio,
+      periodoFim,
+      fornecedor: dadosFornecedor,
+      produtos: itensPedido,
+      status: 'pendente',
+      dataCriacao: new Date().toISOString(),
+    };
+
+    const pedidosRef = ref(db, 'novosPedidos');
+    const newPedidoRef = push(pedidosRef);
+    set(newPedidoRef, pedido)
+      .then(() => {
+        toast.success('Pedido salvo com sucesso!');
+        setDataSelecionada('');
+        setPeriodoInicio('');
+        setPeriodoFim('');
+        setFornecedorSelecionado(null);
+        setItensPedido([]);
+      })
+      .catch((error) => {
+        toast.error('Erro ao salvar o pedido: ' + error.message);
+      });
   };
 
   const styles = {
@@ -546,6 +176,7 @@ export default function NovoPedido() {
       backgroundColor: '#f4f6f9',
       borderRadius: '8px',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      overflow: 'hidden',
     },
     header: {
       backgroundColor: 'rgba(231, 223, 223, 0.4)',
@@ -557,22 +188,7 @@ export default function NovoPedido() {
       color: '#333',
       marginBottom: '10px',
     },
-    subtitle: {
-      fontSize: '1.2rem',
-      color: '#555',
-      marginBottom: '20px',
-    },
     input: {
-      padding: '12px 18px',
-      fontSize: '1rem',
-      width: '100%',
-      maxWidth: '350px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      marginBottom: '15px',
-      backgroundColor: '#fff',
-    },
-    select: {
       padding: '12px 18px',
       fontSize: '1rem',
       width: '100%',
@@ -593,9 +209,6 @@ export default function NovoPedido() {
       transition: 'background-color 0.3s',
       marginTop: '20px',
     },
-    buttonHover: {
-      backgroundColor: '#45a049',
-    },
     modal: {
       position: 'fixed',
       top: '0',
@@ -607,73 +220,75 @@ export default function NovoPedido() {
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: '999',
-      color: 'black'
+      color: 'black',
     },
     modalContent: {
       backgroundColor: '#fff',
       padding: '30px',
       borderRadius: '8px',
-      width: '80%',
-      maxWidth: '500px',
+      width: '90%',
+      maxWidth: '800px',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     },
-    modalButton: {
-      backgroundColor: '#4CAF50',
-      color: '#fff',
-      border: 'none',
-      padding: '12px 30px',
-      cursor: 'pointer',
-      marginTop: '20px',
-      borderRadius: '8px',
-    },
-    modalList: {
-      listStyle: 'none',
-      padding: '0',
-      margin: '10px 0',
-    },
-    modalItem: {
-      padding: '12px',
-      cursor: 'pointer',
-      borderBottom: '1px solid #ddd',
-      transition: 'background-color 0.3s',
-    },
-    modalItemHover: {
-      backgroundColor: '#f1f1f1',
-    },
-    inputReadOnly: {
-      marginLeft: '10px',
-      border: '1px solid #ccc',
-      padding: '12px',
+    table: {
       width: '100%',
-      maxWidth: '350px',
-      backgroundColor: '#f9f9f9',
+      borderCollapse: 'collapse',
+    },
+    tableHeader: {
+      backgroundColor: '#f2f2f2',
+      textAlign: 'left',
+    },
+    tableCell: {
+      padding: '8px',
+      borderBottom: '1px solid #ddd',
+      textAlign: 'center'
+    },
+    textArea: {
+      width: '100%',
+      height: '100px',
+      padding: '12px 18px',
       fontSize: '1rem',
+      border: '1px solid #ccc',
       borderRadius: '8px',
-      cursor: 'not-allowed',
+      marginBottom: '15px',
+      backgroundColor: '#fff',
     },
   };
 
   return (
     <div style={styles.container}>
+      <ToastContainer />
       <div style={styles.header}>
         <h2 style={styles.title}>Cadastro de Pedido</h2>
-        <p style={styles.subtitle}>Preencha os detalhes do pedido abaixo</p>
-        <div><strong>Data de Hoje: </strong>{dataHoje}</div>
-        <div><strong>Número do Pedido: </strong>{numeroPedido}</div>
+        <div style={{ fontSize: '25px', fontWeight: 'bold' }}>
+          <strong style={{ fontWeight: 'normal' }}>Número do Pedido: </strong>{numeroPedido}
+        </div>
+        <br />
+        <p style={{ fontSize: '18px', color: '#555' }}>Preencha os detalhes do pedido abaixo</p>
+
+        <div>
+          <label>Data do Pedido: </label>
+          <input
+            type="date"
+            value={dataSelecionada}
+            onChange={(e) => setDataSelecionada(e.target.value)}
+            style={styles.input}
+          />
+        </div>
         <div>
           <label>Período: </label>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <input 
-              type="date" 
-              value={periodoInicio} 
-              onChange={(e) => setPeriodoInicio(e.target.value)} 
-              style={styles.input} 
+            <input
+              type="date"
+              value={periodoInicio}
+              onChange={(e) => setPeriodoInicio(e.target.value)}
+              style={styles.input}
             />
-            <input 
-              type="date" 
-              value={periodoFim} 
-              onChange={(e) => setPeriodoFim(e.target.value)} 
-              style={styles.input} 
+            <input
+              type="date"
+              value={periodoFim}
+              onChange={(e) => setPeriodoFim(e.target.value)}
+              style={styles.input}
             />
           </div>
         </div>
@@ -681,91 +296,242 @@ export default function NovoPedido() {
 
       <div>
         <h3>Fornecedor</h3>
-        <button onClick={() => setShowModal(true)} style={styles.button}>Selecionar Fornecedor</button>
-
-        {showModal && (
+        <button onClick={() => setShowModalFornecedor(true)} style={styles.button}>Selecionar Fornecedor</button>
+        
+        {showModalFornecedor && (
           <div style={styles.modal}>
             <div style={styles.modalContent}>
               <h4>Selecione um Fornecedor</h4>
-              <ul style={styles.modalList}>
+              <ul>
                 {fornecedores.map(fornecedor => (
-                  <li 
-                    key={fornecedor.cnpj} 
-                    style={styles.modalItem}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f1f1'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                  >
+                  <li key={fornecedor.cnpj}>
                     {fornecedor.razaoSocial}
-                    <button 
-                      onClick={() => handleFornecedorSelect(fornecedor)} 
-                      style={styles.modalButton}
-                    >
-                      Selecionar
-                    </button>
+                    <button onClick={() => handleFornecedorSelect(fornecedor)} style={styles.button}>Selecionar</button>
                   </li>
                 ))}
               </ul>
-              <button onClick={() => setShowModal(false)} style={styles.modalButton}>Fechar</button>
+              <button onClick={() => setShowModalFornecedor(false)} style={styles.button}>Fechar</button>
             </div>
           </div>
         )}
 
         {fornecedorSelecionado && (
           <div style={{ marginTop: '20px' }}>
-            <div><strong>Razão Social: </strong>
-              <input 
-                type="text" 
-                value={dadosFornecedor.razaoSocial} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>Razão Social: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.razaoSocial}
+                readOnly
+                style={styles.input}
               />
             </div>
-            <div><strong>CNPJ: </strong>
-              <input 
-                type="text" 
-                value={dadosFornecedor.cnpj} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>CNPJ do Fornecedor: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.cnpj}
+                readOnly
+                style={styles.input}
               />
             </div>
-            <div><strong>Categoria: </strong>
-              <input 
-                type="text" 
-                value={dadosFornecedor.categoria} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>Grupo: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.grupo}
+                readOnly
+                style={styles.input}
               />
             </div>
-            <div><strong>Contato: </strong>
-              <input 
-                type="text" 
-                value={dadosFornecedor.contato} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>Contato: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.contato}
+                readOnly
+                style={styles.input}
               />
             </div>
-            <div><strong>E-mail: </strong>
-              <input 
-                type="email" 
-                value={dadosFornecedor.email} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>E-mail: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.email}
+                readOnly
+                style={styles.input}
               />
             </div>
-            <div><strong>Telefone: </strong>
-              <input 
-                type="text" 
-                value={dadosFornecedor.telefone} 
-                readOnly 
-                style={styles.inputReadOnly} 
+            <div>
+              <label>Telefone: </label>
+              <input
+                type="text"
+                value={dadosFornecedor.telefone}
+                readOnly
+                style={styles.input}
               />
             </div>
           </div>
         )}
       </div>
 
+      <hr style={{ border: '10px black'}}/>
+      <br /><br />
       <div>
-        <button onClick={handleSubmit} style={styles.button}>Salvar Pedido</button>
+        <h3>Produto</h3>
+        <button onClick={() => setShowModalProduto(true)} style={styles.button}>Selecionar Produto</button>
+        
+        {showModalProduto && (
+          <div style={styles.modal}>
+            <div style={styles.modalContent}>
+              <h4>Selecione um Produto</h4>
+              <table style={styles.table}>
+                <thead style={styles.tableHeader}>
+                  <tr>
+                    <th style={styles.tableCell}>Produto</th>
+                    <th style={styles.tableCell}>Tipo</th>
+                    <th style={styles.tableCell}>Marca</th>
+                    <th style={styles.tableCell}>Grupo</th>
+                    <th style={styles.tableCell}>Unidade</th>
+                    <th style={styles.tableCell}>Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.sku}>
+                      <td style={styles.tableCell}>{product.name}</td>
+                      <td style={styles.tableCell}>{product.tipo}</td>
+                      <td style={styles.tableCell}>{product.marca}</td>
+                      <td style={styles.tableCell}>{product.category}</td>
+                      <td style={styles.tableCell}>{product.unit}</td>
+                      <td style={styles.tableCell}>
+                        <button onClick={() => handleProductSelect(product)} style={styles.button}>Selecionar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button onClick={() => setShowModalProduto(false)} style={styles.button}>Fechar</button>
+            </div>
+          </div>
+        )}
+
+        {dadosProduct.sku && (
+          <div style={{ marginTop: '20px' }}>
+            <div>
+              <label>SKU: </label>
+              <input
+                type="text"
+                value={dadosProduct.sku}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Nome: </label>
+              <input
+                type="text"
+                value={dadosProduct.name}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Tipo: </label>
+              <input
+                type="text"
+                value={dadosProduct.tipo}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Marca: </label>
+              <input
+                type="text"
+                value={dadosProduct.marca}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Grupo: </label>
+              <input
+                type="text"
+                value={dadosProduct.category}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Unidade de Medida: </label>
+              <input
+                type="text"
+                value={dadosProduct.unit}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Quantidade: </label>
+              <input
+                type="number"
+                value={dadosProduct.quantidade}
+                onChange={(e) => setDadosProduct({ ...dadosProduct, quantidade: e.target.value })}
+                min="1"
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label>Observação: </label>
+              <textarea
+                value={dadosProduct.observacao}
+                onChange={(e) => setDadosProduct({ ...dadosProduct, observacao: e.target.value })}
+                style={styles.textArea}
+              />
+            </div>
+          </div>
+        )}
+
+        <div>
+          <button onClick={handleAddProductToOrder} style={styles.button}>Adicionar Produto ao Pedido</button>
+        </div>
+      </div>
+ <br /><br /><br />
+      <div>
+        <h3>Itens do Pedido</h3>
+        <table style={styles.table}>
+          <thead style={styles.tableHeader}>
+            <tr>
+              <th style={styles.tableCell}>SKU</th>
+              <th style={styles.tableCell}>Nome</th>
+              <th style={styles.tableCell}>Tipo</th>
+              <th style={styles.tableCell}>Marca</th>
+              <th style={styles.tableCell}>Grupo</th>
+              <th style={styles.tableCell}>Unidade de Medida</th>
+              <th style={styles.tableCell}>Quantidade</th>
+              <th style={styles.tableCell}>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {itensPedido.map((item, index) => (
+              <tr key={index}>
+                <td style={styles.tableCell}>{item.sku}</td>
+                <td style={styles.tableCell}>{item.name}</td>
+                <td style={styles.tableCell}>{item.tipo}</td>
+                <td style={styles.tableCell}>{item.marca}</td>
+                <td style={styles.tableCell}>{item.category}</td>
+                <td style={styles.tableCell}>{item.unit}</td>
+                <td style={styles.tableCell}>{item.quantidade}</td>
+                <td style={styles.tableCell}>{item.observacao}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <button onClick={handleSubmit} style={styles.button}>Finalizar Pedido</button>
       </div>
     </div>
   );

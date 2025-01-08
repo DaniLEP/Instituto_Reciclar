@@ -158,6 +158,7 @@ function EntradaProdutos() {
   const [unitPrice, setUnitPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("");
+  const [unidMedida, setUnidMedida] = useState("");
   const [category, setCategory] = useState("");  
   const [tipo, setTipo] = useState("");
   const [dateAdded, setDateAdded] = useState("");
@@ -196,6 +197,7 @@ function EntradaProdutos() {
       setCategory(product.category);
       setTipo(product.tipo);
       setQuantity(product.quantity);
+      setUnidMedida(product.unidMedida)
       setUnitPrice(product.unitPrice);
       setDateAdded(product.dateAdded);
       setExpiryDate(product.expiryDate);
@@ -213,6 +215,7 @@ function EntradaProdutos() {
       supplier &&
       unit &&
       quantity &&
+      unidMedida &&
       unitPrice &&
       dateAdded &&
       expiryDate
@@ -224,6 +227,7 @@ function EntradaProdutos() {
         supplier,
         unit,
         quantity,
+        unidMedida,
         category,
         tipo,
         dateAdded,
@@ -246,7 +250,8 @@ function EntradaProdutos() {
       setSupplier("");
       setQuantity("");
       setUnitPrice("");
-      setCategory("");      
+      setCategory("");     
+      setUnidMedida(""); 
       setTipo("");
       setDateAdded("");
       setExpiryDate("");
@@ -314,6 +319,18 @@ function EntradaProdutos() {
             placeholder="Digite a quantidade"
           />
         </FormGroup>
+
+        
+        <FormGroup>
+          <Label>Unidade de Medida:</Label>
+          <Input
+            type="text"
+            value={unit}
+            onChange={(e) => setUnidMedida(e.target.value)}
+            placeholder="Digite a unidade de Medida"
+          />
+        </FormGroup>
+
 
         <FormGroup>
           <Label>Preço Unitário:</Label>

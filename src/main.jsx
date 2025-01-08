@@ -8,7 +8,6 @@ import ErrorPage from './components/Error/ErrorPage.jsx'
 import LoginForm from './pages/Login/Login.jsx'
 import Home from './pages/Home_Page/Home.jsx'
 import ListaPedidos from './pages/List_Order_Page/ListaPedidos.jsx'
-// import StatusPedido from './components/Status_Order/StatusPedido.jsx'
 import EditarProduto from './components/Edit/Edit_Product/EditarProduto.jsx'
 import CadastroFornecedor from './components/Supplier_Registration/CadastroFornecedor.jsx'
 import Relatorio from './pages/Dashboard/Relatorio.jsx'
@@ -16,7 +15,7 @@ import Estoque from './components/Stock/Estoque.jsx'
 import CadProdutos from './components/Product_Registration/CadProdutos.jsx'
 import EntradaProdutos from './components/Prohibited/Entrada.jsx'
 import CadastroRefeicoes from './components/Revenue_Registration/CadastroReceita.jsx'
-import QuantidadeRefeicoes from './components/Quantity_Ref/QuantidadeRef.jsx'
+// import QuantidadeRefeicoes from './components/Quantity_Ref/QuantidadeRef.jsx'
 import RelatorioRef from './components/Dashboards/Dashboard_Ref/RelatorioRef.jsx'
 import RetiradaProdutos from './components/With_Drawal/Retirada.jsx'
 import RelatorioRetirada from './components/Dashboards/Dashboard_Withdrawal/RelatorioRetirada.jsx'
@@ -30,6 +29,7 @@ import Gerenciador from './components/Product Manager/GerenciadorProdutos.jsx'
 import Registro from './pages/User_Registration/Registro_Usuario.jsx'
 import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
 import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
+// import StatusPedidos from './components/Status_Order/StatusPedido.jsx'
 
 
 const router = createBrowserRouter ([
@@ -71,7 +71,7 @@ const router = createBrowserRouter ([
       },
       {
         path: "/Status_Pedido",
-        // element: <StatusPedido/>,
+        // element: <StatusPedidos/>,
       },
       {
         path: "/Editar_Produto/:id",
@@ -104,7 +104,7 @@ const router = createBrowserRouter ([
       },
       {
         path: "/Quantidade_Refeicoes",
-        element: <QuantidadeRefeicoes />,
+        // element: <QuantidadeRefeicoes />,
       },
       // PAGINAS DO CARDS DE DASHBOARD
       {

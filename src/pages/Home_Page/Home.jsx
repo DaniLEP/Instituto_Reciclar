@@ -180,7 +180,12 @@ export default function Home() {
             boxSizing: "border-box",
           }}
         >
-          <div style={{ fontWeight: "bold", fontSize:  '15px'}}>Instituto Reciclar</div>
+          <div style={{
+            width: '30vh',
+            height: 'auto'
+          }}>
+              <img src="/Logo.png"/>
+            </div>
           <div style={{fontSize:  '15px'}}>Seja bem-vindo <br />{usuario.nome || "Usuário não encontrado"}</div> {/* Exibe o nome do usuário */}
           <div
             style={{

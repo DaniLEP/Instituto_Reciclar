@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDatabase, ref, onValue, remove, update } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
-import { useNavigate } from "react-router-dom"; // Alteração: useNavigate ao invés de useHistory
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -22,9 +22,12 @@ const db = getDatabase();
 
 const TabelaFornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
+  const [filteredFornecedores, setFilteredFornecedores] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFornecedor, setSelectedFornecedor] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(null);
-  const navigate = useNavigate(); // Definindo o hook de navegação
+  const [cep, setCep] = useState(""); // Estado para o CEP
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fornecedoresRef = ref(db, "CadastroFornecedores");
@@ -33,87 +36,127 @@ const TabelaFornecedores = () => {
       if (data) {
         const fornecedoresList = Object.keys(data).map((key) => ({
           ...data[key],
-          id: key, // Adiciona o ID para facilitar a edição e exclusão
+          id: key,
         }));
         setFornecedores(fornecedoresList);
+        setFilteredFornecedores(fornecedoresList); // Inicializa com todos os fornecedores
       }
     });
   }, []);
 
-  const handleEdit = (id) => {
-    const fornecedor = fornecedores.find((f) => f.id === id);
-    setEditData(fornecedor);
-    setIsEditing(true);
+  const handleShowDetails = (fornecedor) => {
+    setSelectedFornecedor(fornecedor);
+    setIsEditing(false);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedFornecedor(null);
   };
 
   const handleDelete = (id) => {
     const fornecedorRef = ref(db, `CadastroFornecedores/${id}`);
     remove(fornecedorRef)
       .then(() => {
-        toast.success("Fornecedor excluído com sucesso!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored",
-        });
+        toast.success("Fornecedor excluído com sucesso!");
+        setSelectedFornecedor(null);
       })
-      .catch((error) => {
-        toast.error("Erro ao excluir fornecedor: " + error.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored",
-        });
-      });
-  };
-
-  const handleSaveEdit = () => {
-    if (editData) {
-      const fornecedorRef = ref(db, `CadastroFornecedores/${editData.id}`);
-      update(fornecedorRef, editData)
-        .then(() => {
-          toast.success("Fornecedor atualizado com sucesso!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-          setIsEditing(false);
-          setEditData(null);
-        })
-        .catch((error) => {
-          toast.error("Erro ao atualizar fornecedor: " + error.message, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-        });
-    }
+      .catch((error) =>
+        toast.error("Erro ao excluir fornecedor: " + error.message)
+      );
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prevData) => ({
+    setSelectedFornecedor((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
+  const handleSaveEdit = () => {
+    if (selectedFornecedor) {
+      const fornecedorRef = ref(db, `CadastroFornecedores/${selectedFornecedor.id}`);
+      update(fornecedorRef, selectedFornecedor)
+        .then(() => {
+          toast.success("Fornecedor atualizado com sucesso!");
+          setIsEditing(false);
+        })
+        .catch((error) =>
+          toast.error("Erro ao atualizar fornecedor: " + error.message)
+        );
+    }
+  };
+
   const handleGoBack = () => {
-    navigate('/Cadastro'); // Voltar para a página anterior
+    navigate("/Cadastro");
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = fornecedores.filter((fornecedor) =>
+      fornecedor.razaoSocial.toLowerCase().includes(query) ||
+      fornecedor.cnpj.toLowerCase().includes(query) ||
+      fornecedor.grupo.toLowerCase().includes(query)
+    );
+    setFilteredFornecedores(filtered);
+  };
+
+  const toggleStatus = (id, currentStatus) => {
+    const fornecedorRef = ref(db, `CadastroFornecedores/${id}`);
+    update(fornecedorRef, { ativo: !currentStatus })
+      .then(() => {
+        toast.success(`Status atualizado para ${!currentStatus ? 'Ativo' : 'Inativo'}`);
+      })
+      .catch((error) => toast.error("Erro ao atualizar status: " + error.message));
+  };
+
+  const handleCepChange = async (e) => {
+    const cepValue = e.target.value;
+    setCep(cepValue); // Atualiza o estado do CEP
+
+    if (cepValue.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          toast.error("CEP não encontrado.");
+          return;
+        }
+
+        setSelectedFornecedor((prevData) => ({
+          ...prevData,
+          endereco: data.logradouro || "",
+          bairro: data.bairro || "",
+          municipio: data.localidade || "",
+          uf: data.uf || "",
+        }));
+
+        toast.success("Endereço preenchido automaticamente!");
+      } catch (error) {
+        toast.error("Erro ao buscar o CEP.");
+      }
+    }
+  };
+
+  const formatCNPJ = (value) => {
+    return value
+      .replace(/\D/g, '') // Remove tudo o que não for número
+      .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  };
+
+  const formatTelefone = (value) => {
+    return value
+      .replace(/\D/g, '') // Remove tudo o que não for número
+      .replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  };
+
+  const formatCEP = (value) => {
+    return value
+      .replace(/\D/g, '') // Remove tudo o que não for número
+      .replace(/^(\d{5})(\d{3})$/, '$1-$2');
   };
 
   return (
@@ -125,21 +168,14 @@ const TabelaFornecedores = () => {
         padding: "20px",
         background: "linear-gradient(to bottom, #1E90FF, #00009C)",
         minHeight: "100vh",
-        color: "white",
+        color: "black",
         boxSizing: "border-box",
       }}
     >
-      <h2
-        style={{
-          fontSize: "2.5rem",
-          marginBottom: "20px",
-          textAlign: "center",
-        }}
-      >
+      <h2 style={{ fontSize: "2.5rem", marginBottom: "20px", color: "white" }}>
         Fornecedores Cadastrados
       </h2>
 
-      {/* Botão de Voltar */}
       <button
         onClick={handleGoBack}
         style={{
@@ -156,152 +192,303 @@ const TabelaFornecedores = () => {
         Voltar
       </button>
 
+      <input
+        type="text"
+        placeholder="Buscar por Razão Social, CNPJ ou Grupo"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        style={{
+          width: "300px",
+          padding: "10px",
+          borderRadius: "5px",
+          border: "1px solid #ccc",
+          marginBottom: "20px",
+        }}
+      />
+
       <div
         style={{
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
           gap: "20px",
-          backgroundColor: "white",
-          color: "#333",
-          padding: "20px",
-          borderRadius: "10px",
           width: "100%",
-          maxWidth: "1000px",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
-          boxSizing: "border-box",
+          maxWidth: "1200px",
         }}
       >
-        {fornecedores.length > 0 ? (
-          fornecedores.map((fornecedor, index) => (
+        {filteredFornecedores.length > 0 ? (
+          filteredFornecedores.map((fornecedor) => (
             <div
-              key={index}
+              key={fornecedor.id}
               style={{
                 background: "#f9f9f9",
                 borderRadius: "10px",
                 padding: "15px",
-                width: "250px", // Largura fixa para cada fornecedor
+                width: "100%",
+                maxWidth: "350px",
                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "10px",
-                transition: "transform 0.3s",
+                textAlign: "center",
+                cursor: "pointer",
               }}
+              onClick={() => handleShowDetails(fornecedor)}
             >
-              <h4 style={{ margin: "10px 0", fontSize: "1.2rem", textAlign: "center" }}>
+              <h4 style={{ margin: "10px 0", fontSize: "1.2rem" }}>
                 {fornecedor.razaoSocial}
               </h4>
-              <p><strong>CNPJ:</strong> {fornecedor.cnpj}</p>
-              <p><strong>Contato:</strong> {fornecedor.contato}</p>
-              <p><strong>Telefone:</strong> {fornecedor.telefone}</p>
-              <p><strong>E-mail:</strong> {fornecedor.email}</p>
-              <div>
-                <button
-                  onClick={() => handleEdit(fornecedor.id)}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  onClick={() => handleShowDetails(fornecedor)}
                   style={{
-                    padding: "8px",
-                    backgroundColor: "#2196F3",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer",
                     marginRight: "10px",
-                  }}
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDelete(fornecedor.id)}
-                  style={{
-                    padding: "8px",
-                    backgroundColor: "#F44336",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
+                    color: "#00009C",
+                    fontSize: "1.2rem",
                     cursor: "pointer",
                   }}
                 >
-                  Excluir
+                  Detalhes
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita o fechamento do modal ao clicar no botão
+                    toggleStatus(fornecedor.id, fornecedor.ativo);
+                  }}
+                  style={{
+                    backgroundColor: fornecedor.ativo ? "#28a745" : "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "8px 15px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {fornecedor.ativo ? "Ativo" : "Inativo"}
                 </button>
               </div>
             </div>
           ))
         ) : (
-          <p style={{ textAlign: "center", width: "100%" }}>Nenhum fornecedor cadastrado.</p>
+          <p style={{ textAlign: "center", width: "100%" }}>
+            Nenhum fornecedor encontrado.
+          </p>
         )}
-      </div>
-
-      {/* Modal de Edição */}
-      {isEditing && editData && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "10px",
-              width: "90%",
-              maxWidth: "600px",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
-            }}
-          >
-            <h3 style={{ textAlign: "center", marginBottom: "15px", color: "black" }}>
-              Editar Fornecedor
-            </h3>
-            {[{ label: "CNPJ", name: "cnpj" }, { label: "Razão Social", name: "razaoSocial" }, { label: "Contato", name: "contato" }, { label: "Telefone", name: "telefone" }, { label: "E-mail", name: "email" }].map((field) => (
-              <div key={field.name} style={{ marginBottom: "15px", display: "flex", flexDirection: "column", color: 'black' }}>
-                <label htmlFor={field.name} style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
-                  {field.label}:
-                </label>
-                <input
-                  type="text"
-                  id={field.name}
-                  name={field.name}
-                  value={editData[field.name]}
-                  onChange={handleInputChange}
-                  style={{
-                    padding: "10px",
-                    borderRadius: "5px",
-                    border: "1px solid #ccc",
-                    fontSize: "1rem",
-                  }}
-                />
-              </div>
-            ))}
-            <button
-              onClick={handleSaveEdit}
-              style={{
-                padding: "12px",
-                background: "#2196F3",
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "1rem",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                transition: "background 0.3s ease",
-                width: "100%",
-              }}
-            >
-              Salvar Alterações
-            </button>
-          </div>
-        </div>
-      )}
-
+      </div>{selectedFornecedor && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+    onClick={handleCloseModal}
+  >
+    <div
+      style={{
+        backgroundColor: "white",
+        padding: "30px",
+        borderRadius: "10px",
+        width: "500px",
+        maxWidth: "100%",
+        maxHeight: "80vh", // Limita a altura do modal para 80% da altura da tela
+        overflowY: "auto", // Adiciona scroll vertical caso o conteúdo ultrapasse o tamanho do modal
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3>Editar Fornecedor</h3>
+      <div>
+              <label>Razão Social:</label>
+              <input
+                type="text"
+                name="razaoSocial"
+                value={selectedFornecedor.razaoSocial}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>CNPJ:</label>
+              <input
+                type="text"
+                name="cnpj"
+                value={formatCNPJ(selectedFornecedor.cnpj)}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Categoria:</label>
+              <input
+                type="text"
+                name="grupo"
+                value={selectedFornecedor.grupo}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>CEP:</label>
+              <input
+                type="text"
+                name="cep"
+                value={formatCEP(cep)}
+                onChange={handleCepChange}
+                maxLength="9"
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Endereço:</label>
+              <input
+                type="text"
+                name="endereco"
+                value={selectedFornecedor.endereco || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Número:</label>
+              <input
+                type="number"
+                name="numero"
+                value={selectedFornecedor.numero || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Completo:</label>
+              <input
+                type="text"
+                name="complemento"
+                value={selectedFornecedor.complemento || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Bairro:</label>
+              <input
+                type="text"
+                name="bairro"
+                value={selectedFornecedor.bairro || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Município:</label>
+              <input
+                type="text"
+                name="municipio"
+                value={selectedFornecedor.municipio || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>UF:</label>
+              <input
+                type="text"
+                name="uf"
+                value={selectedFornecedor.uf || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>País:</label>
+              <input
+                type="text"
+                name="pais"
+                value={selectedFornecedor.pais || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Contato:</label>
+              <input
+                type="text"
+                name="contato"
+                value={selectedFornecedor.contato || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Telefone:</label>
+              <input
+                type="number"
+                name="telefone"
+                value={selectedFornecedor.telefone || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>E-mail:</label>
+              <input
+                type="email"
+                name="email"
+                value={selectedFornecedor.email || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Grupo:</label>
+              <input
+                type="text"
+                name="grupo"
+                value={selectedFornecedor.grupo || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+      <button
+        onClick={handleSaveEdit}
+        style={{
+          width: "100%",
+          padding: "10px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginTop: "20px",
+        }}
+      >
+        Salvar Alterações
+      </button>
+      <button
+        onClick={handleCloseModal}
+        style={{
+          width: "100%",
+          padding: "10px",
+          backgroundColor: "#dc3545",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginTop: "10px",
+        }}
+      >
+        Fechar
+      </button>
+    </div>
+  </div>
+)}
       <ToastContainer />
     </div>
   );

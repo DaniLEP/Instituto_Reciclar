@@ -37,6 +37,11 @@ export default function Cadastro() {
             imgSrc="/entregador.png"
             title="Fornecedor"
           />
+            <Card
+            link="/Visualizar_Fornecedores"
+            imgSrc="/users-control.png"            
+            title="Lista de Fornecedores"
+          />
           <Card
             link="/Cadastro_Refeicoes" ///Cadastro_Refeicoes link exato
             imgSrc="/ref.servidas.svg"

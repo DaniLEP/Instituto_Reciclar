@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { getDatabase, ref, push } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
 import { ToastContainer, toast } from "react-toastify";
@@ -38,6 +38,7 @@ const CadastroFornecedores = () => {
     telefone: "",
     email: "",
     grupo: "Mantimentos",
+    status: "Ativo", // Status inicial como "Ativo"
   });
 
   const handleInputChange = (e) => {
@@ -129,6 +130,7 @@ const CadastroFornecedores = () => {
           telefone: "",
           email: "",
           grupo: "Mantimentos",
+          status: "Ativo", // Retorna o status para "Ativo" após o cadastro
         });
       })
       .catch((error) =>
@@ -148,6 +150,13 @@ const CadastroFornecedores = () => {
     navigate(-1); // Navega para a página anterior
   };
 
+  const handleStatusChange = (e) => {
+    setFormData({
+      ...formData,
+      status: e.target.value,
+    });
+  };
+
   return (
     <div
       style={{
@@ -155,7 +164,7 @@ const CadastroFornecedores = () => {
         flexDirection: "column",
         alignItems: "center",
         padding: "20px",
-        background: "linear-gradient(to bottom, #1E90FF, #00009C)",
+        background: "linear-gradient(135deg, #6a11cb, #2575fc)",
         minHeight: "100vh",
         color: "white",
       }}
@@ -187,7 +196,7 @@ const CadastroFornecedores = () => {
           animation: "slideIn 1s ease-in-out",
         }}
       >
-        {[
+        {[ 
           { label: "CNPJ", name: "cnpj" },
           { label: "Razão Social", name: "razaoSocial" },
           { label: "CEP", name: "cep" },
@@ -202,28 +211,47 @@ const CadastroFornecedores = () => {
           { label: "Telefone", name: "telefone" },
           { label: "E-mail", name: "email" },
           { label: "Grupo", name: "grupo" },
+          { label: "Status", name: "status" },  // Campo de status
         ].map((field) => (
           <div key={field.name} style={{ display: "flex", flexDirection: "column" }}>
             <label htmlFor={field.name} style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
               {field.label}:
             </label>
-            <input
-              type="text"
-              id={field.name}
-              name={field.name}
-              value={formData[field.name]}
-              onChange={handleInputChange}
-              style={{
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-              disabled={
-                ["endereco", "bairro", "municipio", "uf"].includes(field.name) &&
-                field.name !== "cep"
-              }
-            />
+            {field.name === "status" ? (
+              <select
+                id={field.name}
+                name={field.name}
+                value={formData.status}
+                onChange={handleStatusChange}
+                style={{
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  fontSize: "1rem",
+                }}
+              >
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+              </select>
+            ) : (
+              <input
+                type={field.name === "cep" ? "number" : "text"}
+                id={field.name}
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleInputChange}
+                style={{
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  fontSize: "1rem",
+                }}
+                disabled={
+                  ["endereco", "bairro", "municipio", "uf"].includes(field.name) &&
+                  field.name !== "cep"
+                }
+              />
+            )}
           </div>
         ))}
         <button
