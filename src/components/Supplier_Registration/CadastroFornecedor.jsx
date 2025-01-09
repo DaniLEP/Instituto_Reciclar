@@ -294,3 +294,5 @@ const CadastroFornecedores = () => {
 };
 
 export default CadastroFornecedores;
+
+

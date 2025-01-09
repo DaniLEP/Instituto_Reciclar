@@ -2,6 +2,9 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, get, push, update } from "firebase/database";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -19,9 +22,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-const CadastroRefeicoes = () => {
+export default function CadastroRefeicoes() {
+  // Definindo estado para o campo de data de refeição
   const [formData, setFormData] = useState({
-    dataRefeicao: "",
+    dataRefeicao: "", // Agora vazio para que o usuário escolha a data
     cafeDescricao: "",
     cafeTotalQtd: "",
     cafeFuncionariosQtd: "",
@@ -44,11 +48,11 @@ const CadastroRefeicoes = () => {
   });
 
   const [refeicoes, setRefeicoes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const refeicoesRef = ref(database, "refeicoesServidas");
 
-    // Usando get() para pegar os dados uma vez
     get(refeicoesRef)
       .then((snapshot) => {
         if (snapshot.exists()) {
@@ -69,62 +73,90 @@ const CadastroRefeicoes = () => {
       });
   }, []);
 
-  const calcularTotal = (campo) => {
-    const {
-      cafeTotalQtd,
-      cafeFuncionariosQtd,
-      almocoTotalQtd,
-      almocoFuncionariosQtd,
-      lancheTotalQtd,
-      lancheFuncionariosQtd,
-      outrasTotalQtd,
-      outrasFuncionariosQtd,
-    } = formData;
-  
-    // Para cada refeição, calculamos a quantidade de jovens subtraindo a quantidade de funcionários
-    if (campo === "cafe") {
-      const cafeJovensQtd = cafeTotalQtd - cafeFuncionariosQtd;
-      setFormData({
-        ...formData,
-        cafeJovensQtd: cafeJovensQtd >= 0 ? cafeJovensQtd : 0, // Garantir que a quantidade não seja negativa
-      });
-    }
-    if (campo === "almoco") {
-      const almocoJovensQtd = almocoTotalQtd - almocoFuncionariosQtd;
-      setFormData({
-        ...formData,
-        almocoJovensQtd: almocoJovensQtd >= 0 ? almocoJovensQtd : 0, // Garantir que a quantidade não seja negativa
-      });
-    }
-    if (campo === "lanche") {
-      const lancheJovensQtd = lancheTotalQtd - lancheFuncionariosQtd;
-      setFormData({
-        ...formData,
-        lancheJovensQtd: lancheJovensQtd >= 0 ? lancheJovensQtd : 0, // Garantir que a quantidade não seja negativa
-      });
-    }
-    if (campo === "outras") {
-      const outrasJovensQtd = outrasTotalQtd - outrasFuncionariosQtd;
-      setFormData({
-        ...formData,
-        outrasJovensQtd: outrasJovensQtd >= 0 ? outrasJovensQtd : 0, // Garantir que a quantidade não seja negativa
-      });
-    }
+  const calcularTotal = (total, funcionarios) => {
+    return Math.max(0, total - funcionarios);
   };
-  
+
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData({ ...formData, [id]: value });
-  
-    // Se o campo alterado for um campo de quantidade, chamamos a função de cálculo
-    if (id.includes("Qtd") && id !== "desperdicioQtd") {
-      const campo = id.split("Qtd")[0]; // Extrai o campo (cafe, almoco, etc.)
-      calcularTotal(campo);
+
+    // Verifica se o campo é uma descrição e atualiza o valor
+    if (id.includes("Descricao")) {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    } else {
+      const valorNumerico = parseInt(value) || 0;
+
+      // Atualiza os campos numéricos com o valor calculado
+      setFormData((prev) => {
+        const novoEstado = { ...prev, [id]: valorNumerico };
+
+        // Calcula a quantidade de jovens para os diferentes tipos de refeição
+        if (id === "cafeTotalQtd" || id === "cafeFuncionariosQtd") {
+          novoEstado.cafeJovensQtd = calcularTotal(
+            novoEstado.cafeTotalQtd || 0,
+            novoEstado.cafeFuncionariosQtd || 0
+          );
+        } else if (id === "almocoTotalQtd" || id === "almocoFuncionariosQtd") {
+          novoEstado.almocoJovensQtd = calcularTotal(
+            novoEstado.almocoTotalQtd || 0,
+            novoEstado.almocoFuncionariosQtd || 0
+          );
+        } else if (id === "lancheTotalQtd" || id === "lancheFuncionariosQtd") {
+          novoEstado.lancheJovensQtd = calcularTotal(
+            novoEstado.lancheTotalQtd || 0,
+            novoEstado.lancheFuncionariosQtd || 0
+          );
+        } else if (id === "outrasTotalQtd" || id === "outrasFuncionariosQtd") {
+          novoEstado.outrasJovensQtd = calcularTotal(
+            novoEstado.outrasTotalQtd || 0,
+            novoEstado.outrasFuncionariosQtd || 0
+          );
+        }
+
+        return novoEstado;
+      });
     }
   };
-  
-  const salvarRefeicao = () => {
-    const refeicaoData = { ...formData };
+
+  // Atualizando a função handleChange para capturar a data manualmente
+  const handleDateChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      dataRefeicao: e.target.value, // Aqui a data é capturada diretamente do input
+    }));
+  };
+
+  const handleBack = () => {
+    navigate(-1); // Navega para a página anterior
+  };
+
+  const salvarNoBanco = () => {
+    const refeicaoData = {
+      dataRefeicao: formData.dataRefeicao,
+      cafeDescricao: formData.cafeDescricao,
+      cafeTotalQtd: formData.cafeTotalQtd,
+      cafeFuncionariosQtd: formData.cafeFuncionariosQtd,
+      cafeJovensQtd: formData.cafeJovensQtd,
+      almocoDescricao: formData.almocoDescricao,
+      almocoTotalQtd: formData.almocoTotalQtd,
+      almocoFuncionariosQtd: formData.almocoFuncionariosQtd,
+      almocoJovensQtd: formData.almocoJovensQtd,
+      lancheDescricao: formData.lancheDescricao,
+      lancheTotalQtd: formData.lancheTotalQtd,
+      lancheFuncionariosQtd: formData.lancheFuncionariosQtd,
+      lancheJovensQtd: formData.lancheJovensQtd,
+      outrasDescricao: formData.outrasDescricao,
+      outrasTotalQtd: formData.outrasTotalQtd,
+      outrasFuncionariosQtd: formData.outrasFuncionariosQtd,
+      outrasJovensQtd: formData.outrasJovensQtd,
+      sobrasDescricao: formData.sobrasDescricao,
+      observacaoDescricao: formData.observacaoDescricao,
+      desperdicioQtd: formData.desperdicioQtd,
+    };
+
     const newRefeicaoKey = push(ref(database, "refeicoesServidas")).key;
 
     const updates = {};
@@ -132,7 +164,15 @@ const CadastroRefeicoes = () => {
 
     update(ref(database), updates)
       .then(() => {
-        alert("Refeição salva com sucesso!");
+        toast.success("Refeições salvas com sucesso!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        });
         setFormData({
           dataRefeicao: "",
           cafeDescricao: "",
@@ -158,464 +198,529 @@ const CadastroRefeicoes = () => {
       })
       .catch((error) => {
         console.error("Erro ao salvar refeição:", error);
+        toast.error("Erro ao salvar refeição. Tente novamente.", {
+          position: "top-right",
+          autoClose: 3000,
+          closeOnClick: true,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          draggable: true,
+          transition: "fade",
+        });
       });
   };
 
   return (
-    <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)" }}>
-      <section style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-        <h2 style={{ color: "white", fontSize: "23px" }}>Data</h2>
-        <input
-          type="date"
-          id="dataRefeicao"
-          value={formData.dataRefeicao}
-          onChange={handleChange}
-          style={{ padding: "8px", marginBottom: "15px" }}
-        />
-        {/* CAFÉ DA MANHÃ */}
+    <div
+      style={{
+        background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+        height: "auto",
+      }}
+    >
+      <h2
+        style={{
+          color: "white",
+          fontSize: "2.2rem",
+          textAlign: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
+        Cadastro de Refeições
+      </h2>
 
-        <h2 style={{ color: "white", fontSize: "23px" }}>Café da Manhã</h2>
-        <textarea
-          id="cafeDescricao"
-          placeholder="Descreva o que foi servido no café da manhã..."
-          value={formData.cafeDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
-          >
-            Total:
+      <section
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+          backgroundColor: "#fff",
+          padding: "30px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ fontSize: "18px", fontWeight: "bold" }}>
+            Data da Refeição
           </label>
           <input
-            type="number"
-            id="cafeTotalQtd"
-            value={formData.cafeTotalQtd}
-            onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
-          />
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
-          >
-            Quantidade para Funcionários:
-          </label>
-          <input
-            type="number"
-            id="cafeFuncionariosQtd"
-            value={formData.cafeFuncionariosQtd}
-            onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
-          />
-          <label style={{ color: "white", fontSize: "23px" }}>
-            Quantidade para Jovens:
-          </label>
-          <input
-            type="number"
-            id="cafeJovensQtd"
-            value={formData.cafeJovensQtd}
-            readOnly
-            style={{ padding: "8px" }}
+            type="date"
+            id="dataRefeicao"
+            value={formData.dataRefeicao}
+            onChange={handleDateChange} // Chamando a função de atualização de data
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
         </div>
 
-        {/* ALMOÇO */}
-        <h2 style={{ color: "white", fontSize: "23px" }}>Almoço</h2>
-        <textarea
-          id="almocoDescricao"
-          placeholder="Descreva o que foi servido no almoço..."
-          value={formData.almocoDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
-          >
-            Total:
-          </label>
-          <input
-            type="number"
-            id="almocoTotalQtd"
-            value={formData.almocoTotalQtd}
+        {/* Café da Manhã */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Café da Manhã</h3>
+          <textarea
+            id="cafeDescricao"
+            value={formData.cafeDescricao}
             onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "10px" }}
           >
-            Quantidade para Funcionários:
-          </label>
-          <input
-            type="number"
-            id="almocoFuncionariosQtd"
-            value={formData.almocoFuncionariosQtd}
-            onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
-          />
-          <label style={{ color: "white", fontSize: "23px" }}>
-            Quantidade para Jovens:
-          </label>
-          <input
-            type="number"
-            id="almocoJovensQtd"
-            value={formData.almocoJovensQtd}
-            readOnly
-            style={{ padding: "8px" }}
-          />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Total:
+            </label>
+            <input
+              type="number"
+              id="cafeTotalQtd"
+              value={formData.cafeTotalQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Funcionários:
+            </label>
+            <input
+              type="number"
+              id="cafeFuncionariosQtd"
+              value={formData.cafeFuncionariosQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens:
+            </label>
+            <input
+              type="number"
+              id="cafeJovensQtd"
+              value={formData.cafeJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              disabled
+            />
+          </div>
         </div>
 
-        {/* LANCHE DA TARDE */}
-        <h2 style={{ color: "white", fontSize: "23px" }}>Lanche da Tarde</h2>
-        <textarea
-          id="lancheDescricao"
-          placeholder="Descreva o que foi servido de Lanche da Tarde..."
-          value={formData.lancheDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
-          >
-            Total:
-          </label>
-          <input
-            type="number"
-            id="lancheTotalQtd"
-            value={formData.lancheTotalQtd}
+        {/* Almoço */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Almoço</h3>
+          <textarea
+            id="almocoDescricao"
+            value={formData.almocoDescricao}
             onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "10px" }}
           >
-            Quantidade para Funcionários:
-          </label>
-          <input
-            type="number"
-            id="lancheFuncionariosQtd"
-            value={formData.lancheFuncionariosQtd}
-            onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
-          />
-          <label style={{ color: "white", fontSize: "23px" }}>
-            Quantidade para Jovens:
-          </label>
-          <input
-            type="number"
-            id="lancheJovensQtd"
-            value={formData.lancheJovensQtd}
-            readOnly
-            style={{ padding: "8px" }}
-          />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Total:
+            </label>
+            <input
+              type="number"
+              id="almocoTotalQtd"
+              value={formData.almocoTotalQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Funcionários:
+            </label>
+            <input
+              type="number"
+              id="almocoFuncionariosQtd"
+              value={formData.almocoFuncionariosQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens:
+            </label>
+            <input
+              type="number"
+              id="almocoJovensQtd"
+              value={formData.almocoJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              disabled
+            />
+          </div>
         </div>
 
-        {/* OUTRAS REFEIÇÕES */}
-        <h2 style={{ color: "white", fontSize: "23px" }}>Outras Refeiçoes</h2>
-        <textarea
-          id="outrasDescricao"
-          placeholder="Descreva o que foi servido de Lanche da Tarde..."
-          value={formData.outrasDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
-          >
-            Total:
-          </label>
-          <input
-            type="number"
-            id="outrasTotalQtd"
-            value={formData.outrasTotalQtd}
+        {/* Lanche da Tarde */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Lanche da Tarde</h3>
+          <textarea
+            id="lancheDescricao"
+            value={formData.lancheDescricao}
             onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
-          <label
-            style={{ marginRight: "10px", color: "white", fontSize: "23px" }}
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "10px" }}
           >
-            Quantidade para Funcionários:
-          </label>
-          <input
-            type="number"
-            id="outrasFuncionariosQtd"
-            value={formData.outrasFuncionariosQtd}
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Total:
+            </label>
+            <input
+              type="number"
+              id="lancheTotalQtd"
+              value={formData.lancheTotalQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Funcionários:
+            </label>
+            <input
+              type="number"
+              id="lancheFuncionariosQtd"
+              value={formData.lancheFuncionariosQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens:
+            </label>
+            <input
+              type="number"
+              id="lancheJovensQtd"
+              value={formData.lancheJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              disabled
+            />
+          </div>
+        </div>
+        {/* Outras Refeições */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Outras Refeições</h3>
+          <textarea
+            id="outrasDescricao"
+            value={formData.outrasDescricao}
             onChange={handleChange}
-            style={{ padding: "8px", marginRight: "10px" }}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
-          <label style={{ color: "white", fontSize: "23px" }}>
-            Quantidade para Jovens:
-          </label>
-          <input
-            type="number"
-            id="outrasJovensQtd"
-            value={formData.outrasJovensQtd}
-            readOnly
-            style={{ padding: "8px" }}
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "10px" }}
+          >
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Total:
+            </label>
+            <input
+              type="number"
+              id="outrasTotalQtd"
+              value={formData.outrasTotalQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Funcionários:
+            </label>
+            <input
+              type="number"
+              id="outrasFuncionariosQtd"
+              value={formData.outrasFuncionariosQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "40%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens:
+            </label>
+            <input
+              type="number"
+              id="outrasJovensQtd"
+              value={formData.outrasJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              disabled
+            />
+          </div>
+        </div>
+        {/* Sobras */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Sobras</h3>
+          <textarea
+            id="sobrasDescricao"
+            value={formData.sobrasDescricao}
+            onChange={handleChange}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
           />
         </div>
-
-        {/*  SOBRAS */}
-
-        <h2 style={{ color: "white", fontSize: "23px" }}>Sobras</h2>
-        <textarea
-          id="outrasDescricao"
-          placeholder="Descreva as sobras..."
-          value={formData.sobrasDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-
-        {/*  OBSERVAÇÕES */}
-
-        <h2 style={{ color: "white", fontSize: "23px" }}>Observações</h2>
-        <textarea
-          id="observacaoDescricao"
-          placeholder="Descreva as observações..."
-          value={formData.observacaoDescricao}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
-        />
-        {/*  DISPERDICIO */}
-
-        <h2 style={{ color: "white", fontSize: "23px" }}>Disperdício</h2>
-        <input
-          type="number"
-          id="desperdicioQtd"
-          placeholder="KG"
-          value={formData.desperdicioQtd}
-          readOnly // Make it read-only if you don't want to change the value
-          style={{ padding: "8px", width: "100%",  }}
-        />
-      <br />
+        {/* Observações */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Observações</h3>
+          <textarea
+            id="observacaoDescricao"
+            value={formData.observacaoDescricao}
+            onChange={handleChange}
+            placeholder="Descrição..."
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
+          />
+        </div>
+        {/* Disperdícios */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ color: "#333", fontSize: "20px" }}>Disperdícios</h3>
+          <input
+            type="number"
+            id="desperdicioQtd"
+            value={formData.desperdicioQtd}
+            placeholder="KG"
+            onChange={handleChange}
+            style={{
+              padding: "12px",
+              fontSize: "1rem",
+              width: "100%",
+              marginRight: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
+          />
+        </div>
         <button
-          onClick={salvarRefeicao}
+          onClick={salvarNoBanco}
           style={{
             padding: "10px 20px",
-            backgroundColor: "#4CAF50",
-            color: "#fff",
+            backgroundColor: "#2575fc",
+            color: "white",
+            borderRadius: "5px",
             border: "none",
+            fontSize: "16px",
             cursor: "pointer",
             marginTop: "20px",
+            width: "100%",
+          }}
+        > Salvar
+        </button>
+        <button
+          type="button"
+          onClick={handleBack}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#F20DE7",
+            color: "white",
+            borderRadius: "5px",
+            border: "none",
+            fontSize: "16px",
+            cursor: "pointer",
+            marginTop: "20px",
+            width: "100%",
+            transition: "background 0.3s ease",
           }}
         >
-          Salvar
+     Voltar
         </button>
-
-        <section style={{ marginTop: "30px" }}>
-          <h2 style={{ color: "white", fontSize: "23px" }}>
-            Refeições Servidas
-          </h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Data
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Café Descrição
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Café Funcionários
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Café Jovens
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Almoço Descrição
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Almoço Funcionários
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Almoço Jovens
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Lanche Descrição
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Lanche Funcionários
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Lanche Jovens
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Outras Ref. Descrição
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Outras Ref. Funcionários
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Outras Ref. Jovens
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Sobras
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Observações
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    color: "white",
-                  }}
-                >
-                  Desperdício
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {refeicoes.map((refeicao) => (
-                <tr key={refeicao.key}>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.dataRefeicao}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.cafe?.descricao || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.cafe?.funcionarios || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.cafe?.jovens || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.almoco?.descricao || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.almoco?.funcionarios || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.almoco?.jovens || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.lanche?.descricao || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.lanche?.funcionarios || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.lanche?.jovens || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.outrasRef?.descricao || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.outrasRef?.funcionarios || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.outrasRef?.jovens || ""}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.sobras}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.observacao}
-                  </td>
-                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                    {refeicao.desperdicio}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
       </section>
+      <ToastContainer />
     </div>
   );
-};
-
-export default CadastroRefeicoes;
+}
