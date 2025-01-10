@@ -29,7 +29,7 @@ import Gerenciador from './components/Product Manager/GerenciadorProdutos.jsx'
 import Registro from './pages/User_Registration/Registro_Usuario.jsx'
 import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
 import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
-import TabelaRefeicoes from './components/Revenue_Registration/Quantity_Ref/Status_Revenue.jsx'
+import TabelaRefeicoes from './components/Revenue_Registration/Status_Revenue/Status_Revenue.jsx'
 // import StatusPedidos from './components/Status_Order/StatusPedido.jsx'
 
 

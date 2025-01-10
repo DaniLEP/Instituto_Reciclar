@@ -45,7 +45,12 @@ export default function Cadastro() {
           <Card
             link="/Cadastro_Refeicoes" ///Cadastro_Refeicoes link exato
             imgSrc="/ref.servidas.svg"
-            title="Ref. Servidas"
+            title="Cadastro de Refeições"
+          />
+            <Card
+            link="/Refeicoes_Servidas" 
+            imgSrc="/refeicoes-servidas.png"
+            title="Lista de Refeições"
           />
 
           <Card link="/Home" imgSrc="/return.svg" title="Voltar" isBackCard />
