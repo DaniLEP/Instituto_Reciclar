@@ -4,20 +4,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getDatabase, ref, get, push, set } from 'firebase/database';
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.appspot.com",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
-};
+  // Configuração do Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+    authDomain: "bancoestoquecozinha.firebaseapp.com",
+    databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+    projectId: "bancoestoquecozinha",
+    storageBucket: "bancoestoquecozinha.appspot.com",
+    messagingSenderId: "71775149511",
+    appId: "1:71775149511:web:bb2ce1a1872c65d1668de2"
+  };
 
-// Inicializando o Firebase (só se não houver app inicializado)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getDatabase(app);
+  // Inicializando o Firebase (só se não houver app inicializado)
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  const db = getDatabase(app);
 
 export default function NovoPedido() {
   const [dataSelecionada, setDataSelecionada] = useState('');
