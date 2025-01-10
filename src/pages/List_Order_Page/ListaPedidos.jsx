@@ -5,7 +5,7 @@ export default function ListaPedidos() {
 
   // Funções de navegação
   const goToShoppingList = () => navigate('/Cadastro_Produtos');
-  const goToOrderStatus = () => navigate('/Status_Pedido');
+  const goToOrderStatus = () => navigate('/Gestão_Pedido');
 
   return (
     <>

@@ -132,14 +132,16 @@ export default function NovoPedido() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Validação dos campos obrigatórios
     if (!dataSelecionada || !periodoInicio || !periodoFim || !fornecedorSelecionado || itensPedido.length === 0) {
       toast.error("Por favor, preencha todos os campos obrigatórios!");
       return;
     }
-
+  
+    // Criar um novo pedido
     const pedido = {
       numeroPedido,
       dataPedido: dataSelecionada,
@@ -147,25 +149,33 @@ export default function NovoPedido() {
       periodoFim,
       fornecedor: dadosFornecedor,
       produtos: itensPedido,
-      status: 'pendente',
-      dataCriacao: new Date().toISOString(),
+      status: 'Pendente',  // Status inicial do pedido
+      dataCriacao: new Date().toISOString(), // Timestamp de criação
     };
-
-    const pedidosRef = ref(db, 'novosPedidos');
-    const newPedidoRef = push(pedidosRef);
-    set(newPedidoRef, pedido)
-      .then(() => {
-        toast.success('Pedido salvo com sucesso!');
-        setDataSelecionada('');
-        setPeriodoInicio('');
-        setPeriodoFim('');
-        setFornecedorSelecionado(null);
-        setItensPedido([]);
-      })
-      .catch((error) => {
-        toast.error('Erro ao salvar o pedido: ' + error.message);
-      });
+  
+    try {
+      // Referência para os pedidos no Firebase
+      const pedidosRef = ref(db, 'novosPedidos');
+  
+      // Adicionando o novo pedido
+      const newPedidoRef = push(pedidosRef);
+      await set(newPedidoRef, pedido);
+  
+      // Feedback de sucesso
+      toast.success('Pedido salvo com sucesso!');
+  
+      // Limpar os campos após o envio
+      setDataSelecionada('');
+      setPeriodoInicio('');
+      setPeriodoFim('');
+      setFornecedorSelecionado(null);
+      setItensPedido([]);
+    } catch (error) {
+      // Em caso de erro, mostrar uma mensagem de erro
+      toast.error('Erro ao salvar o pedido: ' + error.message);
+    }
   };
+  
 
   const styles = {
     container: {

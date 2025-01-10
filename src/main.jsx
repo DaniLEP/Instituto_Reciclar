@@ -29,7 +29,7 @@ import Registro from './pages/User_Registration/Registro_Usuario.jsx'
 import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
 import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
 import TabelaRefeicoes from './components/Revenue_Registration/Status_Revenue/Status_Revenue.jsx'
-import StatusPedidos from './components/Status_Order/StatusPedido.jsx'
+import StatusPedidos from './components/New_Order/Status_Order/StatusPedido.jsx'
 
 
 const router = createBrowserRouter ([
@@ -70,7 +70,7 @@ const router = createBrowserRouter ([
         element: <NovoPedido />,
       },
       {
-        path: "/Status_Pedido",
+        path: "/Gestão_Pedido",
         element: <StatusPedidos/>,
       },
       {

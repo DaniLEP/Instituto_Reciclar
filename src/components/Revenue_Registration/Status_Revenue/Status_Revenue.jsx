@@ -49,21 +49,30 @@ export default function TabelaRefeicoes() {
   }, []);
 
   // Notificações estilizadas com Toastify
-  const showNotification = (message, type) => {
+  const notifySuccess = (message) => {
     Toastify({
       text: message,
       duration: 3000,
-      gravity: "top", // 'top' ou 'bottom'
-      position: "right", // 'left', 'center' ou 'right'
-      backgroundColor:
-        type === "success"
-          ? "#4caf50"
-          : type === "error"
-          ? "#f44336"
-          : "#2196f3",
-      stopOnFocus: true,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#28a745",
+       stopOnFocus: true,
     }).showToast();
   };
+  
+  const notifyError = (message) => {
+    Toastify({
+      text: message,
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#dc3545",
+       stopOnFocus: true,
+    }).showToast();
+  };
+  
 
   // Filtro de datas
   const handleFilter = () => {
@@ -86,7 +95,7 @@ export default function TabelaRefeicoes() {
   // Salvar alterações no Firebase
   const handleSave = (key, field) => {
     if (editValue.trim() === "") {
-      showNotification("O valor não pode estar vazio!", "error");
+      notifyError("O valor não pode estar vazio!");
       return;
     }
 
@@ -102,11 +111,11 @@ export default function TabelaRefeicoes() {
         );
         setEditMode(null);
         setEditValue("");
-        showNotification("Atualizado com sucesso!", "success");
+        notifySuccess("Refeição atualizada com sucesso!");
       })
       .catch((error) => {
         console.error("Erro ao atualizar dados:", error);
-        showNotification("Erro ao atualizar dados!", "error");
+        notifyError("Erro ao atualizar dados!");
       });
   };
 
@@ -237,12 +246,32 @@ export default function TabelaRefeicoes() {
                       "observacaoDescricao",
                       "desperdicioQtd",
                     ].map((field) => (
-                      <td key={field} style={styles.td}>
-                        {field === "dataRefeicao"
-                          ? new Date(refeicao[field]).toLocaleDateString(
-                              "pt-BR"
-                            )
-                          : refeicao[field] || "—"}
+                      <td
+                        key={field}
+                        style={styles.td}
+                        onDoubleClick={() =>
+                          handleEdit(refeicao.key, field, refeicao[field])
+                        }
+                      >
+                        {editMode &&
+                        editMode.key === refeicao.key &&
+                        editMode.field === field ? (
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={handleChange}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleSave(refeicao.key, field);
+                              }
+                            }}
+                            style={styles.input}
+                          />
+                        ) : field === "dataRefeicao" ? (
+                          new Date(refeicao[field]).toLocaleDateString("pt-BR")
+                        ) : (
+                          refeicao[field] || "—"
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -313,7 +342,7 @@ const styles = {
     gap: "10px",
   },
   button: {
-    padding: "10px 20px",
+    padding: "0px 20px",
     backgroundColor: "#007bff",
     color: "white",
     border: "none",
