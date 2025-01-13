@@ -1,10 +1,8 @@
-
-
 // import { useState, useEffect } from "react";
 // import { ToastContainer, toast } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 // import { initializeApp, getApp, getApps } from "firebase/app";
-// import { getDatabase, ref, get, set, update } from "firebase/database";
+// import { getDatabase, ref, get, update } from "firebase/database";
 
 // // Configuração do Firebase
 // const firebaseConfig = {
@@ -40,6 +38,37 @@
 //     fetchPedidos();
 //   }, []);
 
+//   const handleVisualizarPedido = (pedido) => {
+//     setPedidoSelecionado(pedido);
+//     setModalAberto(true);
+//   };
+
+//   const handleFecharModal = () => {
+//     setModalAberto(false);
+//     setPedidoSelecionado(null);
+//   };
+
+//   // Função para atualizar o status no Firebase
+//   const handleAtualizarStatus = (pedidoId, novoStatus) => {
+//     const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
+//     update(pedidoRef, { status: novoStatus })
+//       .then(() => {
+//         toast.success(`Status do pedido atualizado para "${novoStatus}"`);
+//         // Atualizar o estado local dos pedidos
+//         setPedidos((prevPedidos) =>
+//           prevPedidos.map((pedido) =>
+//             pedido.numeroPedido === pedidoId
+//               ? { ...pedido, status: novoStatus }
+//               : pedido
+//           )
+//         );
+//       })
+//       .catch((error) => {
+//         toast.error("Erro ao atualizar o status do pedido.");
+//         console.error("Erro ao atualizar status:", error);
+//       });
+//   };
+
 //   const styles = {
 //     container: {
 //       maxWidth: "1200px",
@@ -49,16 +78,6 @@
 //       backgroundColor: "#f4f6f9",
 //       borderRadius: "8px",
 //       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-//     },
-//     header: {
-//       backgroundColor: "rgba(231, 223, 223, 0.4)",
-//       marginBottom: "40px",
-//       textAlign: "center",
-//     },
-//     title: {
-//       fontSize: "2.5rem",
-//       color: "#333",
-//       marginBottom: "10px",
 //     },
 //     table: {
 //       width: "100%",
@@ -72,39 +91,6 @@
 //       padding: "8px",
 //       borderBottom: "1px solid #ddd",
 //       textAlign: "center",
-//     },
-//     statusBadge: {
-//       padding: "5px 15px",
-//       borderRadius: "8px",
-//       color: "#fff",
-//       fontWeight: "bold",
-//     },
-//     statusPending: {
-//       backgroundColor: "#FF9800",
-//     },
-//     statusApproved: {
-//       backgroundColor: "#4CAF50",
-//     },
-//     statusCancelled: {
-//       backgroundColor: "#F44336",
-//     },
-//     actionButton: {
-//       margin: "5px",
-//       padding: "8px 16px",
-//       border: "none",
-//       borderRadius: "5px",
-//       cursor: "pointer",
-//       color: "#fff",
-//       fontWeight: "bold",
-//     },
-//     approveButton: {
-//       backgroundColor: "#4CAF50",
-//     },
-//     cancelButton: {
-//       backgroundColor: "#F44336",
-//     },
-//     viewButton: {
-//       backgroundColor: "#FF9800",
 //     },
 //     modal: {
 //       position: "fixed",
@@ -152,100 +138,16 @@
 //     },
 //   };
 
-//   const renderStatusBadge = (status) => {
-//     if (status === "Pendente") {
-//       return (
-//         <span style={{ ...styles.statusBadge, ...styles.statusPending }}>
-//           Pendente
-//         </span>
-//       );
-//     }
-//     if (status === "Aprovado") {
-//       return (
-//         <span style={{ ...styles.statusBadge, ...styles.statusApproved }}>
-//           Aprovado
-//         </span>
-//       );
-//     }
-//     if (status === "Cancelado") {
-//       return (
-//         <span style={{ ...styles.statusBadge, ...styles.statusCancelled }}>
-//           Cancelado
-//         </span>
-//       );
-//     }
-//     return null;
-//   };
-
-//   const handleVisualizarPedido = (pedido) => {
-//     setPedidoSelecionado(pedido);
-//     setModalAberto(true);
-//   };
-
-//   const handleFecharModal = () => {
-//     setModalAberto(false);
-//     setPedidoSelecionado(null);
-//   };
-
-//   const handleAprovarPedido = async (pedido) => {
-//     try {
-//       const pedidoRef = ref(db, `novosPedidos/${pedido.numeroPedido}`);
-//       await update(pedidoRef, { status: "Aprovado" });
-
-//       const estoqueRef = ref(db, "Estoque");
-//       for (const produto of pedido.produtos) {
-//         const produtoRef = ref(estoqueRef, produto.name);
-//         const snapshot = await get(produtoRef);
-//         if (snapshot.exists()) {
-//           const currentProduto = snapshot.val();
-//           await update(produtoRef, {
-//             quantidade: currentProduto.quantidade + produto.quantidade,
-//             unidade: produto.unit,
-//           });
-//         } else {
-//           await set(produtoRef, {
-//             quantidade: produto.quantidade,
-//             unidade: produto.unit,
-//           });
-//         }
-//       }
-
-//       toast.success("Pedido aprovado e itens enviados para o estoque!");
-//     } catch (error) {
-//       toast.error("Erro ao aprovar o pedido!");
-//     }
-//   };
-
-//   const handleCancelarPedido = async (pedido) => {
-//     try {
-//       const pedidoRef = ref(db, `novosPedidos/${pedido.numeroPedido}`);
-//       await update(pedidoRef, { status: "Cancelado" });
-
-//       toast.success("Pedido cancelado com sucesso!");
-//     } catch (error) {
-//       toast.error("Erro ao cancelar o pedido!");
-//     }
-//   };
-
 //   return (
 //     <div style={styles.container}>
 //       <ToastContainer />
-//       <div style={styles.header}>
-//         <h2 style={styles.title}>Status dos Pedidos</h2>
-//         <p style={{ fontSize: "18px", color: "#555" }}>
-//           Acompanhe o status dos pedidos realizados
-//         </p>
-//       </div>
-
+//       <h2>Status dos Pedidos</h2>
 //       <table style={styles.table}>
 //         <thead style={styles.tableHeader}>
 //           <tr>
 //             <th style={styles.tableCell}>Número do Pedido</th>
 //             <th style={styles.tableCell}>Data do Pedido</th>
 //             <th style={styles.tableCell}>Fornecedor</th>
-//             <th style={styles.tableCell}>Data</th>
-//             <th style={styles.tableCell}>Irá suprir até</th>
-
 //             <th style={styles.tableCell}>Status</th>
 //             <th style={styles.tableCell}>Ações</th>
 //           </tr>
@@ -259,45 +161,49 @@
 //                   {new Date(pedido.dataPedido).toLocaleDateString()}
 //                 </td>
 //                 <td style={styles.tableCell}>
-//                   {pedido?.fornecedor?.razaoSocial ||
-//                     "Fornecedor não informado"}
+//                   {pedido?.fornecedor?.razaoSocial || "Fornecedor não informado"}
 //                 </td>
 //                 <td style={styles.tableCell}>
-//                   {pedido.dataInicio}
-//                 </td>
-//                 <td style={styles.tableCell}>
-//                   {pedido.dataFim}
-//                 </td>
-//                 <td style={styles.tableCell}>
-//                   {renderStatusBadge(pedido.status)}
+//                   <span
+//                     style={{
+//                       color:
+//                         pedido.status === "Pendente"
+//                           ? "orange"
+//                           : pedido.status === "Aprovado"
+//                           ? "green"
+//                           : "red",
+//                     }}
+//                   >
+//                     {pedido.status}
+//                   </span>
 //                 </td>
 //                 <td style={styles.tableCell}>
 //                   <button
-//                     style={{ ...styles.actionButton, ...styles.viewButton }}
 //                     onClick={() => handleVisualizarPedido(pedido)}
+//                     style={{ marginRight: "10px" }}
 //                   >
 //                     Visualizar
 //                   </button>
-//                   <button
-//                     style={{ ...styles.actionButton, ...styles.approveButton }}
-//                     onClick={() => handleAprovarPedido(pedido)}
-//                     disabled={
-//                       pedido.status === "Aprovado" ||
-//                       pedido.status === "Cancelado"
-//                     }
-//                   >
-//                     Aprovar
-//                   </button>
-//                   <button
-//                     style={{ ...styles.actionButton, ...styles.cancelButton }}
-//                     onClick={() => handleCancelarPedido(pedido)}
-//                     disabled={
-//                       pedido.status === "Aprovado" ||
-//                       pedido.status === "Cancelado"
-//                     }
-//                   >
-//                     Cancelar
-//                   </button>
+//                   {pedido.status === "Pendente" && (
+//                     <>
+//                       <button
+//                         onClick={() =>
+//                           handleAtualizarStatus(pedido.numeroPedido, "Aprovado")
+//                         }
+//                         style={{ backgroundColor: "green", color: "white" }}
+//                       >
+//                         Aprovar
+//                       </button>
+//                       <button
+//                         onClick={() =>
+//                           handleAtualizarStatus(pedido.numeroPedido, "Cancelado")
+//                         }
+//                         style={{ backgroundColor: "red", color: "white" }}
+//                       >
+//                         Cancelar
+//                       </button>
+//                     </>
+//                   )}
 //                 </td>
 //               </tr>
 //             ))
@@ -312,20 +218,24 @@
 //       </table>
 
 //       {/* Modal de Detalhes do Pedido */}
-//       {pedidoSelecionado && (
+//       {modalAberto && pedidoSelecionado && (
 //         <div style={styles.modal}>
 //           <div style={styles.modalContent}>
 //             <h3 style={styles.modalHeader}>
-//               Detalhes do Pedido: {pedidoSelecionado.numeroPedido}
+//               Pedido #{pedidoSelecionado.numeroPedido}
 //             </h3>
+//             <p><strong>Data do Pedido:</strong> {new Date(pedidoSelecionado.dataPedido).toLocaleDateString()}</p>
+//             <p><strong>Fornecedor:</strong> {pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}</p>
+//             <p><strong>Status:</strong> {pedidoSelecionado.status}</p>
+//             <h4>Produtos</h4>
 //             <table style={styles.productTable}>
 //               <thead style={styles.productTableHeader}>
 //                 <tr>
 //                   <th style={styles.productTableCell}>SKU</th>
-//                   <th style={styles.productTableCell}>Produto</th>
-//                   <th style={styles.productTableCell}>Marca</th>
+//                   <th style={styles.productTableCell}>Nome</th>
 //                   <th style={styles.productTableCell}>Quantidade</th>
-//                   <th style={styles.productTableCell}>Unidade</th>
+//                   <th style={styles.productTableCell}>Valor Unitário</th>
+//                   <th style={styles.productTableCell}>Total</th>
 //                 </tr>
 //               </thead>
 //               <tbody>
@@ -333,9 +243,13 @@
 //                   <tr key={index}>
 //                     <td style={styles.productTableCell}>{produto.sku}</td>
 //                     <td style={styles.productTableCell}>{produto.name}</td>
-//                     <td style={styles.productTableCell}>{produto.marca}</td>
 //                     <td style={styles.productTableCell}>{produto.quantidade}</td>
-//                     <td style={styles.productTableCell}>{produto.unit}</td>
+//                     <td style={styles.productTableCell}>
+//                       {produto.valorUnitario?.toFixed(2)}
+//                     </td>
+//                     <td style={styles.productTableCell}>
+//                       {(produto.valorUnitario * produto.quantidade)?.toFixed(2)}
+//                     </td>
 //                   </tr>
 //                 ))}
 //               </tbody>
@@ -349,6 +263,7 @@
 //     </div>
 //   );
 // }
+
 
 
 
@@ -379,9 +294,7 @@ export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
-  const [editando, setEditando] = useState(null); // Estado para saber qual produto está sendo editado
-  const [quantidade, setQuantidade] = useState(""); // Quantidade editada
-  const [valorUnitario, setValorUnitario] = useState(""); // Valor unitário editado
+  const [modoEdicao, setModoEdicao] = useState(false);
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -400,6 +313,7 @@ export default function StatusPedidos() {
   const handleVisualizarPedido = (pedido) => {
     setPedidoSelecionado(pedido);
     setModalAberto(true);
+    setModoEdicao(false); // Desabilitar o modo de edição ao visualizar
   };
 
   const handleFecharModal = () => {
@@ -407,65 +321,48 @@ export default function StatusPedidos() {
     setPedidoSelecionado(null);
   };
 
-  const handleEditProduto = (produto) => {
-    setEditando(produto.sku); // Marca qual produto está sendo editado
-    setQuantidade(produto.quantidade); // Define a quantidade inicial
-    setValorUnitario(produto.valorUnitario); // Define o valor unitário inicial
-  };
-
-
- const handleSalvarProdutoEditado = async (produto) => {
-  // Recalcular o valor total com base na quantidade e no valor unitário
-  const total = parseFloat(valorUnitario) * parseInt(quantidade);
-
-  // Atualizar o produto com as novas informações (quantidade, valorUnitario, total)
-  const updatedProduto = { ...produto, quantidade, valorUnitario, total };
-
-  // Atualiza o pedido no estado local, mas sem adicionar um novo produto
-  const updatedPedidos = pedidos.map((pedido) => {
-    if (pedido.numeroPedido === pedidoSelecionado.numeroPedido) {
-      // Aqui estamos atualizando os produtos no pedido selecionado
-      const updatedProdutos = pedido.produtos.map((prod) => {
-        if (prod.sku === produto.sku) {
-          // Se o SKU do produto coincidir com o produto editado, substituímos ele
-          return updatedProduto;
-        }
-        return prod; // Se não for o produto editado, mantém o produto original
-      });
-      
-      // Atualiza o pedido com os produtos modificados
-      return { ...pedido, produtos: updatedProdutos };
+  const handleAlterarStatus = async (pedidoId, novoStatus) => {
+    try {
+      const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
+      await update(pedidoRef, { status: novoStatus });
+      toast.success(`Pedido ${pedidoId} atualizado para: ${novoStatus}`);
+      // Atualizando o estado local após a alteração
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
+          pedido.numeroPedido === pedidoId
+            ? { ...pedido, status: novoStatus }
+            : pedido
+        )
+      );
+    } catch (error) {
+      toast.error("Erro ao atualizar o status do pedido.");
     }
-    return pedido; // Se não for o pedido selecionado, mantém o pedido original
-  });
-
-  // Atualiza o estado com os pedidos modificados
-  setPedidos(updatedPedidos);
-  setEditando(null); // Limpa o estado de edição
-
-  // Atualizar no Firebase
-  const pedidoRef = ref(db, "novosPedidos/" + pedidoSelecionado.numeroPedido);
-  await update(pedidoRef, {
-    produtos: pedidoSelecionado.produtos.map((prod) => {
-      if (prod.sku === produto.sku) {
-        // Atualiza o produto com os novos dados
-        return updatedProduto;
-      }
-      return prod; // Mantém os outros produtos
-    }),
-  });
-
-  toast.success("Produto atualizado com sucesso!");
-};
-
-  
-  
-  const handleChangeQuantidade = (e) => {
-    setQuantidade(e.target.value);
   };
 
-  const handleChangeValorUnitario = (e) => {
-    setValorUnitario(e.target.value);
+  const handleSalvarEdicao = async () => {
+    try {
+      const pedidoRef = ref(db, `novosPedidos/${pedidoSelecionado.numeroPedido}`);
+      await update(pedidoRef, {
+        produtos: pedidoSelecionado.produtos,
+      });
+      toast.success("Pedido atualizado com sucesso!");
+      setModoEdicao(false); // Desabilitar o modo de edição
+    } catch (error) {
+      toast.error("Erro ao salvar a edição do pedido.");
+    }
+  };
+
+  const handleAlterarItem = (index, campo, valor) => {
+    const novoPedido = { ...pedidoSelecionado };
+    novoPedido.produtos[index][campo] = valor;
+
+    // Atualizar o valor total automaticamente
+    if (campo === "quantidade" || campo === "valorUnitario") {
+      const produto = novoPedido.produtos[index];
+      produto.valorTotal = produto.quantidade * produto.valorUnitario;
+    }
+
+    setPedidoSelecionado(novoPedido);
   };
 
   const styles = {
@@ -490,39 +387,6 @@ export default function StatusPedidos() {
       padding: "8px",
       borderBottom: "1px solid #ddd",
       textAlign: "center",
-    },
-    statusBadge: {
-      padding: "5px 15px",
-      borderRadius: "8px",
-      color: "#fff",
-      fontWeight: "bold",
-    },
-    statusPending: {
-      backgroundColor: "#FF9800",
-    },
-    statusApproved: {
-      backgroundColor: "#4CAF50",
-    },
-    statusCancelled: {
-      backgroundColor: "#F44336",
-    },
-    actionButton: {
-      margin: "5px",
-      padding: "8px 16px",
-      border: "none",
-      borderRadius: "5px",
-      cursor: "pointer",
-      color: "#fff",
-      fontWeight: "bold",
-    },
-    approveButton: {
-      backgroundColor: "#4CAF50",
-    },
-    cancelButton: {
-      backgroundColor: "#F44336",
-    },
-    viewButton: {
-      backgroundColor: "#FF9800",
     },
     modal: {
       position: "fixed",
@@ -568,6 +432,11 @@ export default function StatusPedidos() {
       borderBottom: "1px solid #ddd",
       textAlign: "center",
     },
+    input: {
+      padding: "5px",
+      width: "100px",
+      textAlign: "center",
+    },
   };
 
   return (
@@ -580,8 +449,6 @@ export default function StatusPedidos() {
             <th style={styles.tableCell}>Número do Pedido</th>
             <th style={styles.tableCell}>Data do Pedido</th>
             <th style={styles.tableCell}>Fornecedor</th>
-            <th style={styles.tableCell}>Data</th>
-            <th style={styles.tableCell}>Irá suprir até</th>
             <th style={styles.tableCell}>Status</th>
             <th style={styles.tableCell}>Ações</th>
           </tr>
@@ -595,35 +462,37 @@ export default function StatusPedidos() {
                   {new Date(pedido.dataPedido).toLocaleDateString()}
                 </td>
                 <td style={styles.tableCell}>
-                  {pedido?.fornecedor?.razaoSocial ||
-                    "Fornecedor não informado"}
-                </td>
-                <td style={styles.tableCell}>{pedido.dataInicio}</td>
-                <td style={styles.tableCell}>{pedido.dataFim}</td>
-                <td style={styles.tableCell}>
-                  {pedido.status === "Pendente" && (
-                    <span style={{ ...styles.statusBadge, ...styles.statusPending }}>
-                      Pendente
-                    </span>
-                  )}
-                  {pedido.status === "Aprovado" && (
-                    <span style={{ ...styles.statusBadge, ...styles.statusApproved }}>
-                      Aprovado
-                    </span>
-                  )}
-                  {pedido.status === "Cancelado" && (
-                    <span style={{ ...styles.statusBadge, ...styles.statusCancelled }}>
-                      Cancelado
-                    </span>
-                  )}
+                  {pedido?.fornecedor?.razaoSocial || "Fornecedor não informado"}
                 </td>
                 <td style={styles.tableCell}>
-                  <button
-                    style={{ ...styles.actionButton, ...styles.viewButton }}
-                    onClick={() => handleVisualizarPedido(pedido)}
+                  <span
+                    style={{
+                      color: pedido.status === "Aprovado" ? "green" : pedido.status === "Cancelado" ? "red" : "black",
+                    }}
                   >
+                    {pedido.status}
+                  </span>
+                </td>
+                <td style={styles.tableCell}>
+                  <button onClick={() => handleVisualizarPedido(pedido)}>
                     Visualizar
                   </button>
+                  {pedido.status === "Pendente" && (
+                    <div>
+                      <button
+                        onClick={() => handleAlterarStatus(pedido.numeroPedido, "Aprovado")}
+                        style={{ backgroundColor: "green", color: "white", margin: "5px" }}
+                      >
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() => handleAlterarStatus(pedido.numeroPedido, "Cancelado")}
+                        style={{ backgroundColor: "red", color: "white", margin: "5px" }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))
@@ -638,21 +507,25 @@ export default function StatusPedidos() {
       </table>
 
       {/* Modal de Detalhes do Pedido */}
-      {pedidoSelecionado && (
+      {modalAberto && pedidoSelecionado && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
             <h3 style={styles.modalHeader}>
-              Detalhes do Pedido: {pedidoSelecionado.numeroPedido}
+              Pedido #{pedidoSelecionado.numeroPedido}
             </h3>
+            <p><strong>Data do Pedido:</strong> {new Date(pedidoSelecionado.dataPedido).toLocaleDateString()}</p>
+            <p><strong>Fornecedor:</strong> {pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}</p>
+            <p><strong>Status:</strong> {pedidoSelecionado.status}</p>
+            
+            <h4>Produtos</h4>
             <table style={styles.productTable}>
               <thead style={styles.productTableHeader}>
                 <tr>
                   <th style={styles.productTableCell}>SKU</th>
-                  <th style={styles.productTableCell}>Produto</th>
-                  <th style={styles.productTableCell}>Marca</th>
+                  <th style={styles.productTableCell}>Nome</th>
                   <th style={styles.productTableCell}>Quantidade</th>
                   <th style={styles.productTableCell}>Valor Unitário</th>
-                  <th style={styles.productTableCell}>Valor Total</th>
+                  <th style={styles.productTableCell}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -660,55 +533,66 @@ export default function StatusPedidos() {
                   <tr key={index}>
                     <td style={styles.productTableCell}>{produto.sku}</td>
                     <td style={styles.productTableCell}>{produto.name}</td>
-                    <td style={styles.productTableCell}>{produto.marca}</td>
                     <td style={styles.productTableCell}>
-                      {editando === produto.sku ? (
+                      {modoEdicao ? (
                         <input
+                          style={styles.input}
                           type="number"
-                          value={quantidade}
-                          onChange={handleChangeQuantidade}
+                          value={produto.quantidade}
+                          onChange={(e) =>
+                            handleAlterarItem(index, "quantidade", e.target.value)
+                          }
                         />
                       ) : (
                         produto.quantidade
                       )}
                     </td>
                     <td style={styles.productTableCell}>
-                      {editando === produto.sku ? (
+                      {modoEdicao ? (
                         <input
+                          style={styles.input}
                           type="number"
-                          value={valorUnitario}
-                          onChange={handleChangeValorUnitario}
+                          value={produto.valorUnitario}
+                          onChange={(e) =>
+                            handleAlterarItem(index, "valorUnitario", e.target.value)
+                          }
                         />
                       ) : (
-                        produto.valorUnitario
+                        produto.valorUnitario?.toFixed(2)
                       )}
                     </td>
                     <td style={styles.productTableCell}>
-                      {editando === produto.sku ? (
-                        (parseFloat(valorUnitario) * parseInt(quantidade)).toFixed(2)
-                      ) : (
-                        produto.total || (produto.valorUnitario * produto.quantidade).toFixed(2)
-                      )}
-                    </td>
-                    <td>
-                      {editando === produto.sku ? (
-                        <button
-                          onClick={() => handleSalvarProdutoEditado(produto)}
-                        >
-                          Salvar
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleEditProduto(produto)}
-                        >
-                          Editar
-                        </button>
-                      )}
+                      {(produto.valorUnitario * produto.quantidade)?.toFixed(2)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            
+            {modoEdicao ? (
+              <div>
+                <button
+                  style={{ backgroundColor: "blue", color: "white" }}
+                  onClick={handleSalvarEdicao}
+                >
+                  Salvar Alterações
+                </button>
+                <button
+                  style={{ backgroundColor: "#F44336", color: "white", marginLeft: "10px" }}
+                  onClick={() => setModoEdicao(false)}
+                >
+                  Cancelar Edição
+                </button>
+              </div>
+            ) : (
+              <button
+                style={{ backgroundColor: "orange", color: "white" }}
+                onClick={() => setModoEdicao(true)}
+              >
+                Editar Pedido
+              </button>
+            )}
+
             <button style={styles.modalCloseButton} onClick={handleFecharModal}>
               Fechar
             </button>
@@ -718,3 +602,4 @@ export default function StatusPedidos() {
     </div>
   );
 }
+
