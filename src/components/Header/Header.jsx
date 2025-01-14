@@ -21,7 +21,7 @@ export default function Header() {
 
         {/* Menu (Desktop) */}
         <div className="hidden lg:flex items-center space-x-6">
-          <Link to="#" className="hover:text-[#00FF62] transition">
+          <Link to="/Pedidos" className="hover:text-[#00FF62] transition">
             Pedidos
           </Link>
           <Link to="/Cadastro" className="hover:text-[#00FF62] transition">
@@ -35,6 +35,9 @@ export default function Header() {
           </Link>
           <Link to="/Verificacao_Usuario" className="hover:text-[#00FF62] transition">
             Controle de Usuários
+          </Link> 
+           <Link to="/Estoque" className="hover:text-[#00FF62] transition">
+            Estoque
           </Link>
           <Link to="/Meu_Perfil">
             <img
@@ -96,6 +99,13 @@ export default function Header() {
             onClick={handleClick}
           >
             Controle de Usuários
+          </Link>
+          <Link
+            to="/Estoque"
+            className="hover:text-[#00FF62] transition"
+            onClick={handleClick}
+          >
+            Estoque
           </Link>
           <Link
             to="/Meu_Perfil"

@@ -166,7 +166,7 @@ const TabelaFornecedores = () => {
         flexDirection: "column",
         alignItems: "center",
         padding: "20px",
-        background: "linear-gradient(to bottom, #1E90FF, #00009C)",
+        background: "linear-gradient(135deg, #6a11cb, #2575fc)",
         minHeight: "100vh",
         color: "black",
         boxSizing: "border-box",

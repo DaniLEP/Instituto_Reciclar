@@ -9,6 +9,8 @@ import {
 } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -47,7 +49,7 @@ export default function Login() {
     event.preventDefault();
 
     if (!validateEmail(email)) {
-      setErrorMessage("E-mail inválido.");
+      toast.error("E-mail inválido.");
       return;
     }
 
@@ -57,31 +59,27 @@ export default function Login() {
         const user = userCredential.user;
         console.log("Usuário autenticado:", user);
 
-        // Verifica se o usuário existe no banco de dados
         const userRef = ref(database, "novousuario/" + user.uid);
         get(userRef)
           .then((snapshot) => {
             console.log("Dados do usuário:", snapshot.val());
             if (snapshot.exists()) {
-              // Se os dados existirem, realiza o login
-              alert("Login bem-sucedido, bem-vindo!");
+              toast.success("Login bem-sucedido, bem-vindo!");
               setErrorMessage("");
-              navigate("/Home"); // Redireciona para a página Home
+              navigate("/Home");
             } else {
-              // Se o usuário não for encontrado no banco de dados
-              setErrorMessage("Usuário não encontrado no sistema, contate o suporte!.");
+              setErrorMessage("Usuário não encontrado no sistema, contate o suporte!");
+              toast.error("Usuário não encontrado no sistema, contate o suporte!");
             }
           })
           .catch((error) => {
-            console.log("Erro ao verificar seus dados de acesso, tente novamente!:", error);
-            setErrorMessage(
-              "Erro ao verificar seus dados de acesso, tente novamente!: " + error.message
-            );
+            console.error("Erro ao verificar seus dados de acesso:", error);
+            toast.error("Erro ao verificar seus dados de acesso. Tente novamente!");
           });
       })
       .catch((error) => {
-        console.log("Erro ao realizar login, tente novamente:", error);
-        setErrorMessage("E-mail ou senha incorretos, tente novamente!");
+        console.error("Erro ao realizar login:", error);
+        toast.error("E-mail ou senha incorretos. Tente novamente!");
       })
       .finally(() => {
         setIsLoading(false);
@@ -96,17 +94,18 @@ export default function Login() {
   // Função de recuperação de senha
   const handlePasswordReset = () => {
     if (!validateEmail(resetEmail)) {
-      alert("Digite um e-mail válido!");
+      toast.error("Digite um e-mail válido!");
       return;
     }
 
     sendPasswordResetEmail(auth, resetEmail)
       .then(() => {
-        alert("Instruções de redefinição de senha enviadas para seu e-mail.");
+        toast.success("Instruções de redefinição de senha enviadas para seu e-mail.");
         setShowResetModal(false);
       })
       .catch((error) => {
-        alert("Erro ao enviar e-mail de redefinição: " + error.message);
+        console.error("Erro ao enviar e-mail de redefinição:", error);
+        toast.error("Erro ao enviar e-mail de redefinição. Tente novamente!");
       });
   };
 
@@ -114,7 +113,7 @@ export default function Login() {
     <div
       style={{
         fontFamily: "'Roboto', sans-serif",
-        background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
+        background: "linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -123,8 +122,8 @@ export default function Login() {
         padding: "20px",
         boxSizing: "border-box",
       }}
-     
     >
+      <ToastContainer />
       <div
         style={{
           backgroundColor: "#ffffff",
@@ -136,10 +135,8 @@ export default function Login() {
           maxWidth: "400px",
           boxSizing: "border-box",
         }}
-        onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
-        <img
+         <img
           src="/Reciclar_LOGO.png"
           alt="Logo da Reciclar"
           style={{
@@ -384,3 +381,5 @@ export default function Login() {
     </div>
   );
 }
+
+

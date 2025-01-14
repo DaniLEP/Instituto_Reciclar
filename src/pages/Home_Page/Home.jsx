@@ -140,7 +140,15 @@ export default function Home() {
                 imgSrc="/cadastro.svg"
                 imgAlt="Cadastro"
                 title="Cadastros"
-              />
+              />   
+
+              <Card
+              to="/Estoque"
+              imgSrc="/estoque.png"
+              imgAlt="Estoque"
+              title="Estoque"
+            />
+
               <Card
                 to="/Dashboard"
                 imgSrc="/relatorio.svg"

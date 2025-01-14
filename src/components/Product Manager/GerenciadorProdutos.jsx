@@ -3,117 +3,80 @@ import styled, { createGlobalStyle } from "styled-components";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, update, onValue } from "firebase/database";
 import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Estilos globais
+// Estilos Globais
 const GlobalStyle = createGlobalStyle`
   body {
-    background-color: #00009C;
+  background: linear-gradient(135deg, rgb(140, 78, 207), rgb(168, 55, 212));
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    color: black;
+    color: #333;
   }
 `;
 
-// Estilos para os componentes
-const Container = styled.div`
-  max-width: 1400px;
-  margin: 50px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 768px) {
-    padding: 20px;
-    margin: 20px;
+// Estilização dos Componentes
+const BackButton = styled(Link)`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
   }
 `;
 
-const Title = styled.h1`
-  text-align: center;
-  font-size: 2.5rem;
-  color: #00009c;
-  margin-bottom: 30px;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const Table = styled.table`
+const Button = styled.button`
+  padding: 12px;
+  background: #F20DE7;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+  text-align: center;
 
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-    font-size: 0.9rem;
+  &:hover {
+    background: rgb(167, 104, 192);
   }
 
-  th {
-    background-color: #00009c;
-    color: white;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.8rem;
-    overflow-x: auto;
-    display: block;
-    width: 100%;
+  @media (max-width: 480px) {
+    font-size: 14px;
+    padding: 10px;
   }
 `;
+
+
+
+const CloseButton = styled(Button)`
+margin-top: 10px;
+  background: #dc3545;
+
+  &:hover {
+    background: #b02a37;
+  }
+`;
+
+
+
+
 
 const Modal = styled.div`
-  position: relative;
-  top: 7vh;
+  position: absolute;
+  top: 65%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   width: 90%;
   max-width: 500px;
-
-  h2 {
-    margin-bottom: 20px;
-    text-align: center;
-    color: black;
-    font-size: 30px;
-  }
-
-  label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-
-  input,
-  select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-
-    &:focus {
-      border-color: #00009c;
-      outline: none;
-    }
-  }
-
-  button {
-    width: 100%;
-    margin-top: 10px;
-    gap: 10px;
-  }
 `;
 
 const Overlay = styled.div`
@@ -122,68 +85,107 @@ const Overlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 `;
-const Button = styled.button`
-  padding: 10px 15px;
-  background: #f20de7;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
 
-  @media (max-width: 490px) {
-    width: 100%; 
-    margin-bottom: 10px;
-  }
-
-  &:hover {
-    background-color: #d10ccf;
-  }
+const TableWrapper = styled.div`
+  width: 100%;
+  overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
+  margin-top: 20px;
 `;
 
-const CloseButton = styled(Button)`
-  background: #ff4d4f;
-  margin-top: 10px;
+const ResponsiveTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  
+  thead {
+    background-color: #007bff;
 
-  @media (max-width: 490px) {
-    background: #ff4d4f;
-    margin-top: 10px;
-    margin-left: 0;
-    margin-right: 0;
-    display: block;
-    margin: 10px auto;
-    width: 100%;
+    th {
+      padding: 12px;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
   }
 
-  &:hover {
-    background-color: #e33c3e;
+  tbody {
+    background-color:rgb(248, 248, 248);
+
+    }
+
+    td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+      word-wrap: break-word; /* Evita que textos longos quebrem a tabela */
+    }
   }
-`;
 
-const BackButton = styled(Link)`
-  position: absolute;
-  top: 55px;
-  left: 35px;
-  background: none;
-  border: none;
-  cursor: pointer;
+  @media (max-width: 1024px) {
+    font-size: 14px;
+  }
 
-  img {
-    width: 40px;
-    height: 40px;
+  @media (max-width: 768px) {
+    font-size: 12px;
 
-    @media (max-width: 498px) {
-      width: 30px;
-      height: 30px;
+    thead th {
+      padding: 8px;
+    }
+
+    tbody td {
+      padding: 8px;
+    }
+
+    /* Reduzir o tamanho das colunas na versão mobile */
+    th, td {
+      padding: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+    
+    th, td {
+      padding: 6px;
+    }
+
+    /* Transformar a tabela em lista de itens em dispositivos muito pequenos */
+    tbody tr {
+      display: block;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    tbody td {
+      display: block;
+      text-align: left;
+      padding: 8px 10px;
+      width: 100%;
+    }
+
+    tbody td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      display: inline-block;
+      width: 100%;
+      text-transform: capitalize;
     }
   }
 `;
 
-// Firebase Config
+
+const Title = styled.h1`
+  text-align: center;
+  font-size: 50px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 15px;
+`;
+
+// Firebase Configuração
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -194,27 +196,32 @@ const firebaseConfig = {
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+initializeApp(firebaseConfig);
 
 function Gerenciador() {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const db = getDatabase();
 
+  
   useEffect(() => {
-    const dbProdutos = ref(db, "EntradaProdutos");
-    onValue(dbProdutos, (snapshot) => {
+    const dbRef = ref(db, "EntradaProdutos");
+    onValue(dbRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const loadedProducts = Object.keys(data).map((key) => ({
           ...data[key],
           id: key,
         }));
+  
+        // Ordena os produtos pela propriedade 'name' em ordem alfabética
+        loadedProducts.sort((a, b) => a.name.localeCompare(b.name));
+  
         setProducts(loadedProducts);
       }
     });
-  }, []);
+  }, [db]);
 
   const openModal = (product) => {
     setEditingProduct(product);
@@ -231,82 +238,81 @@ function Gerenciador() {
       const productRef = ref(db, `EntradaProdutos/${editingProduct.id}`);
       update(productRef, editingProduct)
         .then(() => {
-          alert("Produto atualizado com sucesso!");
+          toast.success("Produto atualizado com sucesso!");
           closeModal();
         })
-        .catch((error) =>
-          alert("Erro ao atualizar o produto: " + error.message)
-        );
+        .catch((error) => toast.error("Erro ao atualizar: " + error.message));
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "unitPrice") {
-      // Remover o formato de moeda (R$) e manter apenas o número
-      const numericValue = value.replace(/[^\d,]/g, "").replace(",", ".");
-      setEditingProduct({
-        ...editingProduct,
-        [name]: parseFloat(numericValue),
-      });
-    } else {
-      setEditingProduct({ ...editingProduct, [name]: value });
-    }
+    setEditingProduct({ ...editingProduct, [name]: value });
   };
 
   return (
     <>
       <GlobalStyle />
-      <Container>
+      <ToastContainer />
+      <Title>Cadastro de Produtos</Title>
+
         <BackButton to="/Cadastro">
           <img src="/return.svg" alt="Voltar" />
         </BackButton>
-        <Title>Produtos Cadastrados</Title>
-        <Table>
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Nome</th>
-              <th>Marca</th>
-              <th>Fornecedor</th>
-              <th>Unidade de Medida</th>
-              <th>Data Cadastrada</th>
-              <th>Categoria</th>
-              <th>Tipo</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.sku}</td>
-                <td>{product.name}</td>
-                <td>{product.marca}</td>
-                <td>{product.supplier}</td>
-                <td>{product.unit}</td>
-                <td>{product.dateAdded}</td>
-                <td>{product.category}</td>
-                <td>{product.tipo}</td>
-                <td>
-                  <Button onClick={() => openModal(product)}>Alterar</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Container>
+        <TableWrapper>
+  <ResponsiveTable>
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Nome</th>
+        <th>Marca</th>
+        <th>Fornecedor</th>
+        <th>Peso (KG)</th>
+        <th>Unidade de Medida</th>
+        <th>Categoria</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {products.map((product) => (
+        <tr key={product.id}>
+          <td data-label="SKU">{product.sku}</td>
+          <td data-label="Nome">{product.name}</td>
+          <td data-label="Marca">{product.marca}</td>
+          <td data-label="Fornecedor">{product.supplier}</td>
+          <td data-label="Peso (KG)">{product.peso}</td>
+          <td data-label="Unidade de Medida">{product.unit}</td>
+          <td data-label="Categoria">{product.category}</td>
+          <td data-label="Tipo">{product.tipo}</td>
+          <td>
+            <Button onClick={() => openModal(product)}>Editar</Button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </ResponsiveTable>
+</TableWrapper>
 
       {isModalOpen && (
         <>
           <Overlay onClick={closeModal} />
           <Modal>
-            <h2>Editar Produto</h2>
-            <label>Nome:</label>
-            <input
+             <h2 style={{textAlign: 'center', fontSize: '20px'}}>Atualizar Produto</h2>
+             <label>Nome:</label>
+             <input
               type="text"
               name="name"
               value={editingProduct.name || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             />
             <label>Marca:</label>
             <input
@@ -314,6 +320,14 @@ function Gerenciador() {
               name="marca"
               value={editingProduct.marca || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             />
             <label>Fornecedor:</label>
             <input
@@ -321,6 +335,29 @@ function Gerenciador() {
               name="supplier"
               value={editingProduct.supplier || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
+            />
+            <label>Peso(KG):</label>
+            <input
+              type="text"
+              name="peso"
+              value={editingProduct.peso || ""}
+              onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             />
             <label>Unidade de Medida:</label>
             <input
@@ -328,6 +365,14 @@ function Gerenciador() {
               name="unit"
               value={editingProduct.unit || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             />
            
             <label>Categoria:</label>
@@ -335,6 +380,14 @@ function Gerenciador() {
               name="category"
               value={editingProduct.category || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             >
               <option value="Proteína">Proteína</option>
               <option value="Mantimento">Mantimento</option>
@@ -347,6 +400,14 @@ function Gerenciador() {
               name="tipo"
               value={editingProduct.tipo || ""}
               onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
             >
               <option value="Frutas">Frutas</option>
               <option value="Legumes">Legumes</option>

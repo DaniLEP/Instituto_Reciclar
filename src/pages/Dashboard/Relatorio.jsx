@@ -20,20 +20,8 @@ export default function Relatorio() {
             Relatórios
           </span>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Card 1 - Estoque */}
-            <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
-              <Link to={"/Estoque"}>
-                <img
-                  src="/doacoes.svg"
-                  className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]"
-                  alt="Ref.Servidas"
-                />
-                <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">
-                  Estoque
-                </h2>
-              </Link>
-            </div>
+          <div className="grid grid-cols- sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
             {/* Card  - Ref.Servidas */}
             <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
               <Link to={"#"}>

@@ -1,118 +1,168 @@
 import { useState, useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, onValue } from "firebase/database";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Estilos globais
 const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: #00009C; /* Fundo azul */
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    color: black;
-  }
-`;
+    body {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+  `;
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 50px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.1);
   position: relative;
+  overflow: hidden;
+  width: 100%;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  @media (max-width: 1024px) {
+    padding: 30px;
+    margin: 20px;
+  }
 
   @media (max-width: 768px) {
-    margin: 20px;
-    padding: 15px;
+    padding: 20px;
+    margin: 10px;
   }
 `;
 
 const Title = styled.h1`
   text-align: center;
-  font-size: 2.5rem;
-  color: #00009c;
-  margin-bottom: 30px;
+  font-size: 3rem;
+  color: #6c5ce7;
+  margin-bottom: 40px;
+  font-weight: bold;
 
   @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
     font-size: 2rem;
   }
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Label = styled.label`
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 10px;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  color: #333;
 
   &:focus {
-    border-color: #00009c;
+    border-color: #6c5ce7;
+    background-color: #fff;
     outline: none;
+  }
+
+  &::placeholder {
+    color: #aaa;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
   }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 10px;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  font-size: 1.1rem;
+  background-color: #f9f9f9;
+  color: #333;
+  transition: all 0.3s ease;
 
   &:focus {
-    border-color: #00009c;
+    border-color: #6c5ce7;
     outline: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
   }
 `;
 
 const Button = styled.button`
   width: 100%;
-  padding: 12px;
-  background: #f20de7;
-  color: #fff;
-  border-radius: 8px;
+  padding: 15px;
+  background-color: #6c5ce7;
+  color: white;
   border: none;
-  cursor: pointer;
+  border-radius: 10px;
   font-size: 1.2rem;
-  transition: background-color 0.3s;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #d10ccf;
+    background-color: #5a4bd5;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
   }
 `;
 
 const ButtonReturn = styled(Link)`
   display: block;
   text-align: center;
-  padding: 12px;
-  background: #f20de7;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
+  padding: 15px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 10px;
   font-size: 1.2rem;
   text-decoration: none;
-  transition: background-color 0.3s;
-  margin-top: 10px;
+  transition: background-color 0.3s ease;
+  margin-top: 15px;
 
   &:hover {
-    background-color: #d10ccf;
+    background-color: #c0392b;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
   }
 `;
 
@@ -123,19 +173,130 @@ const BackButton = styled(Link)`
   background: none;
   border: none;
   cursor: pointer;
-
   img {
     width: 40px;
     height: 40px;
+    transition: transform 0.2s ease;
 
-    @media (max-width: 768px) {
-      width: 30px;
-      height: 30px;
+    &:hover {
+      transform: rotate(180deg);
     }
+  }
+
+  @media (max-width: 768px) {
+    top: 15px;
+    left: 15px;
   }
 `;
 
-// Inicialização do Firebase
+// Modal estilizado
+const ModalBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+`;
+
+const ModalContainer = styled.div`
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 80%;
+  overflow-y: auto;
+  max-height: 70%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    90% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  h2 {
+    font-size: 2rem;
+    color: #6c5ce7;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    text-align: center;
+  }
+
+  th {
+    background-color: #6c5ce7;
+    color: white;
+  }
+
+  td {
+    border-top: 1px solid #ddd;
+    background-color: #fafafa;
+  }
+
+  td button {
+    padding: 8px 15px;
+    background-color: #6c5ce7;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  td button:hover {
+    background-color: #5a4bd5;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+`;
+
+const CloseButton = styled.button`
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: block;
+  margin: 20px auto;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+`;
+
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -150,23 +311,60 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-function EntradaProdutos() {
+const Modal = ({ products, onSelectProduct, onClose }) => (
+  <ModalBackdrop>
+    <ModalContainer>
+      <h2>Escolha um Produto</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Nome</th>
+            <th>Marca</th>
+            <th>Fornecedor</th>
+            <th>Peso(KG)</th>
+            <th>Unidade</th>
+            <th>Categoria</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product.id} onClick={() => onSelectProduct(product)}>
+              <td>{product.sku}</td>
+              <td>{product.name}</td>
+              <td>{product.marca}</td>
+              <td>{product.supplier}</td>
+              <td>{product.peso}</td>
+              <td>{product.unit}</td>
+              <td>{product.category}</td>
+              <td>
+                <button>Selecionar</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <CloseButton onClick={onClose}>Fechar</CloseButton>
+    </ModalContainer>
+  </ModalBackdrop>
+);
+
+const EntradaProdutos = () => {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [marca, setMarca] = useState("");
   const [supplier, setSupplier] = useState("");
-  const [unitPrice, setUnitPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [peso, setPeso] = useState("");
+  const [pesoTotal, setPesoTotal] = useState("");
   const [unit, setUnit] = useState("");
-  const [unidMedida, setUnidMedida] = useState("");
-  const [category, setCategory] = useState("");  
+  const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [dateAdded, setDateAdded] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [products, setProducts] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   // Carregar os produtos do Firebase
   useEffect(() => {
@@ -183,40 +381,32 @@ function EntradaProdutos() {
     });
   }, []);
 
-  // Função para pesquisar produto pelo SKU ou nome
-  const handleSearch = () => {
-    const product = products.find(
-      (product) => product.sku === sku || product.name === name
-    );
-
-    if (product) {
-      setName(product.name);
-      setMarca(product.marca);
-      setSupplier(product.supplier);
-      setUnit(product.unit);
-      setCategory(product.category);
-      setTipo(product.tipo);
-      setQuantity(product.quantity);
-      setUnidMedida(product.unidMedida)
-      setUnitPrice(product.unitPrice);
-      setDateAdded(product.dateAdded);
-      setExpiryDate(product.expiryDate);
-      setIsEditing(true); // Habilita o modo de edição
-    } else {
-      alert("Produto não encontrado.");
-    }
+  // Função para preencher os campos automaticamente ao selecionar um produto
+  const handleSelectProduct = (product) => {
+    setSku(product.sku);
+    setName(product.name);
+    setMarca(product.marca);
+    setSupplier(product.supplier);
+    setPeso(product.peso);
+    setUnit(product.unit);
+    setCategory(product.category);
+    setTipo(product.tipo);
+    setQuantity(product.quantity);
+    setDateAdded(product.dateAdded);
+    setExpiryDate(product.expiryDate);
+    setShowModal(false); // Fecha o modal após selecionar o produto
   };
 
-  // Função para salvar o produto na tabela de Estoque
+  // Função para salvar o produto
   const handleSave = () => {
     if (
       sku &&
       name &&
       supplier &&
+      peso &&
       unit &&
       quantity &&
-      unidMedida &&
-      unitPrice &&
+      category &&
       dateAdded &&
       expiryDate
     ) {
@@ -225,38 +415,58 @@ function EntradaProdutos() {
         name,
         marca,
         supplier,
+        peso,
         unit,
         quantity,
-        unidMedida,
         category,
         tipo,
         dateAdded,
-        unitPrice: parseFloat(unitPrice),
         expiryDate,
       };
 
-      // Salvar na tabela de Estoque
       const newProductRef = ref(db, `Estoque/${new Date().getTime()}`);
       set(newProductRef, newProduct)
-        .then(() => alert("Produto adicionado ao Estoque com sucesso!"))
-        .catch((error) =>
-          alert("Erro ao salvar o produto no Estoque: " + error.message)
-        );
+        .then(() => {
+          toast.success("Produto adicionado ao Estoque!");
+        })
+        .catch((error) => {
+          toast.error("Erro ao salvar: " + error.message);
+        });
 
-      // Limpar os campos
+      // Limpar campos
       setSku("");
       setName("");
       setMarca("");
       setSupplier("");
       setQuantity("");
-      setUnitPrice("");
-      setCategory("");     
-      setUnidMedida(""); 
+      setPeso("");
+      setUnit("");
+      setCategory("");
       setTipo("");
       setDateAdded("");
       setExpiryDate("");
     } else {
-      alert("Por favor, preencha todos os campos obrigatórios.");
+      toast.warning("Preencha todos os campos!");
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const quantity = e.target.value;
+    setQuantity(quantity);
+
+    if (peso && quantity) {
+      const totalPeso = peso * quantity; // Calcula o peso total
+      setPesoTotal(totalPeso);
+    }
+  };
+
+  const handlePesoChange = (e) => {
+    const pesoUnitario = e.target.value;
+    setPeso(pesoUnitario);
+
+    if (quantity && pesoUnitario) {
+      const totalPeso = pesoUnitario * quantity; // Recalcula o peso total com a nova unidade de peso
+      setPesoTotal(totalPeso);
     }
   };
 
@@ -273,22 +483,22 @@ function EntradaProdutos() {
           <Label>SKU:</Label>
           <Input
             type="text"
-            value={sku}
+            value={sku || ""} // Fallback para string vazia caso seja undefined ou null
             onChange={(e) => setSku(e.target.value)}
-            placeholder="Digite o SKU do produto"
+            placeholder="Digite o SKU"
+            onClick={() => setShowModal(true)}
           />
         </FormGroup>
+
         <FormGroup>
-          <Label>Nome do Produto:</Label>
+          <Label>Nome:</Label>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Digite o nome do produto"
+            placeholder="Nome do produto"
           />
         </FormGroup>
-
-        <Button onClick={handleSearch}>Buscar Produto</Button>
 
         <FormGroup>
           <Label>Marca:</Label>
@@ -296,7 +506,7 @@ function EntradaProdutos() {
             type="text"
             value={marca}
             onChange={(e) => setMarca(e.target.value)}
-            placeholder="Digite a marca do produto"
+            placeholder="Marca do produto"
           />
         </FormGroup>
 
@@ -306,7 +516,7 @@ function EntradaProdutos() {
             type="text"
             value={supplier}
             onChange={(e) => setSupplier(e.target.value)}
-            placeholder="Digite o fornecedor"
+            placeholder="Fornecedor"
           />
         </FormGroup>
 
@@ -315,35 +525,55 @@ function EntradaProdutos() {
           <Input
             type="number"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Digite a quantidade"
+            onChange={handleQuantityChange} // Usar a função para tratar a quantidade e calcular o peso total
+            placeholder="Quantidade"
           />
         </FormGroup>
 
-        
         <FormGroup>
-          <Label>Unidade de Medida:</Label>
-          <Input
-            type="text"
-            value={unit}
-            onChange={(e) => setUnidMedida(e.target.value)}
-            placeholder="Digite a unidade de Medida"
-          />
-        </FormGroup>
-
-
-        <FormGroup>
-          <Label>Preço Unitário:</Label>
+          <Label>Peso Unitário(KG):</Label>
           <Input
             type="number"
-            value={unitPrice}
-            onChange={(e) => setUnitPrice(e.target.value)}
-            placeholder="Digite o preço unitário"
+            value={peso}
+            onChange={handlePesoChange} // Atualiza o peso e recalcula o peso total
+            placeholder="Peso unitário"
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label>Peso Total (kg):</Label>
+          <Input
+            type="number"
+            value={pesoTotal}
+            placeholder="Peso Total"
+            disabled // Desabilita para não edição manual
           />
         </FormGroup>
 
         <FormGroup>
-          <Label>Data de Cadastro:</Label>
+          <Label>Categoria:</Label>
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Selecione a Categoria</option>
+            <option value="Alimentos">Alimentos</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Utensílios">Utensílios</option>
+          </Select>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Tipo:</Label>
+          <Input
+            type="text"
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            placeholder="Tipo"
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Data de Adição:</Label>
           <Input
             type="date"
             value={dateAdded}
@@ -360,45 +590,20 @@ function EntradaProdutos() {
           />
         </FormGroup>
 
-        <FormGroup>
-          <Label>Categoria:</Label>
-          <Select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Selecione a categoria</option>
-            <option value="Proteína">Proteína</option>
-            <option value="Mantimento">Mantimento</option>
-            <option value="Hortaliça">Hortaliça</option>
-            <option value="Doações">Doações</option>
-          </Select>
-        </FormGroup>
-        
-        <FormGroup>
-          <Label>Tipo:</Label>
-          <Select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-          >
-            <option value="">Selecione o tipo</option>
-            <option value="Frutas">Frutas</option>
-              <option value="Legumes">Legumes</option>
-              <option value="Verduras">Verduras</option>
-              <option value="Bovina">Bovina</option>              
-              <option value="Ave">Ave</option>
-              <option value="Suína">Suína</option>
-              <option value="Pescado">Pescado</option>
-              <option value="Mercado">Mercado</option>
-          </Select>
-        </FormGroup>
-
-        <Button onClick={handleSave}>
-          {isEditing ? "Adicionar ao Estoque" : "Adicionar ao Estoque"}
-        </Button>
+        <Button onClick={handleSave}>Salvar Produto</Button>
         <ButtonReturn to="/Cadastro">Voltar</ButtonReturn>
       </Container>
+
+      {showModal && (
+        <Modal
+          products={products}
+          onSelectProduct={handleSelectProduct}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+      <ToastContainer />
     </>
   );
-}
+};
 
 export default EntradaProdutos;

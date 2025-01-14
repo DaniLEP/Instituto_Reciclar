@@ -158,7 +158,7 @@ const RetiradaProdutos = () => {
         />
         <input
           type="text"
-          placeholder="Retirante"
+          placeholder="Responsável"
           value={retirante}
           onChange={(e) => setRetirante(e.target.value)}
           style={styles.input}
