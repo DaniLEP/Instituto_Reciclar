@@ -53,7 +53,15 @@ const HistoricoRetiradas = () => {
 
   // Função para formatar a data e hora
   const formatarDataHora = (timestamp) => {
-    const data = new Date(timestamp);
+    if (!timestamp) return "Data inválida";  // Verifica se o timestamp é válido
+
+    // Verifica se o valor de data é uma string ISO ou timestamp numérico
+    const data = typeof timestamp === 'string' ? new Date(timestamp) : new Date(Number(timestamp));
+    
+    // Verifica se a data é inválida
+    if (isNaN(data.getTime())) return "Data inválida";
+
+    // Formata a data
     return data.toLocaleString('pt-BR', {
       year: 'numeric',
       month: '2-digit',
@@ -122,6 +130,7 @@ const HistoricoRetiradas = () => {
             <th style={{ padding: '12px' }}>Produto</th>
             <th style={{ padding: '12px' }}>Categoria</th>
             <th style={{ padding: '12px' }}>Quantidade</th>
+            <th style={{ padding: '12px' }}>Peso(KG)</th>
             <th style={{ padding: '12px' }}>Data de Retirada</th>
             <th style={{ padding: '12px' }}>Responsável</th>
           </tr>
@@ -132,9 +141,9 @@ const HistoricoRetiradas = () => {
               <td style={{ padding: '12px' }}>{retirada.sku}</td>
               <td style={{ padding: '12px' }}>{retirada.name}</td>
               <td style={{ padding: '12px' }}>{retirada.category}</td>
-              <td style={{ padding: '12px' }}>{retirada.quantity}</td>
-              <td style={{ padding: '12px' }}>{formatarDataHora(retirada.data)}
-              </td>
+              <td style={{ padding: '12px' }}>{retirada.quantity} UN</td>
+              <td style={{ padding: '12px' }}>{retirada.peso} KG</td>
+              <td style={{ padding: '12px' }}>{formatarDataHora(retirada.data)}</td>
               <td style={{ padding: '12px' }}>{retirada.retirante}</td>
             </tr>
           ))}

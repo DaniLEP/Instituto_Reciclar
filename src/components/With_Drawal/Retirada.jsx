@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, push, update, remove } from "firebase/database";
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -24,9 +26,17 @@ const RetiradaProdutos = () => {
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [peso, setPeso] = useState("");
   const [retirante, setRetirante] = useState("");
   const [data, setData] = useState("");
   const [produtos, setProdutos] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Atualiza a data automaticamente
+  useEffect(() => {
+    const dataAtual = formatarDataHora(new Date());
+    setData(dataAtual);
+  }, []);
 
   useEffect(() => {
     const fetchProdutos = async () => {
@@ -40,68 +50,72 @@ const RetiradaProdutos = () => {
     fetchProdutos();
   }, []);
 
-  const handleConsultar = () => {
-    const produto = produtos.find((p) => p.sku === sku);
-    if (produto) {
-      setName(produto.name);
-      setCategory(produto.category);
-      setTipo(produto.tipo);
-      setData(formatarDataHora(new Date())); // Formato correto da data
-    } else {
-      alert("Produto não encontrado!");
-      setName("");
-      setCategory("");
-      setData("");
-    }
-  };
-
   const handleRetirada = async () => {
-    if (!sku || !name || !category || !tipo || !quantity || !retirante || !data) {
-      alert("Por favor, preencha todos os campos.");
+    if (!sku || !name || !category || !tipo || !quantity || !peso || !retirante || !data) {
+      toast.error("Por favor, preencha todos os campos.");
       return;
     }
 
     const produto = produtos.find((p) => p.sku === sku);
     if (!produto) {
-      alert("Produto não encontrado!");
+      toast.error("Produto não encontrado!");
       return;
     }
 
     if (produto.quantity < quantity) {
-      alert("Estoque insuficiente!");
+      toast.error("Estoque insuficiente para a quantidade!");
+      return;
+    }
+
+    if (produto.peso < peso) {
+      toast.error("Estoque insuficiente para o peso!");
       return;
     }
 
     const novaQuantidade = produto.quantity - quantity;
-    const produtoRef = ref(database, `Estoque/${produto.id}`);
+    const novoPeso = produto.peso - peso;
 
-    if (novaQuantidade === 0) {
+    const produtoRef = ref(database, `Estoque/${produto.id}`);
+    const atualizacao = {
+      quantity: novaQuantidade,
+      peso: novoPeso,
+    };
+
+    if (novaQuantidade === 0 && novoPeso === 0) {
       await remove(produtoRef);
       setProdutos((prevProdutos) => prevProdutos.filter((p) => p.id !== produto.id));
     } else {
-      await update(produtoRef, { quantity: novaQuantidade });
+      await update(produtoRef, atualizacao);
       setProdutos((prevProdutos) =>
         prevProdutos.map((p) =>
-          p.id === produto.id ? { ...p, quantity: novaQuantidade } : p
+          p.id === produto.id ? { ...p, ...atualizacao } : p
         )
       );
     }
 
     const retiradaRef = ref(database, "Retiradas");
-    const retiradaData = { sku, name, category, tipo, quantity, retirante, data };
+    const retiradaData = { sku, name, category, tipo, quantity, peso, retirante, data };
     await push(retiradaRef, retiradaData);
 
-    alert(`Retirada registrada com sucesso por ${retirante}. Estoque atualizado.`);
+    toast.success(`Retirada registrada com sucesso por ${retirante}. Estoque atualizado.`);
     setSku("");
     setName("");
     setCategory("");
     setTipo("");
     setQuantity("");
+    setPeso("");
     setRetirante("");
-    setData("");
+    setData(formatarDataHora(new Date())); // Atualiza a data ao registrar a retirada
   };
 
-  // Função para formatar a data no estilo DD/MM/YYYY HH:mm:ss
+  const handleProdutoSelecionado = (produto) => {
+    setSku(produto.sku);
+    setName(produto.name);
+    setCategory(produto.category);
+    setTipo(produto.tipo);
+    setIsModalOpen(false);
+  };
+
   const formatarDataHora = (timestamp) => {
     const date = new Date(timestamp);
     const dia = String(date.getDate()).padStart(2, "0");
@@ -115,153 +129,119 @@ const RetiradaProdutos = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Retirada de Produtos</h1>
-      <div style={styles.form}>
+    <div style={{ background: "#f4f4f9", minHeight: "100vh", padding: "20px", color: "#333", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <ToastContainer />
+      <h1 style={{ fontSize: "2rem", color: "#2b2d42", marginBottom: "20px" }}>Retirada de Produtos</h1>
+      <div style={{ background: "#ffffff", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", padding: "20px", width: "100%", maxWidth: "400px", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <input
           type="text"
           placeholder="SKU"
           value={sku}
-          onChange={(e) => setSku(e.target.value)}
-          style={styles.input}
+          onClick={() => setIsModalOpen(true)}
+          readOnly
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
         />
-        <button onClick={handleConsultar} style={styles.Consultabutton}>
-          Consultar
-        </button>
         <input
           type="text"
           placeholder="Nome do Produto"
           value={name}
           readOnly
-          style={styles.inputReadOnly}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
         />
         <input
           type="text"
           placeholder="Categoria"
           value={category}
           readOnly
-          style={styles.inputReadOnly}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
         />
         <input
           type="text"
           placeholder="Tipo"
           value={tipo}
           readOnly
-          style={styles.inputReadOnly}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
         />
         <input
           type="number"
           placeholder="Quantidade"
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
-          style={styles.input}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
+        />
+        <input
+          type="number"
+          placeholder="Peso (kg)"
+          value={peso}
+          onChange={(e) => setPeso(Number(e.target.value))}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
         />
         <input
           type="text"
           placeholder="Responsável"
           value={retirante}
           onChange={(e) => setRetirante(e.target.value)}
-          style={styles.input}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
         />
         <input
           type="text"
           placeholder="Data"
           value={data}
           readOnly
-          style={styles.inputReadOnly}
+          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
         />
-        <button onClick={handleRetirada} style={styles.button}>
+        <button onClick={handleRetirada} style={{ width: "90%", padding: "10px", background: "#F20DE7", color: "#ffffff", border: "none", borderRadius: "5px", fontSize: "1rem", cursor: "pointer", transition: "background 0.3s" }}>
           Registrar Retirada
         </button>
-        <Link to={'/Retirada'}>
-          <button style={styles.voltarButton}>
+        <Link to={"/Retirada"}>
+          <button style={{ width: "90%", padding: "10px", color: "black", border: "none", borderRadius: "5px", fontSize: "1rem", cursor: "pointer", transition: "background 0.3s", marginTop: "10px" }}>
             Voltar
           </button>
         </Link>
       </div>
+
+      {isModalOpen && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "10px", width: "90%", maxWidth: "800px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)" }}>
+            <h2 style={{ fontSize: "1.5rem", marginBottom: "20px", textAlign: "center" }}>Produtos Disponíveis</h2>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+              <thead>
+                <tr style={{ textAlign: "center" }}>
+                  <th>Nome</th>
+                  <th>SKU</th>
+                  <th>Categoria</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Peso(KG)</th>
+                  <th>Selecionar</th>
+                </tr>
+              </thead>
+              <tbody style={{ textAlign: "center" }}>
+                {produtos.map((produto) => (
+                  <tr key={produto.id}>
+                    <td>{produto.name}</td>
+                    <td>{produto.sku}</td>
+                    <td>{produto.category}</td>
+                    <td>{produto.tipo}</td>
+                    <td>{produto.quantity}</td>
+                    <td>{produto.peso}</td>
+                    <td>
+                      <button onClick={() => handleProdutoSelecionado(produto)} style={{ background: "#007BFF", color: "#fff", padding: "5px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                        Selecionar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button onClick={() => setIsModalOpen(false)} style={{ backgroundColor: "#00009c", color: "#fff", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    background: "#f4f4f9",
-    minHeight: "100vh",
-    padding: "20px",
-    color: "#333",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: "2rem",
-    color: "#2b2d42",
-    marginBottom: "20px",
-  },
-  form: {
-    background: "#ffffff",
-    borderRadius: "10px",
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-    padding: "20px",
-    width: "100%",
-    maxWidth: "400px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  input: {
-    width: "90%",
-    padding: "10px",
-    marginBottom: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    color: "#333",
-  },
-  inputReadOnly: {
-    width: "90%",
-    padding: "10px",
-    marginBottom: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    background: "#f0f0f0",
-    color: "#888",
-  },
-  button: {
-    width: "90%",
-    padding: "10px",
-    background: "#F20DE7",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    transition: "background 0.3s",
-  },
-  Consultabutton: {
-    width: "90%",
-    padding: "10px",
-    background: "#00009c",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    transition: "background 0.3s",
-    marginBottom: '10px'
-  },
-  voltarButton: {
-    width: "90%",
-    padding: "10px",
-    color: "black",
-    border: "none",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    transition: "background 0.3s",
-    marginTop: '10px',
-  },
 };
 
 export default RetiradaProdutos;

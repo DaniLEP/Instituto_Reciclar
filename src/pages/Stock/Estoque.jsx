@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,24 @@ const Estoque = () => {
         }));
         setProductsData(products);
         setFilteredProducts(products); // Exibe todos os produtos inicialmente
+
+        // Calcular totais ao carregar os produtos
+        const totalQuantity = products.reduce(
+          (acc, item) => acc + parseInt(item.quantity, 10),
+          0
+        );
+        const totalPeso = products.reduce(
+          (acc, item) => acc + parseFloat(item.peso || 0),
+          0
+        );
+        const totalUnitPrice = products.reduce(
+          (acc, item) => acc + (item.unitPrice || 0) * (item.quantity || 0),
+          0
+        );
+
+        setTotalQuantity(totalQuantity);
+        setTotalPeso(totalPeso);
+        setTotalUnitPrice(totalUnitPrice);
       }
     });
   }, []);
@@ -88,7 +106,6 @@ const Estoque = () => {
       );
       setTotalQuantity(totalQuantity);
 
-      
       const totalPeso = filtered.reduce(
         (acc, item) => acc + parseInt(item.peso, 10),
         0
@@ -276,16 +293,20 @@ const Estoque = () => {
 
       {error && <p style={errorMessageStyle}>{error}</p>}
 
-      {filteredProducts.length > 0 && (
+      {productsData.length > 0 && (
         <div style={summaryStyle}>
           <h3 style={summaryTextStyle}>
-            Quantidade de Produtos: {totalQuantity}
+            Quantidade Total de Produtos: {totalQuantity}
           </h3>
           <h3 style={summaryTextStyle}>
-            Valor Total: R$ {totalUnitPrice.toFixed(2)}
+            Valor Total no Estoque:{" "}
+            {new Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(totalUnitPrice)}
           </h3>
           <h3 style={summaryTextStyle}>
-            Peso Total: KG {totalPeso.toFixed(2)}
+            Peso Total no Estoque: KG {totalPeso.toFixed(2).replace(".", ",")}
           </h3>
         </div>
       )}
@@ -300,11 +321,9 @@ const Estoque = () => {
               <th style={tableCellStyle}>Marca</th>
               <th style={tableCellStyle}>Categoria</th>
               <th style={tableCellStyle}>Tipo</th>
-              <th style={tableCellStyle}>Quantidade</th>
               <th style={tableCellStyle}>Unidade de Medida</th>
-              <th style={tableCellStyle}>Peso Unitário</th>
-              <th style={tableCellStyle}>Peso Total</th>
-
+              <th style={tableCellStyle}>Quantidade</th>
+              <th style={tableCellStyle}>Peso Unitário (KG)</th>
               <th style={tableCellStyle}>Valor Unitário</th>
               <th style={tableCellStyle}>Data de Cadastro</th>
               <th style={tableCellStyle}>Data de Vencimento</th>
@@ -320,14 +339,13 @@ const Estoque = () => {
                 <td style={tableCellStyle}>{item.marca}</td>
                 <td style={tableCellStyle}>{item.category || "N/A"}</td>
                 <td style={tableCellStyle}>{item.tipo || "N/A"}</td>
-                <td style={tableCellStyle}>{item.quantity}</td>
                 <td style={tableCellStyle}>{item.unit}</td>
-                <td style={tableCellStyle}>{item.peso}</td>
-                <td style={tableCellStyle}>{item.pesoTotal}</td>
-                <td style={tableCellStyle}>{item.quantity}</td>
+                <td style={tableCellStyle}>{item.quantity} UN</td>
+                <td style={tableCellStyle}>{item.peso} KG </td>
+
                 <td style={tableCellStyle}>
-                  {item.unitPrice
-                    ? `R$ ${item.unitPrice.toFixed(2)}`
+                  {item.unitPrice && !isNaN(Number(item.unitPrice))
+                    ? `R$ ${Number(item.unitPrice).toFixed(2)}`
                     : "Preço não disponível"}
                 </td>
                 <td style={tableCellStyle}>{formatDate(item.dateAdded)}</td>

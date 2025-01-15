@@ -335,7 +335,7 @@ const Modal = ({ products, onSelectProduct, onClose }) => (
               <td>{product.name}</td>
               <td>{product.marca}</td>
               <td>{product.supplier}</td>
-              <td>{product.peso}</td>
+              <td>{product.peso} - KG</td>
               <td>{product.unit}</td>
               <td>{product.category}</td>
               <td>
@@ -361,6 +361,7 @@ const EntradaProdutos = () => {
   const [unit, setUnit] = useState("");
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
   const [dateAdded, setDateAdded] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -391,6 +392,7 @@ const EntradaProdutos = () => {
     setUnit(product.unit);
     setCategory(product.category);
     setTipo(product.tipo);
+    setUnitPrice(product.unitPrice);
     setQuantity(product.quantity);
     setDateAdded(product.dateAdded);
     setExpiryDate(product.expiryDate);
@@ -407,6 +409,8 @@ const EntradaProdutos = () => {
       unit &&
       quantity &&
       category &&
+      tipo &&
+      unitPrice &&
       dateAdded &&
       expiryDate
     ) {
@@ -420,6 +424,7 @@ const EntradaProdutos = () => {
         quantity,
         category,
         tipo,
+        unitPrice,
         dateAdded,
         expiryDate,
       };
@@ -443,6 +448,7 @@ const EntradaProdutos = () => {
       setUnit("");
       setCategory("");
       setTipo("");
+      setUnitPrice("");
       setDateAdded("");
       setExpiryDate("");
     } else {
@@ -458,6 +464,21 @@ const EntradaProdutos = () => {
       const totalPeso = peso * quantity; // Calcula o peso total
       setPesoTotal(totalPeso);
     }
+  };
+
+  const handleUnitPriceChange = (e) => {
+    let inputValue = e.target.value;
+
+    // Remove tudo que não for número (para processar corretamente)
+    inputValue = inputValue.replace(/\D/g, "");
+
+    // Formata no estilo moeda brasileira
+    const formattedValue = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
+
+    setUnitPrice(formattedValue);
   };
 
   const handlePesoChange = (e) => {
@@ -555,10 +576,11 @@ const EntradaProdutos = () => {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="">Selecione a Categoria</option>
-            <option value="Alimentos">Alimentos</option>
-            <option value="Bebidas">Bebidas</option>
-            <option value="Utensílios">Utensílios</option>
+          <option value="">Selecione a categoria:</option>
+          <option value="Proteína">Proteína</option>
+          <option value="Mantimento">Mantimento</option>
+          <option value="Hortaliças">Hortaliças</option>
+          <option value="Doações">Doações</option>
           </Select>
         </FormGroup>
 
@@ -569,6 +591,16 @@ const EntradaProdutos = () => {
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
             placeholder="Tipo"
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Valor Unitário (R$):</Label>
+          <Input
+            type="text"
+            value={unitPrice}
+            onChange={handleUnitPriceChange}
+            placeholder="R$ 0,00"
           />
         </FormGroup>
 
