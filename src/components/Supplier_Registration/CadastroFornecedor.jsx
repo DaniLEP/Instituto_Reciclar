@@ -43,13 +43,23 @@ const CadastroFornecedores = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-
-    if (name === "cep" && value.length === 8) {
-      fetchAddress(value);
+  
+    // Valida o CEP para garantir que é um número com 8 dígitos
+    if (name === "cep" && /^[0-9]{0,8}$/.test(value)) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+  
+      // Se o CEP tiver 8 dígitos, tenta buscar o endereço
+      if (value.length === 8) {
+        fetchAddress(value);
+      }
+    } else if (name !== "cep") {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
     }
   };
 

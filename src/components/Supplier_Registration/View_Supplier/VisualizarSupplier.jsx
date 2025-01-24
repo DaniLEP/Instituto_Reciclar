@@ -75,7 +75,10 @@ const TabelaFornecedores = () => {
 
   const handleSaveEdit = () => {
     if (selectedFornecedor) {
-      const fornecedorRef = ref(db, `CadastroFornecedores/${selectedFornecedor.id}`);
+      const fornecedorRef = ref(
+        db,
+        `CadastroFornecedores/${selectedFornecedor.id}`
+      );
       update(fornecedorRef, selectedFornecedor)
         .then(() => {
           toast.success("Fornecedor atualizado com sucesso!");
@@ -95,68 +98,84 @@ const TabelaFornecedores = () => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
-    const filtered = fornecedores.filter((fornecedor) =>
-      fornecedor.razaoSocial.toLowerCase().includes(query) ||
-      fornecedor.cnpj.toLowerCase().includes(query) ||
-      fornecedor.grupo.toLowerCase().includes(query)
+    const filtered = fornecedores.filter(
+      (fornecedor) =>
+        fornecedor.razaoSocial.toLowerCase().includes(query) ||
+        fornecedor.cnpj.toLowerCase().includes(query) ||
+        fornecedor.grupo.toLowerCase().includes(query)
     );
-    setFilteredFornecedores(filtered);
+
+    setFilteredFornecedores(filtered); // Filtra os fornecedores conforme a pesquisa
+
+    if (filtered.length === 1) {
+      // Se encontrar exatamente um fornecedor, preenche os campos automaticamente
+      setSelectedFornecedor(filtered[0]);
+    } else {
+      setSelectedFornecedor(null); // Se não encontrar ou encontrar mais de um, limpa a seleção
+    }
   };
 
   const toggleStatus = (id, currentStatus) => {
     const fornecedorRef = ref(db, `CadastroFornecedores/${id}`);
     update(fornecedorRef, { ativo: !currentStatus })
       .then(() => {
-        toast.success(`Status atualizado para ${!currentStatus ? 'Ativo' : 'Inativo'}`);
+        toast.success(
+          `Status atualizado para ${!currentStatus ? "Ativo" : "Inativo"}`
+        );
       })
-      .catch((error) => toast.error("Erro ao atualizar status: " + error.message));
+      .catch((error) =>
+        toast.error("Erro ao atualizar status: " + error.message)
+      );
   };
 
   const handleCepChange = async (e) => {
-    const cepValue = e.target.value;
+    const cepValue = e.target.value.replace(/\D/g, ''); // Remover qualquer caractere não numérico
     setCep(cepValue); // Atualiza o estado do CEP
-
+  
+    // Verifica se o CEP tem exatamente 8 dígitos (sem o hífen)
     if (cepValue.length === 8) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
         const data = await response.json();
-
+  
         if (data.erro) {
           toast.error("CEP não encontrado.");
           return;
         }
-
+  
+        // Atualiza os dados do fornecedor com o endereço retornado do ViaCEP
         setSelectedFornecedor((prevData) => ({
           ...prevData,
           endereco: data.logradouro || "",
           bairro: data.bairro || "",
           municipio: data.localidade || "",
           uf: data.uf || "",
+          pais: "Brasil", // O país será fixo ou ajustado conforme necessário
         }));
-
+  
         toast.success("Endereço preenchido automaticamente!");
       } catch (error) {
         toast.error("Erro ao buscar o CEP.");
       }
     }
   };
-
+  
   const formatCNPJ = (value) => {
     return value
-      .replace(/\D/g, '') // Remove tudo o que não for número
-      .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+      .replace(/\D/g, "") // Remove tudo o que não for número
+      .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
   };
 
   const formatTelefone = (value) => {
     return value
-      .replace(/\D/g, '') // Remove tudo o que não for número
-      .replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+      .replace(/\D/g, "") // Remove tudo o que não for número
+      .replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
   };
 
   const formatCEP = (value) => {
     return value
       .replace(/\D/g, '') // Remove tudo o que não for número
-      .replace(/^(\d{5})(\d{3})$/, '$1-$2');
+      .replace(/^(\d{5})(\d{3})$/, '$1-$2'); // Formata no padrão 'xxxxx-xxx'
   };
 
   return (
@@ -277,35 +296,36 @@ const TabelaFornecedores = () => {
             Nenhum fornecedor encontrado.
           </p>
         )}
-      </div>{selectedFornecedor && (
-  <div
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-    onClick={handleCloseModal}
-  >
-    <div
-      style={{
-        backgroundColor: "white",
-        padding: "30px",
-        borderRadius: "10px",
-        width: "500px",
-        maxWidth: "100%",
-        maxHeight: "80vh", // Limita a altura do modal para 80% da altura da tela
-        overflowY: "auto", // Adiciona scroll vertical caso o conteúdo ultrapasse o tamanho do modal
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3>Editar Fornecedor</h3>
-      <div>
+      </div>
+      {selectedFornecedor && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onClick={handleCloseModal}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "30px",
+              borderRadius: "10px",
+              width: "500px",
+              maxWidth: "100%",
+              maxHeight: "80vh", // Limita a altura do modal para 80% da altura da tela
+              overflowY: "auto", // Adiciona scroll vertical caso o conteúdo ultrapasse o tamanho do modal
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Editar Fornecedor</h3>
+            <div>
               <label>Razão Social:</label>
               <input
                 type="text"
@@ -336,26 +356,26 @@ const TabelaFornecedores = () => {
               />
             </div>
             <div>
-              <label>CEP:</label>
-              <input
-                type="text"
-                name="cep"
-                value={formatCEP(cep)}
-                onChange={handleCepChange}
-                maxLength="9"
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
-            <div>
-              <label>Endereço:</label>
-              <input
-                type="text"
-                name="endereco"
-                value={selectedFornecedor.endereco || ""}
-                onChange={handleInputChange}
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
+  <label>CEP:</label>
+  <input
+    type="text"
+    name="cep"
+    value={formatCEP(cep)} // Aplique a máscara do CEP
+    onChange={handleCepChange} // Chama o método de consulta ao CEP
+    maxLength="9" // Limita o número de caracteres
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
+<div>
+  <label>Endereço:</label>
+  <input
+    type="text"
+    name="endereco"
+    value={selectedFornecedor.endereco || ""} // Preenche automaticamente com o valor do CEP
+    onChange={handleInputChange}
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
             <div>
               <label>Número:</label>
               <input
@@ -377,45 +397,45 @@ const TabelaFornecedores = () => {
               />
             </div>
             <div>
-              <label>Bairro:</label>
-              <input
-                type="text"
-                name="bairro"
-                value={selectedFornecedor.bairro || ""}
-                onChange={handleInputChange}
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
+  <label>Bairro:</label>
+  <input
+    type="text"
+    name="bairro"
+    value={selectedFornecedor.bairro || ""}
+    onChange={handleInputChange}
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
+<div>
+  <label>Município:</label>
+  <input
+    type="text"
+    name="municipio"
+    value={selectedFornecedor.municipio || ""}
+    onChange={handleInputChange}
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
             <div>
-              <label>Município:</label>
-              <input
-                type="text"
-                name="municipio"
-                value={selectedFornecedor.municipio || ""}
-                onChange={handleInputChange}
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
-            <div>
-              <label>UF:</label>
-              <input
-                type="text"
-                name="uf"
-                value={selectedFornecedor.uf || ""}
-                onChange={handleInputChange}
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
-            <div>
-              <label>País:</label>
-              <input
-                type="text"
-                name="pais"
-                value={selectedFornecedor.pais || ""}
-                onChange={handleInputChange}
-                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-              />
-            </div>
+  <label>UF:</label>
+  <input
+    type="text"
+    name="uf"
+    value={selectedFornecedor.uf || ""}
+    onChange={handleInputChange}
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
+<div>
+  <label>País:</label>
+  <input
+    type="text"
+    name="pais"
+    value={selectedFornecedor.pais || ""}
+    onChange={handleInputChange}
+    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+  />
+</div>
             <div>
               <label>Contato:</label>
               <input
@@ -456,39 +476,39 @@ const TabelaFornecedores = () => {
                 style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
               />
             </div>
-      <button
-        onClick={handleSaveEdit}
-        style={{
-          width: "100%",
-          padding: "10px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "20px",
-        }}
-      >
-        Salvar Alterações
-      </button>
-      <button
-        onClick={handleCloseModal}
-        style={{
-          width: "100%",
-          padding: "10px",
-          backgroundColor: "#dc3545",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "10px",
-        }}
-      >
-        Fechar
-      </button>
-    </div>
-  </div>
-)}
+            <button
+              onClick={handleSaveEdit}
+              style={{
+                width: "100%",
+                padding: "10px",
+                backgroundColor: "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginTop: "20px",
+              }}
+            >
+              Salvar Alterações
+            </button>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                width: "100%",
+                padding: "10px",
+                backgroundColor: "#dc3545",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginTop: "10px",
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
       <ToastContainer />
     </div>
   );
