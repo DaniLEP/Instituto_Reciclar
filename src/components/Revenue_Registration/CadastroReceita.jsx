@@ -25,7 +25,7 @@ const database = getDatabase(app);
 export default function CadastroRefeicoes() {
   // Definindo estado para o campo de data de refeição
   const [formData, setFormData] = useState({
-    dataRefeicao: "", // Agora vazio para que o usuário escolha a data
+    dataRefeicao: new Date().toISOString().split('T')[0], // Define a data atual
     cafeDescricao: "",
     cafeTotalQtd: "",
     cafeFuncionariosQtd: "",

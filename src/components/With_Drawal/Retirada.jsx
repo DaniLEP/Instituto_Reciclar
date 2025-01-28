@@ -30,7 +30,9 @@ const RetiradaProdutos = () => {
   const [retirante, setRetirante] = useState("");
   const [data, setData] = useState("");
   const [produtos, setProdutos] = useState([]);
+  const [filteredProdutos, setFilteredProdutos] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Atualiza a data automaticamente
   useEffect(() => {
@@ -44,11 +46,26 @@ const RetiradaProdutos = () => {
       const snapshot = await get(produtosRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
-        setProdutos(Object.entries(data).map(([id, produto]) => ({ id, ...produto })));
+        const produtosList = Object.entries(data).map(([id, produto]) => ({ id, ...produto }));
+        setProdutos(produtosList);
+        setFilteredProdutos(produtosList); // Inicializa os produtos filtrados com todos os produtos
       }
     };
     fetchProdutos();
   }, []);
+
+  // Filtro de produtos baseado no nome ou SKU
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredProdutos(produtos);
+    } else {
+      const filtered = produtos.filter((produto) =>
+        produto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        produto.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProdutos(filtered);
+    }
+  }, [searchTerm, produtos]);
 
   const handleRetirada = async () => {
     if (!sku || !name || !category || !tipo || !quantity || !peso || !retirante || !data) {
@@ -176,13 +193,19 @@ const RetiradaProdutos = () => {
           onChange={(e) => setPeso(Number(e.target.value))}
           style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
         />
-        <input
+        <select
           type="text"
           placeholder="Responsável"
           value={retirante}
           onChange={(e) => setRetirante(e.target.value)}
           style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
-        />
+        >
+          <option value="Selecionar">Escolha o Responsável</option>
+          <option value="Maria José">Maria José</option>
+          <option value="Maria Miselene">Maria Mislene</option>
+          <option value="Rose">Rose</option>
+
+        </select>
         <input
           type="text"
           placeholder="Data"
@@ -204,6 +227,21 @@ const RetiradaProdutos = () => {
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center" }}>
           <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "10px", width: "90%", maxWidth: "800px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)" }}>
             <h2 style={{ fontSize: "1.5rem", marginBottom: "20px", textAlign: "center" }}>Produtos Disponíveis</h2>
+            <input
+              type="text"
+              placeholder="Buscar por nome ou SKU"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                marginBottom: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                fontSize: "1rem",
+                color: "#333"
+              }}
+            />
             <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
               <thead>
                 <tr style={{ textAlign: "center" }}>
@@ -217,7 +255,7 @@ const RetiradaProdutos = () => {
                 </tr>
               </thead>
               <tbody style={{ textAlign: "center" }}>
-                {produtos.map((produto) => (
+                {filteredProdutos.map((produto) => (
                   <tr key={produto.id}>
                     <td>{produto.name}</td>
                     <td>{produto.sku}</td>
@@ -226,7 +264,17 @@ const RetiradaProdutos = () => {
                     <td>{produto.quantity}</td>
                     <td>{produto.peso}</td>
                     <td>
-                      <button onClick={() => handleProdutoSelecionado(produto)} style={{ background: "#007BFF", color: "#fff", padding: "5px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                      <button
+                        onClick={() => handleProdutoSelecionado(produto)}
+                        style={{
+                          background: "#007BFF",
+                          color: "#fff",
+                          padding: "5px 10px",
+                          border: "none",
+                          borderRadius: "5px",
+                          cursor: "pointer"
+                        }}
+                      >
                         Selecionar
                       </button>
                     </td>
