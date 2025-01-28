@@ -1,9 +1,34 @@
 import { useEffect, useState } from "react";
 import { getDatabase, ref, get } from "firebase/database";
-
+import { useNavigate } from "react-router-dom";
 
 export default function ExibirRefeicoes() {
   const [refeicoes, setRefeicoes] = useState([]);
+  const [filtroInicio, setFiltroInicio] = useState("");
+  const [filtroFim, setFiltroFim] = useState("");
+  const navigate = useNavigate();
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "Data inválida";
+    let date;
+    if (typeof timestamp === "number") {
+      date = new Date(timestamp);
+    } else if (typeof timestamp === "string") {
+      date = new Date(Date.parse(timestamp));
+    } else {
+      return "Data inválida";
+    }
+    if (isNaN(date.getTime())) return "Data inválida";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const parseDate = (dateStr) => {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  };
 
   useEffect(() => {
     const database = getDatabase();
@@ -17,7 +42,7 @@ export default function ExibirRefeicoes() {
             const data = childSnapshot.val();
             refeicoesData.push({
               key: childSnapshot.key,
-              dataRefeicao: formatDate(data.dataRefeicao), // Formatação da data
+              dataRefeicao: formatDate(data.dataRefeicao),
               ...data,
             });
           });
@@ -31,13 +56,40 @@ export default function ExibirRefeicoes() {
       });
   }, []);
 
-  // Função para formatar a data
-const formatDate = (timestamp) => {
-  const date = new Date(timestamp);
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return date.toLocaleDateString("pt-BR", options); // Formato 'dd/mm/aaaa'
-};
+  const filtrarRefeicoes = () => {
+    const inicio = filtroInicio ? parseDate(filtroInicio) : null;
+    const fim = filtroFim ? parseDate(filtroFim) : null;
 
+    const database = getDatabase();
+    const refeicoesRef = ref(database, "refeicoesServidas");
+
+    get(refeicoesRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const refeicoesData = [];
+          snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const dataRefeicao = parseDate(data.dataRefeicao);
+            if (
+              (!inicio || dataRefeicao >= inicio) &&
+              (!fim || dataRefeicao <= fim)
+            ) {
+              refeicoesData.push({
+                key: childSnapshot.key,
+                dataRefeicao: parseDate(data.dataRefeicao),
+                ...data,
+              });
+            }
+          });
+          setRefeicoes(refeicoesData);
+        } else {
+          console.log("Nenhuma refeição encontrada");
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao filtrar dados do Firebase:", error);
+      });
+  };
 
   return (
     <div
@@ -60,6 +112,68 @@ const formatDate = (timestamp) => {
       >
         Resultados Cadastrados de Refeições
       </h2>
+
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
+        <label style={{ marginRight: "10px", color: "#fff" }}>
+          Data Início:
+          <input
+            type="date"
+            value={filtroInicio}
+            onChange={(e) => setFiltroInicio(e.target.value)}
+            style={{
+              marginLeft: "10px",
+              padding: "5px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+              color: 'black'
+            }}
+          />
+        </label>
+        <label style={{ marginRight: "10px", color:  "#fff" }}>
+          Data Fim:
+          <input
+            type="date"
+            value={filtroFim}
+            onChange={(e) => setFiltroFim(e.target.value)}
+            style={{
+              marginLeft: "10px",
+              padding: "5px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+              color: 'black'
+
+            }}
+          />
+        </label>
+        <button
+          onClick={filtrarRefeicoes}
+          style={{
+            padding: "10px 20px",
+            borderRadius: "5px",
+            backgroundColor: "#2575fc",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Filtrar
+        </button>
+      </div>
+
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          padding: "10px 20px",
+          borderRadius: "5px",
+          backgroundColor: "#ff4d4d",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        Voltar
+      </button>
 
       <div
         style={{
@@ -89,20 +203,34 @@ const formatDate = (timestamp) => {
                 fontSize: "16px",
               }}
             >
-              {/* Ajuste de espaçamento das colunas */}
               {[
-                "Data", "Café", "Café Total", "Café Funcionários", "Café Jovens",
-                "Almoço", "Almoço Total", "Almoço Funcionários", "Almoço Jovens",
-                "Lanche", "Lanche Total", "Lanche Funcionários", "Lanche Jovens",
-                "Outras", "Outras Ref. Total", "Outras Ref. Funcionários",
-                "Outras Ref. Jovens", "Sobras", "Observação", "Desperdícios"
+                "Data Refeição",
+                "Café Descrição",
+                "Café Total (kg)",
+                "Café Funcionários",
+                "Café Jovens",
+                "Almoço Descrição",
+                "Almoço Total (kg)",
+                "Almoço Funcionários",
+                "Almoço Jovens",
+                "Lanche Descrição",
+                "Lanche Total (kg)",
+                "Lanche Funcionários",
+                "Lanche Jovens",
+                "Outras Descrição",
+                "Outras Ref. Total (kg)",
+                "Outras Ref. Funcionários",
+                "Outras Ref. Jovens",
+                "Sobras",
+                "Observação",
+                "Desperdícios (kg)",
               ].map((header, index) => (
                 <th
                   key={index}
                   style={{
-                    padding: "12px",
+                    padding: "20px",
                     border: "1px solid #ddd",
-                    textAlign: "left",
+                    textAlign: "center",
                     fontWeight: "bold",
                     whiteSpace: "nowrap",
                   }}
@@ -116,21 +244,35 @@ const formatDate = (timestamp) => {
             {refeicoes.map((refeicao) => (
               <tr key={refeicao.key}>
                 {[
-                  refeicao.dataRefeicao, refeicao.cafeDescricao, refeicao.cafeTotalQtd,
-                  refeicao.cafeFuncionariosQtd, refeicao.cafeJovensQtd, refeicao.almocoDescricao,
-                  refeicao.almocoTotalQtd, refeicao.almocoFuncionariosQtd, refeicao.almocoJovensQtd,
-                  refeicao.lancheDescricao, refeicao.lancheTotalQtd, refeicao.lancheFuncionariosQtd,
-                  refeicao.lancheJovensQtd, refeicao.outrasDescricao, refeicao.outrasTotalQtd,
-                  refeicao.outrasJovensQtd, refeicao.sobrasDescricao, refeicao.observacaoDescricao,
+                  refeicao.dataRefeicao,
+                  refeicao.cafeDescricao,
+                  refeicao.cafeTotalQtd,
+                  refeicao.cafeFuncionariosQtd,
+                  refeicao.cafeJovensQtd,
+                  refeicao.almocoDescricao,
+                  refeicao.almocoTotalQtd,
+                  refeicao.almocoFuncionariosQtd,
+                  refeicao.almocoJovensQtd,
+                  refeicao.lancheDescricao,
+                  refeicao.lancheTotalQtd,
+                  refeicao.lancheFuncionariosQtd,
+                  refeicao.lancheJovensQtd,
+                  refeicao.outrasDescricao,
+                  refeicao.outrasTotalQtd,
+                  refeicao.outrasFuncionariosQtd,
+                  refeicao.outrasJovensQtd,
+                  refeicao.sobrasDescricao,
+                  refeicao.observacaoDescricao,
                   refeicao.desperdicioQtd,
                 ].map((value, index) => (
                   <td
                     key={index}
                     style={{
-                      padding: "12px",
+                      padding: "20px 10px",
                       border: "1px solid #ddd",
-                      textAlign: "left",
-                      backgroundColor: index % 2 === 0 ? "#f9f9f9" : "transparent",
+                      textAlign: "center",
+                      backgroundColor:
+                        index % 2 === 0 ? "#f9f9f9" : "transparent",
                     }}
                   >
                     {value}
