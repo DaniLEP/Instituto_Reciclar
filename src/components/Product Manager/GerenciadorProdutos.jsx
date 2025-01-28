@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Estilos Globais
 const GlobalStyle = createGlobalStyle`
   body {
-  background: linear-gradient(135deg, rgb(140, 78, 207), rgb(168, 55, 212));
+    background: linear-gradient(135deg, rgb(140, 78, 207), rgb(168, 55, 212));
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
@@ -19,13 +19,42 @@ const GlobalStyle = createGlobalStyle`
 
 // Estilização dos Componentes
 const BackButton = styled(Link)`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  img {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #F20DE7, #D90DD0);
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  width: fit-content;
+  margin: 20px auto;
+
+  &:hover {
+    background: linear-gradient(135deg, #D90DD0, #B508BD);
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 10px 18px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 8px 16px;
   }
 `;
 
@@ -50,20 +79,14 @@ const Button = styled.button`
   }
 `;
 
-
-
 const CloseButton = styled(Button)`
-margin-top: 10px;
+  margin-top: 10px;
   background: #dc3545;
 
   &:hover {
     background: #b02a37;
   }
 `;
-
-
-
-
 
 const Modal = styled.div`
   position: absolute;
@@ -91,7 +114,7 @@ const Overlay = styled.div`
 
 const TableWrapper = styled.div`
   width: 100%;
-  overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
+  overflow-x: auto;
   margin-top: 20px;
 `;
 
@@ -99,7 +122,7 @@ const ResponsiveTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
-  
+
   thead {
     background-color: #007bff;
 
@@ -112,70 +135,49 @@ const ResponsiveTable = styled.table`
   }
 
   tbody {
-    background-color:rgb(248, 248, 248);
-
-    }
+    background-color: rgb(248, 248, 248);
 
     td {
       padding: 12px;
       border: 1px solid #ddd;
       text-align: center;
-      word-wrap: break-word; /* Evita que textos longos quebrem a tabela */
+      word-wrap: break-word;
     }
-  }
-
-  @media (max-width: 1024px) {
-    font-size: 14px;
   }
 
   @media (max-width: 768px) {
-    font-size: 12px;
+    font-size: 14px;
 
     thead th {
-      padding: 8px;
-    }
-
-    tbody td {
-      padding: 8px;
-    }
-
-    /* Reduzir o tamanho das colunas na versão mobile */
-    th, td {
-      padding: 8px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    font-size: 10px;
-    
-    th, td {
-      padding: 6px;
-    }
-
-    /* Transformar a tabela em lista de itens em dispositivos muito pequenos */
-    tbody tr {
-      display: block;
-      margin-bottom: 10px;
-      background: #fff;
+      display: none;
     }
 
     tbody td {
       display: block;
+      padding: 8px;
       text-align: left;
-      padding: 8px 10px;
-      width: 100%;
+      position: relative;
+
+      &:before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 4px;
+        color: #555;
+      }
     }
 
-    tbody td::before {
-      content: attr(data-label);
-      font-weight: bold;
-      display: inline-block;
-      width: 100%;
-      text-transform: capitalize;
+    tbody tr {
+      margin-bottom: 10px;
+      display: block;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 `;
-
 
 const Title = styled.h1`
   text-align: center;
@@ -204,7 +206,6 @@ function Gerenciador() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const db = getDatabase();
 
-  
   useEffect(() => {
     const dbRef = ref(db, "EntradaProdutos");
     onValue(dbRef, (snapshot) => {
@@ -214,10 +215,9 @@ function Gerenciador() {
           ...data[key],
           id: key,
         }));
-  
-        // Ordena os produtos pela propriedade 'name' em ordem alfabética
+
         loadedProducts.sort((a, b) => a.name.localeCompare(b.name));
-  
+
         setProducts(loadedProducts);
       }
     });
@@ -236,14 +236,33 @@ function Gerenciador() {
   const handleUpdate = () => {
     if (editingProduct) {
       const productRef = ref(db, `EntradaProdutos/${editingProduct.id}`);
-      update(productRef, editingProduct)
+      update(productRef, {
+        ...editingProduct, // Isso garante que todos os campos do produto sejam atualizados
+      })
         .then(() => {
+          // Recarga os produtos após a atualização
+          const dbRef = ref(db, "EntradaProdutos");
+          onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const loadedProducts = Object.keys(data).map((key) => ({
+                ...data[key],
+                id: key,
+              }));
+
+              loadedProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+              setProducts(loadedProducts); // Atualiza o estado com os dados mais recentes
+            }
+          });
+
           toast.success("Produto atualizado com sucesso!");
           closeModal();
         })
         .catch((error) => toast.error("Erro ao atualizar: " + error.message));
     }
   };
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -256,51 +275,49 @@ function Gerenciador() {
       <ToastContainer />
       <Title>Cadastro de Produtos</Title>
 
-        <BackButton to="/Cadastro">
-          <img src="/return.svg" alt="Voltar" />
-        </BackButton>
-        <TableWrapper>
-  <ResponsiveTable>
-    <thead>
-      <tr>
-        <th>SKU</th>
-        <th>Nome</th>
-        <th>Marca</th>
-        <th>Fornecedor</th>
-        <th>Peso (KG)</th>
-        <th>Unidade de Medida</th>
-        <th>Categoria</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {products.map((product) => (
-        <tr key={product.id}>
-          <td data-label="SKU">{product.sku}</td>
-          <td data-label="Nome">{product.name}</td>
-          <td data-label="Marca">{product.marca}</td>
-          <td data-label="Fornecedor">{product.supplier}</td>
-          <td data-label="Peso (KG)">{product.peso}</td>
-          <td data-label="Unidade de Medida">{product.unit}</td>
-          <td data-label="Categoria">{product.category}</td>
-          <td data-label="Tipo">{product.tipo}</td>
-          <td>
-            <Button onClick={() => openModal(product)}>Editar</Button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </ResponsiveTable>
-</TableWrapper>
+      <BackButton to="/Cadastro">Voltar</BackButton>
+      <TableWrapper>
+        <ResponsiveTable>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Nome</th>
+              <th>Marca</th>
+              <th>Fornecedor</th>
+              <th>Peso (KG)</th>
+              <th>Unidade de Medida</th>
+              <th>Categoria</th>
+              <th>Tipo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td data-label="SKU">{product.sku}</td>
+                <td data-label="Nome">{product.name}</td>
+                <td data-label="Marca">{product.marca}</td>
+                <td data-label="Fornecedor">{product.supplier}</td>
+                <td data-label="Peso (KG)">{product.peso} {product.pesoUnit}</td>
+                <td data-label="Unidade de Medida">{product.unitMeasure}</td>
+                <td data-label="Categoria">{product.category}</td>
+                <td data-label="Tipo">{product.tipo}</td>
+                <td>
+                  <Button onClick={() => openModal(product)}>Editar</Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </ResponsiveTable>
+      </TableWrapper>
 
       {isModalOpen && (
         <>
           <Overlay onClick={closeModal} />
           <Modal>
-             <h2 style={{textAlign: 'center', fontSize: '20px'}}>Atualizar Produto</h2>
-             <label>Nome:</label>
-             <input
+            <h2 style={{ textAlign: 'center', fontSize: '20px' }}>Atualizar Produto</h2>
+            <label>Nome:</label>
+            <input
               type="text"
               name="name"
               value={editingProduct.name || ""}
@@ -344,26 +361,27 @@ function Gerenciador() {
                 fontSize: "1rem",
               }}
             />
-            <label>Peso(KG):</label>
-            <input
-              type="text"
-              name="peso"
-              value={editingProduct.peso || ""}
-              onChange={handleInputChange}
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginBottom: "15px",
-                fontSize: "1rem",
-              }}
-            />
+            <label>Peso:</label>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px" }}>
+              <input
+                type="number"
+                name="peso"
+                value={editingProduct.peso || ""}
+                onChange={handleInputChange}
+                style={{
+                  width: "70%",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                }}
+                placeholder="Digite o peso"
+              />
+            </div>
             <label>Unidade de Medida:</label>
-            <input
-              type="text"
-              name="unit"
-              value={editingProduct.unit || ""}
+            <select
+              name="unitMeasure"
+              value={editingProduct.unitMeasure || ""}
               onChange={handleInputChange}
               style={{
                 width: "100%",
@@ -373,8 +391,11 @@ function Gerenciador() {
                 marginBottom: "15px",
                 fontSize: "1rem",
               }}
-            />
-           
+            >
+              <option value="g">Gramas</option>
+              <option value="kg">Quilos</option>
+              <option value="un">Unidade</option>
+            </select>
             <label>Categoria:</label>
             <select
               name="category"
@@ -412,12 +433,11 @@ function Gerenciador() {
               <option value="Frutas">Frutas</option>
               <option value="Legumes">Legumes</option>
               <option value="Verduras">Verduras</option>
-              <option value="Bovina">Bovina</option>              
+              <option value="Bovina">Bovina</option>
               <option value="Ave">Ave</option>
               <option value="Suína">Suína</option>
               <option value="Pescado">Pescado</option>
               <option value="Mercado">Mercado</option>
-
             </select>
             <Button onClick={handleUpdate}>Atualizar</Button>
             <CloseButton onClick={closeModal}>Fechar</CloseButton>

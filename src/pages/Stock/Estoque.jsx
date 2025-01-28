@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
@@ -19,14 +19,13 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbProdutos = ref(db, "Estoque");
 
-const Estoque = () => {
+export default function Estoque  () {
   const [searchTerm, setSearchTerm] = useState("");
   const [productsData, setProductsData] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalPeso, setTotalPeso] = useState(0);
-
-  const [totalUnitPrice, setTotalUnitPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0); // Renomeado para totalPrice
   const [error, setError] = useState("");
   const [isSearched, setIsSearched] = useState(false);
   const navigate = useNavigate();
@@ -42,7 +41,7 @@ const Estoque = () => {
         }));
         setProductsData(products);
         setFilteredProducts(products); // Exibe todos os produtos inicialmente
-
+  
         // Calcular totais ao carregar os produtos
         const totalQuantity = products.reduce(
           (acc, item) => acc + parseInt(item.quantity, 10),
@@ -52,14 +51,17 @@ const Estoque = () => {
           (acc, item) => acc + parseFloat(item.peso || 0),
           0
         );
-        const totalUnitPrice = products.reduce(
-          (acc, item) => acc + (item.unitPrice || 0) * (item.quantity || 0),
+        const totalPrice = products.reduce(
+          (acc, item) => {
+            const itemPrice = parseFloat(item.totalPrice) || 0;
+            return acc + itemPrice * itemPrice;
+          },
           0
         );
-
+  
         setTotalQuantity(totalQuantity);
         setTotalPeso(totalPeso);
-        setTotalUnitPrice(totalUnitPrice);
+        setTotalPrice(totalPrice); // Usando totalPrice calculado
       }
     });
   }, []);
@@ -76,7 +78,7 @@ const Estoque = () => {
     const date2 = new Date(expiryDate);
     const timeDifference = date2 - date1;
     const dayDifference = timeDifference / (1000 * 3600 * 24); // Converte milissegundos em dias
-    return dayDifference >= 0 ? dayDifference : 0; // Garante que o valor não será negativo
+    return dayDifference; // Retorna o valor, mesmo que seja negativo
   };
 
   // Função de filtro para buscar produtos por qualquer termo
@@ -107,23 +109,24 @@ const Estoque = () => {
       setTotalQuantity(totalQuantity);
 
       const totalPeso = filtered.reduce(
-        (acc, item) => acc + parseInt(item.peso, 10),
+        (acc, item) => acc + parseFloat(item.peso || 0),
         0
       );
-      setTotalQuantity(totalQuantity);
+      setTotalPeso(totalPeso);
 
-      const totalUnitPrice = filtered.reduce(
-        (acc, item) => acc + (item.unitPrice || 0), // Garante que o valor seja 0 caso unitPrice seja undefined
+      const totalPrice = filtered.reduce(
+        (acc, item) => acc + (item.totalPrice || 0) * (item.totalPrice || 0),
         0
       );
-      setTotalUnitPrice(totalUnitPrice);
+      
 
+      setTotalPrice(totalPrice); // Usando totalPrice
       setIsSearched(true);
     } else {
       setFilteredProducts([]);
       setError("Produto não encontrado.");
       setTotalQuantity(0);
-      setTotalUnitPrice(0);
+      setTotalPrice(0); // Usando totalPrice
       setTotalPeso(0);
       setIsSearched(false);
     }
@@ -133,7 +136,7 @@ const Estoque = () => {
     setSearchTerm("");
     setFilteredProducts(productsData); // Resetando o filtro para exibir todos os produtos
     setTotalQuantity(0);
-    setTotalUnitPrice(0);
+    setTotalPrice(0); // Usando totalPrice
     setTotalPeso(0);
     setError("");
     setIsSearched(false);
@@ -141,6 +144,20 @@ const Estoque = () => {
 
   const voltar = () => {
     navigate("/Home");
+  };
+
+  // Função para verificar se o item está vencido ou perto de vencer
+  const isExpired = (expiryDate) => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    return expiry < today; // Se a data de vencimento já passou, retorna true
+  };
+
+  // Estilo condicional para a linha da tabela
+  const getRowStyle = (expiryDate) => {
+    return isExpired(expiryDate)
+      ? { backgroundColor: "red", color: "white" }
+      : {};
   };
 
   // Estilos inline
@@ -246,14 +263,6 @@ const Estoque = () => {
     border: "1px solid #ddd",
   };
 
-  const tableRowEvenStyle = {
-    backgroundColor: "#f9f9f9",
-  };
-
-  const tableRowHoverStyle = {
-    backgroundColor: "#f1f1f1",
-  };
-
   const backButtonStyle = {
     padding: "10px 20px",
     backgroundColor: "#007bff",
@@ -270,11 +279,11 @@ const Estoque = () => {
       <div style={headerStyle}>
         <h1 style={headerTextStyle}>Consulta de Estoque</h1>
       </div>
-
+  
       <div style={searchContainerStyle}>
         <input
           type="text"
-          value={searchTerm}
+          value={searchTerm || ""} // Garante que o valor nunca seja undefined
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
           style={searchInputStyle}
@@ -290,27 +299,23 @@ const Estoque = () => {
           )}
         </div>
       </div>
-
+  
       {error && <p style={errorMessageStyle}>{error}</p>}
-
+  
       {productsData.length > 0 && (
         <div style={summaryStyle}>
           <h3 style={summaryTextStyle}>
             Quantidade Total de Produtos: {totalQuantity}
           </h3>
           <h3 style={summaryTextStyle}>
-            Valor Total no Estoque:{" "}
-            {new Intl.NumberFormat("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            }).format(totalUnitPrice)}
+            Valor Total no Estoque: R$ {totalPrice.toFixed(2).replace(".", ",")}
           </h3>
           <h3 style={summaryTextStyle}>
-            Peso Total no Estoque: KG {totalPeso.toFixed(2).replace(".", ",")}
+            Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
           </h3>
         </div>
       )}
-
+      
       <div style={tableContainerStyle}>
         <table style={tableStyle}>
           <thead>
@@ -321,49 +326,57 @@ const Estoque = () => {
               <th style={tableCellStyle}>Marca</th>
               <th style={tableCellStyle}>Categoria</th>
               <th style={tableCellStyle}>Tipo</th>
+              <th style={tableCellStyle}>Peso Unitário</th>
               <th style={tableCellStyle}>Unidade de Medida</th>
               <th style={tableCellStyle}>Quantidade</th>
-              <th style={tableCellStyle}>Peso Unitário (KG)</th>
               <th style={tableCellStyle}>Valor Unitário</th>
+              <th style={tableCellStyle}>Valor Total</th>
               <th style={tableCellStyle}>Data de Cadastro</th>
               <th style={tableCellStyle}>Data de Vencimento</th>
               <th style={tableCellStyle}>Dias para Consumo</th>
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((item, index) => (
-              <tr key={`${item.sku}-${index}`} style={tableRowEvenStyle}>
-                <td style={tableCellStyle}>{item.sku}</td>
-                <td style={tableCellStyle}>{item.name}</td>
-                <td style={tableCellStyle}>{item.supplier}</td>
-                <td style={tableCellStyle}>{item.marca}</td>
-                <td style={tableCellStyle}>{item.category || "N/A"}</td>
-                <td style={tableCellStyle}>{item.tipo || "N/A"}</td>
-                <td style={tableCellStyle}>{item.unit}</td>
-                <td style={tableCellStyle}>{item.quantity} UN</td>
-                <td style={tableCellStyle}>{item.peso} KG </td>
-
-                <td style={tableCellStyle}>
-                  {item.unitPrice && !isNaN(Number(item.unitPrice))
-                    ? `R$ ${Number(item.unitPrice).toFixed(2)}`
-                    : "Preço não disponível"}
-                </td>
-                <td style={tableCellStyle}>{formatDate(item.dateAdded)}</td>
-                <td style={tableCellStyle}>{formatDate(item.expiryDate)}</td>
-                <td style={tableCellStyle}>
-                  {calculateConsumptionDays(item.dateAdded, item.expiryDate)}
-                </td>
-              </tr>
-            ))}
+            {filteredProducts.map((item, index) => {
+              const daysForConsumption = calculateConsumptionDays(
+                item.dateAdded,
+                item.expiryDate
+              );
+              return (
+                <tr
+                  key={`${item.sku}-${index}`}
+                  style={getRowStyle(item.expiryDate)}
+                >
+                  <td style={tableCellStyle}>{item.sku}</td>
+                  <td style={tableCellStyle}>{item.name}</td>
+                  <td style={tableCellStyle}>{item.supplier}</td>
+                  <td style={tableCellStyle}>{item.marca}</td>
+                  <td style={tableCellStyle}>{item.category || "N/A"}</td>
+                  <td style={tableCellStyle}>{item.tipo || "N/A"}</td>
+                  <td style={tableCellStyle}>{item.peso}</td>
+                  <td style={tableCellStyle}>{item.unitMeasure}</td>
+                  <td style={tableCellStyle}>{item.quantity}</td>
+                  <td style={tableCellStyle}>
+                      {item.unitPrice}
+                  </td>
+                  <td style={tableCellStyle}>{item.totalPrice}</td>
+                  <td style={tableCellStyle}>
+                    {formatDate(item.dateAdded)}
+                  </td>
+                  <td style={tableCellStyle}>{formatDate(item.expiryDate)}</td>
+                  <td style={tableCellStyle}>
+                    {daysForConsumption >= 0 ? daysForConsumption : 0}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-
+  
       <button onClick={voltar} style={backButtonStyle}>
         Voltar
       </button>
     </div>
-  );
+  )
 };
-
-export default Estoque;

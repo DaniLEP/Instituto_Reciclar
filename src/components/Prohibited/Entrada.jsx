@@ -335,8 +335,8 @@ const Modal = ({ products, onSelectProduct, onClose }) => (
               <td>{product.name}</td>
               <td>{product.marca}</td>
               <td>{product.supplier}</td>
-              <td>{product.peso} - KG</td>
-              <td>{product.unit}</td>
+              <td>{product.peso}</td>
+              <td>{product.unitMeasure}</td>
               <td>{product.category}</td>
               <td>
                 <button>Selecionar</button>
@@ -358,10 +358,11 @@ const EntradaProdutos = () => {
   const [quantity, setQuantity] = useState("");
   const [peso, setPeso] = useState("");
   const [pesoTotal, setPesoTotal] = useState("");
-  const [unit, setUnit] = useState("");
+  const [unitMeasure, setUnitMeasure] = useState("");
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
+  const [totalPrice, setTotalPrice] = useState("");
   const [dateAdded, setDateAdded] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -389,10 +390,11 @@ const EntradaProdutos = () => {
     setMarca(product.marca);
     setSupplier(product.supplier);
     setPeso(product.peso);
-    setUnit(product.unit);
+    setUnitMeasure(product.unitMeasure);
     setCategory(product.category);
     setTipo(product.tipo);
     setUnitPrice(product.unitPrice);
+    setTotalPrice(product.totalPrice)
     setQuantity(product.quantity);
     setDateAdded(product.dateAdded);
     setExpiryDate(product.expiryDate);
@@ -406,11 +408,12 @@ const EntradaProdutos = () => {
       name &&
       supplier &&
       peso &&
-      unit &&
+      unitMeasure &&
       quantity &&
       category &&
       tipo &&
       unitPrice &&
+      totalPrice &&
       dateAdded &&
       expiryDate
     ) {
@@ -420,11 +423,12 @@ const EntradaProdutos = () => {
         marca,
         supplier,
         peso,
-        unit,
+        unitMeasure,
         quantity,
         category,
         tipo,
         unitPrice,
+        totalPrice,
         dateAdded,
         expiryDate,
       };
@@ -445,10 +449,11 @@ const EntradaProdutos = () => {
       setSupplier("");
       setQuantity("");
       setPeso("");
-      setUnit("");
+      setUnitMeasure("");
       setCategory("");
       setTipo("");
       setUnitPrice("");
+      setTotalPrice("");
       setDateAdded("");
       setExpiryDate("");
     } else {
@@ -479,6 +484,22 @@ const EntradaProdutos = () => {
     }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
 
     setUnitPrice(formattedValue);
+    setTotalPrice(formattedValue);
+  };
+
+  const handledUnitPriceChange = (e) => {
+    let inputValue = e.target.value;
+
+    // Remove tudo que não for número (para processar corretamente)
+    inputValue = inputValue.replace(/\D/g, "");
+
+    // Formata no estilo moeda brasileira
+    const formattedValue = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
+
+    setTotalPrice(formattedValue);
   };
 
   const handlePesoChange = (e) => {
@@ -600,6 +621,15 @@ const EntradaProdutos = () => {
             type="text"
             value={unitPrice}
             onChange={handleUnitPriceChange}
+            placeholder="R$ 0,00"
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label>Valor Total (R$):</Label>
+          <Input
+            type="text"
+            value={totalPrice}
+            onChange={handledUnitPriceChange}
             placeholder="R$ 0,00"
           />
         </FormGroup>
