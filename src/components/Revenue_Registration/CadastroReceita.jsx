@@ -25,7 +25,7 @@ const database = getDatabase(app);
 export default function CadastroRefeicoes() {
   // Definindo estado para o campo de data de refeição
   const [formData, setFormData] = useState({
-    dataRefeicao: new Date().toISOString().split('T')[0], // Define a data atual
+    dataRefeicao: "", // Define a data atual
     cafeDescricao: "",
     cafeTotalQtd: "",
     cafeFuncionariosQtd: "",
@@ -47,7 +47,7 @@ export default function CadastroRefeicoes() {
     desperdicioQtd: "",
   });
 
-  const [refeicoes, setRefeicoes] = useState([]);
+  const [setRefeicoes] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -699,7 +699,9 @@ export default function CadastroRefeicoes() {
             marginTop: "20px",
             width: "100%",
           }}
-        > Salvar
+        >
+          {" "}
+          Salvar
         </button>
         <button
           type="button"
@@ -717,7 +719,7 @@ export default function CadastroRefeicoes() {
             transition: "background 0.3s ease",
           }}
         >
-     Voltar
+          Voltar
         </button>
       </section>
       <ToastContainer />
