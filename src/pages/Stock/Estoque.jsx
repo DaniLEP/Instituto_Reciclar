@@ -19,14 +19,13 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbProdutos = ref(db, "Estoque");
 
-export default function Estoque  () {
+export default function Estoque() {
   const [searchTerm, setSearchTerm] = useState("");
   const [productsData, setProductsData] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalPeso, setTotalPeso] = useState(0);
-  const [totalPrice, setTotalPrice] = useState(0); // Renomeado para totalPrice
-  const [error, setError] = useState("");
+  const [totalPrice, setTotalPrice] = useState(0);
   const [isSearched, setIsSearched] = useState(false);
   const navigate = useNavigate();
 
@@ -41,47 +40,32 @@ export default function Estoque  () {
         }));
         setProductsData(products);
         setFilteredProducts(products); // Exibe todos os produtos inicialmente
-  
-        // Calcular totais ao carregar os produtos
-        const totalQuantity = products.reduce(
-          (acc, item) => acc + parseInt(item.quantity, 10),
-          0
-        );
-        const totalPeso = products.reduce(
-          (acc, item) => acc + parseFloat(item.peso || 0),
-          0
-        );
-        const totalPrice = products.reduce(
-          (acc, item) => {
-            const itemPrice = parseFloat(item.totalPrice) || 0;
-            return acc + itemPrice * itemPrice;
-          },
-          0
-        );
-  
-        setTotalQuantity(totalQuantity);
-        setTotalPeso(totalPeso);
-        setTotalPrice(totalPrice); // Usando totalPrice calculado
+        calculateTotals(products);
       }
     });
   }, []);
 
-  // Função para formatar data para o padrão brasileiro (DD/MM/YYYY)
-  const formatDate = (date) => {
-    const dateObj = new Date(date);
-    return dateObj.toLocaleDateString("pt-BR");
+  // Função para calcular totais
+  const calculateTotals = (products) => {
+    const totalQuantity = products.reduce(
+      (acc, item) => acc + parseInt(item.quantity, 10),
+      0
+    );
+    const totalPeso = products.reduce(
+      (acc, item) => acc + parseFloat(item.peso || 0),
+      0
+    );
+    const totalPrice = products.reduce((acc, item) => {
+      const itemPrice = parseFloat(item.totalPrice) || 0;
+      return acc + itemPrice;
+    }, 0);
+
+    setTotalQuantity(totalQuantity);
+    setTotalPeso(totalPeso);
+    setTotalPrice(totalPrice);
   };
 
-  // Função para calcular os dias para o consumo
-  const calculateConsumptionDays = (dateAdded, expiryDate) => {
-    const date1 = new Date(dateAdded);
-    const date2 = new Date(expiryDate);
-    const timeDifference = date2 - date1;
-    const dayDifference = timeDifference / (1000 * 3600 * 24); // Converte milissegundos em dias
-    return dayDifference; // Retorna o valor, mesmo que seja negativo
-  };
-
-  // Função de filtro para buscar produtos por qualquer termo
+  // Função de filtro para buscar produtos
   const handleSearch = () => {
     const filtered = productsData.filter((item) => {
       const lowerSearchTerm = searchTerm.toLowerCase();
@@ -96,87 +80,65 @@ export default function Estoque  () {
     });
 
     if (filtered.length > 0) {
-      // Ordenar os produtos por nome (alfabeticamente)
       filtered.sort((a, b) => a.name.localeCompare(b.name));
-
       setFilteredProducts(filtered);
-      setError("");
-
-      const totalQuantity = filtered.reduce(
-        (acc, item) => acc + parseInt(item.quantity, 10),
-        0
-      );
-      setTotalQuantity(totalQuantity);
-
-      const totalPeso = filtered.reduce(
-        (acc, item) => acc + parseFloat(item.peso || 0),
-        0
-      );
-      setTotalPeso(totalPeso);
-
-      const totalPrice = filtered.reduce(
-        (acc, item) => acc + (item.totalPrice || 0) * (item.totalPrice || 0),
-        0
-      );
-      
-
-      setTotalPrice(totalPrice); // Usando totalPrice
       setIsSearched(true);
+      calculateTotals(filtered);
     } else {
       setFilteredProducts([]);
-      setError("Produto não encontrado.");
-      setTotalQuantity(0);
-      setTotalPrice(0); // Usando totalPrice
-      setTotalPeso(0);
       setIsSearched(false);
+      setTotalQuantity(0);
+      setTotalPeso(0);
+      setTotalPrice(0);
     }
   };
 
   const handleBack = () => {
     setSearchTerm("");
-    setFilteredProducts(productsData); // Resetando o filtro para exibir todos os produtos
-    setTotalQuantity(0);
-    setTotalPrice(0); // Usando totalPrice
-    setTotalPeso(0);
-    setError("");
+    setFilteredProducts(productsData); // Resetando o filtro
     setIsSearched(false);
+    calculateTotals(productsData);
   };
 
   const voltar = () => {
     navigate("/Home");
   };
 
-  // Função para verificar se o item está vencido ou perto de vencer
+  // Função para calcular os dias para o consumo
+  const calculateConsumptionDays = (dateAdded, expiryDate) => {
+    const today = new Date();
+    const addedDate = new Date(dateAdded);
+    const expirationDate = new Date(expiryDate);
+
+    const timeToExpiry = expirationDate - today;
+    const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
+
+    return daysToExpiry;
+  };
+
+  // Função para formatar datas
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  // Função para verificar se o produto está vencido
   const isExpired = (expiryDate) => {
     const today = new Date();
-    const expiry = new Date(expiryDate);
-    return expiry < today; // Se a data de vencimento já passou, retorna true
+    const expirationDate = new Date(expiryDate);
+    return expirationDate < today;
   };
 
-  // Estilo condicional para a linha da tabela
-  const getRowStyle = (expiryDate) => {
-    return isExpired(expiryDate)
-      ? { backgroundColor: "red", color: "white" }
-      : {};
-  };
-
-  // Estilos inline
+  // Estilo inline simplificado
   const containerStyle = {
     fontFamily: "Arial, sans-serif",
     padding: "30px",
     backgroundColor: "#f4f6f9",
     margin: "0 auto",
     maxWidth: "1200px",
-  };
-
-  const headerStyle = {
-    textAlign: "center",
-    marginBottom: "30px",
-  };
-
-  const headerTextStyle = {
-    fontSize: "2.5rem",
-    color: "#333",
   };
 
   const searchContainerStyle = {
@@ -195,49 +157,6 @@ export default function Estoque  () {
     fontSize: "1rem",
     marginBottom: "10px",
     boxSizing: "border-box",
-  };
-
-  const searchButtonsStyle = {
-    display: "flex",
-    gap: "10px",
-  };
-
-  const searchButtonStyle = {
-    padding: "10px 20px",
-    fontSize: "1rem",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    backgroundColor: "#4CAF50",
-    color: "white",
-  };
-
-  const clearButtonStyle = {
-    padding: "10px 20px",
-    fontSize: "1rem",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    backgroundColor: "#f44336",
-    color: "white",
-  };
-
-  const errorMessageStyle = {
-    color: "#d32f2f",
-    fontSize: "1rem",
-    textAlign: "center",
-    marginTop: "10px",
-  };
-
-  const summaryStyle = {
-    textAlign: "center",
-    marginTop: "20px",
-  };
-
-  const summaryTextStyle = {
-    fontSize: "1.2rem",
-    color: "#333",
   };
 
   const tableContainerStyle = {
@@ -276,46 +195,72 @@ export default function Estoque  () {
 
   return (
     <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={headerTextStyle}>Consulta de Estoque</h1>
+      <div style={{ textAlign: "center", marginBottom: "30px" }}>
+        <h1 style={{ fontSize: "2.5rem", color: "#333" }}>Consulta de Estoque</h1>
       </div>
-  
+
       <div style={searchContainerStyle}>
         <input
           type="text"
-          value={searchTerm || ""} // Garante que o valor nunca seja undefined
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
           style={searchInputStyle}
         />
-        <div style={searchButtonsStyle}>
-          <button onClick={handleSearch} style={searchButtonStyle}>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={handleSearch}
+            style={{
+              padding: "10px 20px",
+              fontSize: "1rem",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
             Consultar
           </button>
           {isSearched && (
-            <button onClick={handleBack} style={clearButtonStyle}>
+            <button
+              onClick={handleBack}
+              style={{
+                padding: "10px 20px",
+                fontSize: "1rem",
+                backgroundColor: "#f44336",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
               Limpar
             </button>
           )}
         </div>
       </div>
-  
-      {error && <p style={errorMessageStyle}>{error}</p>}
-  
-      {productsData.length > 0 && (
-        <div style={summaryStyle}>
-          <h3 style={summaryTextStyle}>
+
+      {isSearched && filteredProducts.length === 0 && (
+        <p style={{ color: "red", textAlign: "center" }}>Produto não encontrado.</p>
+      )}
+
+      {filteredProducts.length > 0 && (
+        <div style={{ marginBottom: "30px", textAlign: 'center', fontFamily: 'Chakra-Petch', fontSize: '20px' }}>
+          <h3>
             Quantidade Total de Produtos: {totalQuantity}
           </h3>
-          <h3 style={summaryTextStyle}>
+          <h3>
             Valor Total no Estoque: R$ {totalPrice.toFixed(2).replace(".", ",")}
           </h3>
-          <h3 style={summaryTextStyle}>
+          <h3>
             Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
           </h3>
+          <strong><li style={{color: 'red'}}>Linha vermelha, indentifica produtos que já passaram da data de vencimento</li></strong>
         </div>
+
       )}
-      
+
       <div style={tableContainerStyle}>
         <table style={tableStyle}>
           <thead>
@@ -345,7 +290,10 @@ export default function Estoque  () {
               return (
                 <tr
                   key={`${item.sku}-${index}`}
-                  style={getRowStyle(item.expiryDate)}
+                  style={{
+                    backgroundColor: isExpired(item.expiryDate) ? "red" : "",
+                    color: isExpired(item.expiryDate) ? "white" : "",
+                  }}
                 >
                   <td style={tableCellStyle}>{item.sku}</td>
                   <td style={tableCellStyle}>{item.name}</td>
@@ -356,13 +304,9 @@ export default function Estoque  () {
                   <td style={tableCellStyle}>{item.peso}</td>
                   <td style={tableCellStyle}>{item.unitMeasure}</td>
                   <td style={tableCellStyle}>{item.quantity}</td>
-                  <td style={tableCellStyle}>
-                      {item.unitPrice}
-                  </td>
+                  <td style={tableCellStyle}>{item.unitPrice}</td>
                   <td style={tableCellStyle}>{item.totalPrice}</td>
-                  <td style={tableCellStyle}>
-                    {formatDate(item.dateAdded)}
-                  </td>
+                  <td style={tableCellStyle}>{formatDate(item.dateAdded)}</td>
                   <td style={tableCellStyle}>{formatDate(item.expiryDate)}</td>
                   <td style={tableCellStyle}>
                     {daysForConsumption >= 0 ? daysForConsumption : 0}
@@ -373,10 +317,10 @@ export default function Estoque  () {
           </tbody>
         </table>
       </div>
-  
+
       <button onClick={voltar} style={backButtonStyle}>
         Voltar
       </button>
     </div>
-  )
-};
+  );
+}
