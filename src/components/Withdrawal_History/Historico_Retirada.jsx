@@ -141,8 +141,8 @@ const HistoricoRetiradas = () => {
               <td style={{ padding: '12px' }}>{retirada.sku}</td>
               <td style={{ padding: '12px' }}>{retirada.name}</td>
               <td style={{ padding: '12px' }}>{retirada.category}</td>
-              <td style={{ padding: '12px' }}>{retirada.quantity} UN</td>
-              <td style={{ padding: '12px' }}>{retirada.peso} KG</td>
+              <td style={{ padding: '12px' }}>{retirada.quantity}</td>
+              <td style={{ padding: '12px' }}>{retirada.peso}</td>
               <td style={{ padding: '12px' }}>{formatarDataHora(retirada.data)}</td>
               <td style={{ padding: '12px' }}>{retirada.retirante}</td>
             </tr>

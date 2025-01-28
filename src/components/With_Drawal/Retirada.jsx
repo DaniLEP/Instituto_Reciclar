@@ -130,6 +130,8 @@ const RetiradaProdutos = () => {
     setName(produto.name);
     setCategory(produto.category);
     setTipo(produto.tipo);
+    setPeso(produto.peso);
+
     setIsModalOpen(false);
   };
 
@@ -190,6 +192,7 @@ const RetiradaProdutos = () => {
           type="number"
           placeholder="Peso (kg)"
           value={peso}
+          readOnly
           onChange={(e) => setPeso(Number(e.target.value))}
           style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
         />
