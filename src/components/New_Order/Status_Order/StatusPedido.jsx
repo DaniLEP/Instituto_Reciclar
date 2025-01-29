@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -6,6 +5,7 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get, update, push } from "firebase/database";
 import * as XLSX from "xlsx";
 
+// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -23,6 +23,9 @@ export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalAbertoCancelamento, setModalAbertoCancelamento] = useState(false);
+  const [motivoCancelamento, setMotivoCancelamento] = useState(""); // Novo estado para armazenar o motivo
+  const [modalAbertoEdit, setModalAbertoEdit] = useState(false);
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -42,14 +45,22 @@ export default function StatusPedidos() {
     fetchPedidos();
   }, []);
 
-  const handleAtualizarStatus = (pedidoId, novoStatus) => {
+  const handleAtualizarStatus = (pedidoId, novoStatus, motivo) => {
     const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
-    update(pedidoRef, { status: novoStatus })
+    const updates = { status: novoStatus };
+
+    if (motivo) {
+      updates.motivoCancelamento = motivo; // Se houver motivo, adiciona ao pedido
+    }
+
+    update(pedidoRef, updates)
       .then(() => {
         toast.success(`Status atualizado para ${novoStatus}`);
         setPedidos((prev) =>
           prev.map((p) =>
-            p.id === pedidoId ? { ...p, status: novoStatus } : p
+            p.id === pedidoId
+              ? { ...p, status: novoStatus, motivoCancelamento: motivo }
+              : p
           )
         );
         if (novoStatus === "Aprovado") {
@@ -122,7 +133,6 @@ export default function StatusPedidos() {
         ValorUnitario: produto.unitPrice,
         ValorTotal: produto.totalPrice,
         Observação: produto.obersavacao,
-
       }))
     );
 
@@ -132,6 +142,32 @@ export default function StatusPedidos() {
     // Gerar e baixar o arquivo Excel
     XLSX.writeFile(wb, `Pedido_${pedidoSelecionado.numeroPedido}.xlsx`);
   };
+
+  const handleEditar = (index, campo, valor) => {
+    const novosProdutos = [...pedidoSelecionado.produtos];
+    novosProdutos[index] = { ...novosProdutos[index], [campo]: valor };
+    setPedidoSelecionado({ ...pedidoSelecionado, produtos: novosProdutos });
+  };
+  
+  const handleSalvarEdicao = () => {
+    // Verificar se existe algum pedido selecionado
+    if (!pedidoSelecionado) {
+      toast.error("Nenhum pedido selecionado para salvar!");
+      return;
+    }
+  
+    // Atualizar o banco de dados com os dados do pedido atualizado
+    const pedidoRef = ref(db, `novosPedidos/${pedidoSelecionado.id}`);
+    update(pedidoRef, { produtos: pedidoSelecionado.produtos })
+      .then(() => {
+        toast.success("Pedido atualizado com sucesso!");
+        setModalAbertoEdit(false); // Fechar o modal após salvar a edição
+      })
+      .catch(() => {
+        toast.error("Erro ao salvar edição!");
+      });
+  };
+  
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -172,8 +208,18 @@ export default function StatusPedidos() {
                   >
                     Visualizar
                   </button>
+
                   {pedido.status === "Pendente" && (
                     <>
+                      <button
+                        className="bg-[#F20DE7] text-white px-4 py-1 mr-2 rounded"
+                        onClick={() => {
+                          setPedidoSelecionado(pedido);
+                          setModalAbertoEdit(true);
+                        }}
+                      >
+                        Editar
+                      </button>
                       <button
                         className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600"
                         onClick={() =>
@@ -184,9 +230,10 @@ export default function StatusPedidos() {
                       </button>
                       <button
                         className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        onClick={() =>
-                          handleAtualizarStatus(pedido.id, "Cancelado")
-                        }
+                        onClick={() => {
+                          setPedidoSelecionado(pedido);
+                          setModalAbertoCancelamento(true);
+                        }}
                       >
                         Cancelar
                       </button>
@@ -204,7 +251,58 @@ export default function StatusPedidos() {
           )}
         </tbody>
       </table>
+      {/* MODAL DE CANCELAMENTO */}
+      {modalAbertoCancelamento && pedidoSelecionado && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-100 relative animate-slide-up overflow-hidden">
+            <button
+              className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
+              onClick={() => setModalAbertoCancelamento(false)}
+            >
+              ×
+            </button>
+            <h3 className="text-2xl font-bold mb-4 text-center">
+              Pedido #{pedidoSelecionado.numeroPedido}
+            </h3>
+            <h3 className="mb-4 font-semibold">
+              Status:{" "}
+              <span className="font-normal">{pedidoSelecionado.status}</span>
+            </h3>
 
+            {/* Campo para o motivo do cancelamento */}
+            <div className="mb-4">
+              <label className="font-semibold" htmlFor="motivoCancelamento">
+                Motivo do Cancelamento:
+              </label>
+              <textarea
+                id="motivoCancelamento"
+                value={motivoCancelamento}
+                onChange={(e) => setMotivoCancelamento(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                onClick={() => {
+                  handleAtualizarStatus(
+                    pedidoSelecionado.id,
+                    "Cancelado",
+                    motivoCancelamento
+                  );
+                  setModalAbertoCancelamento(false);
+                  setMotivoCancelamento(""); // Limpar o motivo após o cancelamento
+                }}
+              >
+                Confirmar Cancelamento
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL DE VISUALIZAÇÃO */}
       {modalAberto && pedidoSelecionado && (
         <div className="fixed top-0  left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
           <div className="bg-white p-6 rounded-lg shadow-lg w-100 relative animate-slide-up overflow-hidden">
@@ -229,23 +327,33 @@ export default function StatusPedidos() {
             </p>
             <p className="mb-4 font-semibold">
               Contato:{" "}
-              <span className="font-normal">{pedidoSelecionado.fornecedor?.contato || "Não informado"}</span>
+              <span className="font-normal">
+                {pedidoSelecionado.fornecedor?.contato || "Não informado"}
+              </span>
             </p>
             <p className="mb-4 font-semibold">
               Telefone:{" "}
-              <span className="font-normal">{pedidoSelecionado.fornecedor?.telefone || "Não informado"}</span>
+              <span className="font-normal">
+                {pedidoSelecionado.fornecedor?.telefone || "Não informado"}
+              </span>
             </p>
             <p className="mb-4 font-semibold">
               E-mail:{" "}
-              <span className="font-normal">{pedidoSelecionado.fornecedor?.email || "Não informado"}</span>
+              <span className="font-normal">
+                {pedidoSelecionado.fornecedor?.email || "Não informado"}
+              </span>
             </p>
-            <p className="mb-4 font-semibold">
-              Período que irá suprir:{" "}
-            </p>            
+            <p className="mb-4 font-semibold">Período que irá suprir: </p>
             <p className="mb-4 font-semibold">
               De:{" "}
-              <span className="font-normal">{formatDate(pedidoSelecionado.periodoInicio || "Não informado")}</span> Até:
-               <span className="font-normal"> {formatDate(pedidoSelecionado.periodoFim || "Não informado")}</span>
+              <span className="font-normal">
+                {formatDate(pedidoSelecionado.periodoInicio || "Não informado")}
+              </span>{" "}
+              Até:
+              <span className="font-normal">
+                {" "}
+                {formatDate(pedidoSelecionado.periodoFim || "Não informado")}
+              </span>
             </p>
             {/* Tabela dentro do modal */}
             <div className="overflow-x-auto mb-4 text-center">
@@ -295,6 +403,90 @@ export default function StatusPedidos() {
           </div>
         </div>
       )}
+      {/* MODAL DE EDIÇÃO DOS PRODUTOS */}
+      {modalAbertoEdit && pedidoSelecionado && (
+  <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-100 relative animate-slide-up overflow-hidden">
+      <button
+        className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
+        onClick={() => setModalAbertoEdit(false)}
+      >
+        ×
+      </button>
+      <h3 className="text-2xl font-bold mb-4 text-center">
+        Editar o Pedido #{pedidoSelecionado.numeroPedido}
+      </h3>
+      <h3 className="mb-4 font-semibold">
+        Status: <span className="font-normal">{pedidoSelecionado.status}</span>
+      </h3>
+      <div className="overflow-x-auto mb-4 text-center">
+        <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="p-2">SKU</th>
+              <th className="p-2">Produto</th>
+              <th className="p-2">Marca</th>
+              <th className="p-2">Peso Unitário</th>
+              <th className="p-2">Quantidade</th>
+              <th className="p-2">Unidade de Medida</th>
+              <th className="p-2">Tipo</th>
+              <th className="p-2">Valor Unitário</th>
+              <th className="p-2">Valor Total</th>
+              <th className="p-2">Observações</th>
+              <th className="p-2">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pedidoSelecionado.produtos.map((produto, index) => (
+              <tr key={index} className="border-b">
+                <td className="px-4 py-2">{produto.sku}</td>
+                <td className="px-4 py-2">{produto.name}</td>
+                <td className="px-4 py-2">{produto.marca}</td>
+                <td className="px-4 py-2">{produto.peso}</td>
+                <td className="px-4 py-2">
+                  <input
+                    type="number"
+                    value={produto.quantidade}
+                    onChange={(e) => handleEditar(index, 'quantidade', e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1 w-full"
+                  />
+                </td>
+                <td className="px-4 py-2">{produto.unit}</td>
+                <td className="px-4 py-2">{produto.tipo}</td>
+                <td className="px-4 py-2">
+                  <input
+                    type="number"
+                    value={produto.unitPrice}
+                    onChange={(e) => handleEditar(index, 'valorUnitario', e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1 w-full"
+                  />
+                </td>
+                <td className="px-4 py-2">{produto.quantidade * produto.unitPrice}</td>
+                <td className="px-4 py-2">{produto.observacoes}</td>
+                <td className="px-4 py-2">
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                    onClick={() => handleRemoverProduto(index)}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        onClick={handleSalvarEdicao}
+      >
+        Salvar Edição
+      </button>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 }
