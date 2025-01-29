@@ -8,6 +8,7 @@ export default function ExibirRefeicoes() {
   const [filtroFim, setFiltroFim] = useState("");
   const navigate = useNavigate();
 
+  // Função para formatar a data levando em conta o fuso horário
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
     let date;
@@ -19,15 +20,14 @@ export default function ExibirRefeicoes() {
       return "Data inválida";
     }
     if (isNaN(date.getTime())) return "Data inválida";
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
-  const parseDate = (dateStr) => {
-    const [day, month, year] = dateStr.split("/").map(Number);
-    return new Date(year, month - 1, day);
+    // Ajustando a data para o fuso horário local
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const year = localDate.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export default function ExibirRefeicoes() {
             refeicoesData.push({
               key: childSnapshot.key,
               dataRefeicao: formatDate(data.dataRefeicao),
+              dataRefeicaoObj: new Date(data.dataRefeicao), // Adicionando o objeto Date sem formatar
               ...data,
             });
           });
@@ -57,38 +58,30 @@ export default function ExibirRefeicoes() {
   }, []);
 
   const filtrarRefeicoes = () => {
-    const inicio = filtroInicio ? parseDate(filtroInicio) : null;
-    const fim = filtroFim ? parseDate(filtroFim) : null;
+    // Ajustando o início e fim para comparar apenas as datas
+    const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
+    const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
 
-    const database = getDatabase();
-    const refeicoesRef = ref(database, "refeicoesServidas");
+    // Filtrar refeições, comparando apenas as datas
+    const refeicoesFiltradas = refeicoes.filter((refeicao) => {
+      const dataRefeicao = resetTime(refeicao.dataRefeicaoObj);  // Reseta a hora da data
 
-    get(refeicoesRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const refeicoesData = [];
-          snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            const dataRefeicao = parseDate(data.dataRefeicao);
-            if (
-              (!inicio || dataRefeicao >= inicio) &&
-              (!fim || dataRefeicao <= fim)
-            ) {
-              refeicoesData.push({
-                key: childSnapshot.key,
-                dataRefeicao: parseDate(data.dataRefeicao),
-                ...data,
-              });
-            }
-          });
-          setRefeicoes(refeicoesData);
-        } else {
-          console.log("Nenhuma refeição encontrada");
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao filtrar dados do Firebase:", error);
-      });
+      if (
+        (!inicio || dataRefeicao >= inicio) &&
+        (!fim || dataRefeicao <= fim)
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    setRefeicoes(refeicoesFiltradas);
+  };
+
+  // Função para remover a parte de hora, minuto e segundo de uma data
+  const resetTime = (date) => {
+    date.setHours(0, 0, 0, 0); // Zera a hora para garantir a comparação apenas de data
+    return date;
   };
 
   return (
@@ -125,11 +118,11 @@ export default function ExibirRefeicoes() {
               padding: "5px",
               borderRadius: "5px",
               border: "1px solid #ccc",
-              color: 'black'
+              color: "black",
             }}
           />
         </label>
-        <label style={{ marginRight: "10px", color:  "#fff" }}>
+        <label style={{ marginRight: "10px", color: "#fff" }}>
           Data Fim:
           <input
             type="date"
@@ -140,8 +133,7 @@ export default function ExibirRefeicoes() {
               padding: "5px",
               borderRadius: "5px",
               border: "1px solid #ccc",
-              color: 'black'
-
+              color: "black",
             }}
           />
         </label>
@@ -244,7 +236,7 @@ export default function ExibirRefeicoes() {
             {refeicoes.map((refeicao) => (
               <tr key={refeicao.key}>
                 {[
-                  refeicao.dataRefeicao,
+                  formatDate(refeicao.dataRefeicao),
                   refeicao.cafeDescricao,
                   refeicao.cafeTotalQtd,
                   refeicao.cafeFuncionariosQtd,
@@ -286,3 +278,4 @@ export default function ExibirRefeicoes() {
     </div>
   );
 }
+ 

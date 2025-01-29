@@ -319,13 +319,10 @@ export default function NovoPedido() {
         }
       }
     `;
-
   const navigate = useNavigate(); // Criando uma função de navegação
-
   const handleVoltar = () => {
     navigate(-1); // Volta para a página anterior
   };
-
   return (
     <>
       <div
@@ -379,7 +376,6 @@ export default function NovoPedido() {
               </div>
             </div>
           </div>
-
           <div>
             <h3>Escolha um Fornecedor:</h3>
             <button
@@ -521,7 +517,6 @@ export default function NovoPedido() {
               </div>
             )}
           </div>
-
           <hr style={{ border: "10px black" }} />
           <br />
           <br />
@@ -533,7 +528,6 @@ export default function NovoPedido() {
             >
               Selecionar Produto
             </button>
-
             {showModalProduto && (
               <div style={styles.modal}>
                 <div style={styles.modalContent}>
@@ -578,7 +572,6 @@ export default function NovoPedido() {
                 </div>
               </div>
             )}
-
             {dadosProduct.sku && (
               <div style={{ marginTop: "20px" }}>
                 <div>
@@ -665,7 +658,6 @@ export default function NovoPedido() {
                 </div>
               </div>
             )}
-
             <div>
               <button onClick={handleAddProductToOrder} style={styles.button}>
                 Adicionar Produto ao Pedido
@@ -706,7 +698,6 @@ export default function NovoPedido() {
               </tbody>
             </table>
           </div>
-
           <div>
             <button onClick={handleSubmit} style={styles.button}>
               Finalizar Pedido
@@ -715,7 +706,7 @@ export default function NovoPedido() {
 
           <button
             onClick={handleVoltar}
-            style={{  marginBottom: "20px", width: '100%' }}
+            style={{ marginBottom: "20px", width: "100%" }}
           >
             Voltar
           </button>
