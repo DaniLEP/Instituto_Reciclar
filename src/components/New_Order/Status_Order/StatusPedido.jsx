@@ -1,281 +1,11 @@
-// import { useState, useEffect } from "react";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import { initializeApp, getApp, getApps } from "firebase/app";
-// import { getDatabase, ref, get, update } from "firebase/database";
-
-// // Configuração do Firebase
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-//   authDomain: "bancoestoquecozinha.firebaseapp.com",
-//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-//   projectId: "bancoestoquecozinha",
-//   storageBucket: "bancoestoquecozinha.appspot.com",
-//   messagingSenderId: "71775149511",
-//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-// };
-
-// // Inicializando o Firebase (só se não houver app inicializado)
-// const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-// const db = getDatabase(app);
-
-// export default function StatusPedidos() {
-//   const [pedidos, setPedidos] = useState([]);
-//   const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
-//   const [modalAberto, setModalAberto] = useState(false);
-
-//   useEffect(() => {
-//     const fetchPedidos = async () => {
-//       const pedidosRef = ref(db, "novosPedidos");
-//       const pedidosSnapshot = await get(pedidosRef);
-//       if (pedidosSnapshot.exists()) {
-//         setPedidos(Object.values(pedidosSnapshot.val()));
-//       } else {
-//         toast.error("Nenhum pedido encontrado!");
-//       }
-//     };
-
-//     fetchPedidos();
-//   }, []);
-
-//   const handleVisualizarPedido = (pedido) => {
-//     setPedidoSelecionado(pedido);
-//     setModalAberto(true);
-//   };
-
-//   const handleFecharModal = () => {
-//     setModalAberto(false);
-//     setPedidoSelecionado(null);
-//   };
-
-//   // Função para atualizar o status no Firebase
-//   const handleAtualizarStatus = (pedidoId, novoStatus) => {
-//     const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
-//     update(pedidoRef, { status: novoStatus })
-//       .then(() => {
-//         toast.success(`Status do pedido atualizado para "${novoStatus}"`);
-//         // Atualizar o estado local dos pedidos
-//         setPedidos((prevPedidos) =>
-//           prevPedidos.map((pedido) =>
-//             pedido.numeroPedido === pedidoId
-//               ? { ...pedido, status: novoStatus }
-//               : pedido
-//           )
-//         );
-//       })
-//       .catch((error) => {
-//         toast.error("Erro ao atualizar o status do pedido.");
-//         console.error("Erro ao atualizar status:", error);
-//       });
-//   };
-
-//   const styles = {
-//     container: {
-//       maxWidth: "1200px",
-//       margin: "0 auto",
-//       padding: "40px 20px",
-//       fontFamily: "Arial, sans-serif",
-//       backgroundColor: "#f4f6f9",
-//       borderRadius: "8px",
-//       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-//     },
-//     table: {
-//       width: "100%",
-//       borderCollapse: "collapse",
-//     },
-//     tableHeader: {
-//       backgroundColor: "#f2f2f2",
-//       textAlign: "left",
-//     },
-//     tableCell: {
-//       padding: "8px",
-//       borderBottom: "1px solid #ddd",
-//       textAlign: "center",
-//     },
-//     modal: {
-//       position: "fixed",
-//       top: "0",
-//       left: "0",
-//       width: "100%",
-//       height: "100%",
-//       backgroundColor: "rgba(0, 0, 0, 0.5)",
-//       display: modalAberto ? "flex" : "none",
-//       justifyContent: "center",
-//       alignItems: "center",
-//       zIndex: "1000",
-//     },
-//     modalContent: {
-//       backgroundColor: "white",
-//       padding: "20px",
-//       borderRadius: "8px",
-//       maxWidth: "800px",
-//       width: "100%",
-//     },
-//     modalHeader: {
-//       fontSize: "1.5rem",
-//       marginBottom: "20px",
-//     },
-//     modalCloseButton: {
-//       backgroundColor: "#F44336",
-//       color: "white",
-//       border: "none",
-//       padding: "5px 10px",
-//       borderRadius: "5px",
-//       cursor: "pointer",
-//     },
-//     productTable: {
-//       width: "100%",
-//       borderCollapse: "collapse",
-//       marginTop: "20px",
-//     },
-//     productTableHeader: {
-//       backgroundColor: "#f2f2f2",
-//     },
-//     productTableCell: {
-//       padding: "8px",
-//       borderBottom: "1px solid #ddd",
-//       textAlign: "center",
-//     },
-//   };
-
-//   return (
-//     <div style={styles.container}>
-//       <ToastContainer />
-//       <h2>Status dos Pedidos</h2>
-//       <table style={styles.table}>
-//         <thead style={styles.tableHeader}>
-//           <tr>
-//             <th style={styles.tableCell}>Número do Pedido</th>
-//             <th style={styles.tableCell}>Data do Pedido</th>
-//             <th style={styles.tableCell}>Fornecedor</th>
-//             <th style={styles.tableCell}>Status</th>
-//             <th style={styles.tableCell}>Ações</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {pedidos.length > 0 ? (
-//             pedidos.map((pedido, index) => (
-//               <tr key={index}>
-//                 <td style={styles.tableCell}>{pedido.numeroPedido}</td>
-//                 <td style={styles.tableCell}>
-//                   {new Date(pedido.dataPedido).toLocaleDateString()}
-//                 </td>
-//                 <td style={styles.tableCell}>
-//                   {pedido?.fornecedor?.razaoSocial || "Fornecedor não informado"}
-//                 </td>
-//                 <td style={styles.tableCell}>
-//                   <span
-//                     style={{
-//                       color:
-//                         pedido.status === "Pendente"
-//                           ? "orange"
-//                           : pedido.status === "Aprovado"
-//                           ? "green"
-//                           : "red",
-//                     }}
-//                   >
-//                     {pedido.status}
-//                   </span>
-//                 </td>
-//                 <td style={styles.tableCell}>
-//                   <button
-//                     onClick={() => handleVisualizarPedido(pedido)}
-//                     style={{ marginRight: "10px" }}
-//                   >
-//                     Visualizar
-//                   </button>
-//                   {pedido.status === "Pendente" && (
-//                     <>
-//                       <button
-//                         onClick={() =>
-//                           handleAtualizarStatus(pedido.numeroPedido, "Aprovado")
-//                         }
-//                         style={{ backgroundColor: "green", color: "white" }}
-//                       >
-//                         Aprovar
-//                       </button>
-//                       <button
-//                         onClick={() =>
-//                           handleAtualizarStatus(pedido.numeroPedido, "Cancelado")
-//                         }
-//                         style={{ backgroundColor: "red", color: "white" }}
-//                       >
-//                         Cancelar
-//                       </button>
-//                     </>
-//                   )}
-//                 </td>
-//               </tr>
-//             ))
-//           ) : (
-//             <tr>
-//               <td colSpan="5" style={styles.tableCell}>
-//                 Nenhum pedido encontrado.
-//               </td>
-//             </tr>
-//           )}
-//         </tbody>
-//       </table>
-
-//       {/* Modal de Detalhes do Pedido */}
-//       {modalAberto && pedidoSelecionado && (
-//         <div style={styles.modal}>
-//           <div style={styles.modalContent}>
-//             <h3 style={styles.modalHeader}>
-//               Pedido #{pedidoSelecionado.numeroPedido}
-//             </h3>
-//             <p><strong>Data do Pedido:</strong> {new Date(pedidoSelecionado.dataPedido).toLocaleDateString()}</p>
-//             <p><strong>Fornecedor:</strong> {pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}</p>
-//             <p><strong>Status:</strong> {pedidoSelecionado.status}</p>
-//             <h4>Produtos</h4>
-//             <table style={styles.productTable}>
-//               <thead style={styles.productTableHeader}>
-//                 <tr>
-//                   <th style={styles.productTableCell}>SKU</th>
-//                   <th style={styles.productTableCell}>Nome</th>
-//                   <th style={styles.productTableCell}>Quantidade</th>
-//                   <th style={styles.productTableCell}>Valor Unitário</th>
-//                   <th style={styles.productTableCell}>Total</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {pedidoSelecionado.produtos.map((produto, index) => (
-//                   <tr key={index}>
-//                     <td style={styles.productTableCell}>{produto.sku}</td>
-//                     <td style={styles.productTableCell}>{produto.name}</td>
-//                     <td style={styles.productTableCell}>{produto.quantidade}</td>
-//                     <td style={styles.productTableCell}>
-//                       {produto.valorUnitario?.toFixed(2)}
-//                     </td>
-//                     <td style={styles.productTableCell}>
-//                       {(produto.valorUnitario * produto.quantidade)?.toFixed(2)}
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//             <button style={styles.modalCloseButton} onClick={handleFecharModal}>
-//               Fechar
-//             </button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
-
-
-
 
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getDatabase, ref, get, update } from "firebase/database";
+import { getDatabase, ref, get, update, push } from "firebase/database";
+import * as XLSX from "xlsx";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -286,7 +16,6 @@ const firebaseConfig = {
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
-// Inicializando o Firebase (só se não houver app inicializado)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
 
@@ -294,211 +23,181 @@ export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
-  const [modoEdicao, setModoEdicao] = useState(false);
 
   useEffect(() => {
     const fetchPedidos = async () => {
       const pedidosRef = ref(db, "novosPedidos");
       const pedidosSnapshot = await get(pedidosRef);
       if (pedidosSnapshot.exists()) {
-        setPedidos(Object.values(pedidosSnapshot.val()));
+        setPedidos(
+          Object.entries(pedidosSnapshot.val()).map(([id, pedido]) => ({
+            id,
+            ...pedido,
+          }))
+        );
       } else {
         toast.error("Nenhum pedido encontrado!");
       }
     };
-
     fetchPedidos();
   }, []);
 
-  const handleVisualizarPedido = (pedido) => {
-    setPedidoSelecionado(pedido);
-    setModalAberto(true);
-    setModoEdicao(false); // Desabilitar o modo de edição ao visualizar
+  const handleAtualizarStatus = (pedidoId, novoStatus) => {
+    const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
+    update(pedidoRef, { status: novoStatus })
+      .then(() => {
+        toast.success(`Status atualizado para ${novoStatus}`);
+        setPedidos((prev) =>
+          prev.map((p) =>
+            p.id === pedidoId ? { ...p, status: novoStatus } : p
+          )
+        );
+        if (novoStatus === "Aprovado") {
+          enviarParaEstoque(pedidoId);
+        }
+      })
+      .catch(() => toast.error("Erro ao atualizar status"));
   };
 
-  const handleFecharModal = () => {
-    setModalAberto(false);
-    setPedidoSelecionado(null);
-  };
+  const enviarParaEstoque = async (pedidoId) => {
+    const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
+    const pedidoSnapshot = await get(pedidoRef);
 
-  const handleAlterarStatus = async (pedidoId, novoStatus) => {
-    try {
-      const pedidoRef = ref(db, `novosPedidos/${pedidoId}`);
-      await update(pedidoRef, { status: novoStatus });
-      toast.success(`Pedido ${pedidoId} atualizado para: ${novoStatus}`);
-      // Atualizando o estado local após a alteração
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((pedido) =>
-          pedido.numeroPedido === pedidoId
-            ? { ...pedido, status: novoStatus }
-            : pedido
-        )
-      );
-    } catch (error) {
-      toast.error("Erro ao atualizar o status do pedido.");
-    }
-  };
+    if (pedidoSnapshot.exists()) {
+      const pedido = pedidoSnapshot.val();
+      const estoqueRef = ref(db, "Estoque");
 
-  const handleSalvarEdicao = async () => {
-    try {
-      const pedidoRef = ref(db, `novosPedidos/${pedidoSelecionado.numeroPedido}`);
-      await update(pedidoRef, {
-        produtos: pedidoSelecionado.produtos,
+      const produtoPromises = pedido.produtos.map(async (produto) => {
+        await push(estoqueRef, {
+          sku: produto.sku || "Indefinido",
+          name: produto.name || "Indefinido",
+          quantity: produto.quantidade || 0,
+          supplier: pedido.fornecedor?.razaoSocial || "Indefinido",
+          "Data de Cadastro": new Date().toISOString(),
+          "Valor Unitário": produto.unitPrice || 0,
+          "Valor Total": produto.totalPrice || 0,
+        });
       });
-      toast.success("Pedido atualizado com sucesso!");
-      setModoEdicao(false); // Desabilitar o modo de edição
-    } catch (error) {
-      toast.error("Erro ao salvar a edição do pedido.");
+
+      await Promise.all(produtoPromises); // Aguarda todas as inserções
+      toast.success("Produtos adicionados ao estoque!");
+    } else {
+      toast.error("Erro: Pedido não encontrado.");
     }
   };
 
-  const handleAlterarItem = (index, campo, valor) => {
-    const novoPedido = { ...pedidoSelecionado };
-    novoPedido.produtos[index][campo] = valor;
-
-    // Atualizar o valor total automaticamente
-    if (campo === "quantidade" || campo === "valorUnitario") {
-      const produto = novoPedido.produtos[index];
-      produto.valorTotal = produto.quantidade * produto.valorUnitario;
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "Data inválida";
+    let date;
+    if (typeof timestamp === "number") {
+      date = new Date(timestamp);
+    } else if (typeof timestamp === "string") {
+      date = new Date(Date.parse(timestamp));
+    } else {
+      return "Data inválida";
     }
+    if (isNaN(date.getTime())) return "Data inválida";
 
-    setPedidoSelecionado(novoPedido);
+    // Ajustando a data para o fuso horário local
+    const localDate = new Date(
+      date.getTime() + date.getTimezoneOffset() * 60000
+    );
+
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const year = localDate.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
-  const styles = {
-    container: {
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: "40px 20px",
-      fontFamily: "Arial, sans-serif",
-      backgroundColor: "#f4f6f9",
-      borderRadius: "8px",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    },
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-    },
-    tableHeader: {
-      backgroundColor: "#f2f2f2",
-      textAlign: "left",
-    },
-    tableCell: {
-      padding: "8px",
-      borderBottom: "1px solid #ddd",
-      textAlign: "center",
-    },
-    modal: {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      display: modalAberto ? "flex" : "none",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: "1000",
-    },
-    modalContent: {
-      backgroundColor: "white",
-      padding: "20px",
-      borderRadius: "8px",
-      maxWidth: "800px",
-      width: "100%",
-    },
-    modalHeader: {
-      fontSize: "1.5rem",
-      marginBottom: "20px",
-    },
-    modalCloseButton: {
-      backgroundColor: "#F44336",
-      color: "white",
-      border: "none",
-      padding: "5px 10px",
-      borderRadius: "5px",
-      cursor: "pointer",
-    },
-    productTable: {
-      width: "100%",
-      borderCollapse: "collapse",
-      marginTop: "20px",
-    },
-    productTableHeader: {
-      backgroundColor: "#f2f2f2",
-    },
-    productTableCell: {
-      padding: "8px",
-      borderBottom: "1px solid #ddd",
-      textAlign: "center",
-    },
-    input: {
-      padding: "5px",
-      width: "100px",
-      textAlign: "center",
-    },
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      pedidoSelecionado.produtos.map((produto) => ({
+        SKU: produto.sku,
+        Produto: produto.name,
+        Marca: produto.marca,
+        Peso: produto.peso,
+        UnidadeMedida: produto.unit,
+        Quantidade: `${produto.quantidade} unidades`,
+        Tipo: produto.tipo,
+        ValorUnitario: produto.unitPrice,
+        ValorTotal: produto.totalPrice,
+        Observação: produto.obersavacao,
+
+      }))
+    );
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
+
+    // Gerar e baixar o arquivo Excel
+    XLSX.writeFile(wb, `Pedido_${pedidoSelecionado.numeroPedido}.xlsx`);
   };
 
   return (
-    <div style={styles.container}>
+    <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
-      <h2>Status dos Pedidos</h2>
-      <table style={styles.table}>
-        <thead style={styles.tableHeader}>
+      <h2 className="text-2xl font-bold mb-4">Status dos Pedidos</h2>
+      <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead className="bg-gray-200">
           <tr>
-            <th style={styles.tableCell}>Número do Pedido</th>
-            <th style={styles.tableCell}>Data do Pedido</th>
-            <th style={styles.tableCell}>Fornecedor</th>
-            <th style={styles.tableCell}>Status</th>
-            <th style={styles.tableCell}>Ações</th>
+            <th className="p-2">Número</th>
+            <th className="p-2">Data</th>
+            <th className="p-2">Fornecedor</th>
+            <th className="p-2">Categoria</th>
+            <th className="p-2">Status</th>
+            <th className="p-2">Ações</th>
           </tr>
         </thead>
         <tbody>
           {pedidos.length > 0 ? (
-            pedidos.map((pedido, index) => (
-              <tr key={index}>
-                <td style={styles.tableCell}>{pedido.numeroPedido}</td>
-                <td style={styles.tableCell}>
-                  {new Date(pedido.dataPedido).toLocaleDateString()}
+            pedidos.map((pedido) => (
+              <tr
+                key={pedido.id}
+                className="border-b hover:bg-gray-100 text-center"
+              >
+                <td className="p-2">{pedido.numeroPedido}</td>
+                <td className="p-2">{formatDate(pedido.dataPedido)}</td>
+                <td className="p-2">
+                  {pedido?.fornecedor?.razaoSocial || "Não informado"}
                 </td>
-                <td style={styles.tableCell}>
-                  {pedido?.fornecedor?.razaoSocial || "Fornecedor não informado"}
-                </td>
-                <td style={styles.tableCell}>
-                  <span
-                    style={{
-                      color: pedido.status === "Aprovado" ? "green" : pedido.status === "Cancelado" ? "red" : "black",
+                <td className="p-2">{pedido.category || "Não informado"}</td>
+                <td className="p-2">{pedido.status}</td>
+                <td className="p-2">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded mr-2 hover:bg-blue-600"
+                    onClick={() => {
+                      setPedidoSelecionado(pedido);
+                      setModalAberto(true);
                     }}
                   >
-                    {pedido.status}
-                  </span>
-                </td>
-                <td style={styles.tableCell}>
-                  <button onClick={() => handleVisualizarPedido(pedido)}>
                     Visualizar
                   </button>
                   {pedido.status === "Pendente" && (
-                    <div>
+                    <>
                       <button
-                        onClick={() => handleAlterarStatus(pedido.numeroPedido, "Aprovado")}
-                        style={{ backgroundColor: "green", color: "white", margin: "5px" }}
+                        className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600"
+                        onClick={() =>
+                          handleAtualizarStatus(pedido.id, "Aprovado")
+                        }
                       >
                         Aprovar
                       </button>
                       <button
-                        onClick={() => handleAlterarStatus(pedido.numeroPedido, "Cancelado")}
-                        style={{ backgroundColor: "red", color: "white", margin: "5px" }}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        onClick={() =>
+                          handleAtualizarStatus(pedido.id, "Cancelado")
+                        }
                       >
                         Cancelar
                       </button>
-                    </div>
+                    </>
                   )}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="5" style={styles.tableCell}>
+              <td colSpan="5" className="p-4 text-center">
                 Nenhum pedido encontrado.
               </td>
             </tr>
@@ -506,100 +205,96 @@ export default function StatusPedidos() {
         </tbody>
       </table>
 
-      {/* Modal de Detalhes do Pedido */}
       {modalAberto && pedidoSelecionado && (
-        <div style={styles.modal}>
-          <div style={styles.modalContent}>
-            <h3 style={styles.modalHeader}>
+        <div className="fixed top-0  left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-100 relative animate-slide-up overflow-hidden">
+            <button
+              className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
+              onClick={() => setModalAberto(false)}
+            >
+              ×
+            </button>
+            <h3 className="text-2xl font-bold mb-4 text-center">
               Pedido #{pedidoSelecionado.numeroPedido}
             </h3>
-            <p><strong>Data do Pedido:</strong> {new Date(pedidoSelecionado.dataPedido).toLocaleDateString()}</p>
-            <p><strong>Fornecedor:</strong> {pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}</p>
-            <p><strong>Status:</strong> {pedidoSelecionado.status}</p>
-            
-            <h4>Produtos</h4>
-            <table style={styles.productTable}>
-              <thead style={styles.productTableHeader}>
-                <tr>
-                  <th style={styles.productTableCell}>SKU</th>
-                  <th style={styles.productTableCell}>Nome</th>
-                  <th style={styles.productTableCell}>Quantidade</th>
-                  <th style={styles.productTableCell}>Valor Unitário</th>
-                  <th style={styles.productTableCell}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pedidoSelecionado.produtos.map((produto, index) => (
-                  <tr key={index}>
-                    <td style={styles.productTableCell}>{produto.sku}</td>
-                    <td style={styles.productTableCell}>{produto.name}</td>
-                    <td style={styles.productTableCell}>
-                      {modoEdicao ? (
-                        <input
-                          style={styles.input}
-                          type="number"
-                          value={produto.quantidade}
-                          onChange={(e) =>
-                            handleAlterarItem(index, "quantidade", e.target.value)
-                          }
-                        />
-                      ) : (
-                        produto.quantidade
-                      )}
-                    </td>
-                    <td style={styles.productTableCell}>
-                      {modoEdicao ? (
-                        <input
-                          style={styles.input}
-                          type="number"
-                          value={produto.valorUnitario}
-                          onChange={(e) =>
-                            handleAlterarItem(index, "valorUnitario", e.target.value)
-                          }
-                        />
-                      ) : (
-                        produto.valorUnitario?.toFixed(2)
-                      )}
-                    </td>
-                    <td style={styles.productTableCell}>
-                      {(produto.valorUnitario * produto.quantidade)?.toFixed(2)}
-                    </td>
+            <h3 className="mb-4 font-semibold">
+              Status:{" "}
+              <span className="font-normal">{pedidoSelecionado.status}</span>
+            </h3>
+            <p className="mb-2 font-semibold">
+              Fornecedor:{" "}
+              <span className="font-normal">
+                {pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}
+              </span>
+            </p>
+            <p className="mb-4 font-semibold">
+              Contato:{" "}
+              <span className="font-normal">{pedidoSelecionado.fornecedor?.contato || "Não informado"}</span>
+            </p>
+            <p className="mb-4 font-semibold">
+              Telefone:{" "}
+              <span className="font-normal">{pedidoSelecionado.fornecedor?.telefone || "Não informado"}</span>
+            </p>
+            <p className="mb-4 font-semibold">
+              E-mail:{" "}
+              <span className="font-normal">{pedidoSelecionado.fornecedor?.email || "Não informado"}</span>
+            </p>
+            <p className="mb-4 font-semibold">
+              Período que irá suprir:{" "}
+            </p>            
+            <p className="mb-4 font-semibold">
+              De:{" "}
+              <span className="font-normal">{formatDate(pedidoSelecionado.periodoInicio || "Não informado")}</span> Até:
+               <span className="font-normal"> {formatDate(pedidoSelecionado.periodoFim || "Não informado")}</span>
+            </p>
+            {/* Tabela dentro do modal */}
+            <div className="overflow-x-auto mb-4 text-center">
+              <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="p-2">SKU</th>
+                    <th className="p-2">Produto</th>
+                    <th className="p-2">Marca</th>
+                    <th className="p-2">Peso Unitário</th>
+                    <th className="p-2">Quantidade</th>
+                    <th className="p-2">Unidade de Medida</th>
+                    <th className="p-2">Tipo</th>
+                    <th className="p-2">Valor Unitário</th>
+                    <th className="p-2">Valor Total</th>
+                    <th className="p-2">Observações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {modoEdicao ? (
-              <div>
-                <button
-                  style={{ backgroundColor: "blue", color: "white" }}
-                  onClick={handleSalvarEdicao}
-                >
-                  Salvar Alterações
-                </button>
-                <button
-                  style={{ backgroundColor: "#F44336", color: "white", marginLeft: "10px" }}
-                  onClick={() => setModoEdicao(false)}
-                >
-                  Cancelar Edição
-                </button>
-              </div>
-            ) : (
-              <button
-                style={{ backgroundColor: "orange", color: "white" }}
-                onClick={() => setModoEdicao(true)}
-              >
-                Editar Pedido
-              </button>
-            )}
+                </thead>
+                <tbody>
+                  {pedidoSelecionado.produtos.map((produto, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="px-4 py-2">{produto.sku}</td>
+                      <td className="px-4 py-2">{produto.name}</td>
+                      <td className="px-4 py-2">{produto.marca}</td>
+                      <td className="px-4 py-2">{produto.peso}</td>
+                      <td className="px-4 py-2">{produto.quantidade}</td>
+                      <td className="px-4 py-2">{produto.unit}</td>
+                      <td className="px-4 py-2">{produto.tipo}</td>
+                      <td className="px-4 py-2">{produto.unitPrice}</td>
+                      <td className="px-4 py-2">{produto.totalPrice}</td>
+                      <td className="px-4 py-2">{produto.obersavacao}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <button style={styles.modalCloseButton} onClick={handleFecharModal}>
-              Fechar
-            </button>
+            {/* Botão para exportar em Excel */}
+            <div className="flex justify-end">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                onClick={exportToExcel}
+              >
+                Exportar para Excel
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
-

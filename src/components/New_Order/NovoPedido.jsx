@@ -25,6 +25,7 @@ export default function NovoPedido() {
   const [numeroPedido, setNumeroPedido] = useState("");
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFim, setPeriodoFim] = useState("");
+  const [category, setCategory] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
   const [dadosFornecedor, setDadosFornecedor] = useState({
@@ -42,6 +43,7 @@ export default function NovoPedido() {
     sku: "",
     name: "",
     tipo: "",
+    category: "",
     unidMedida: "",
     quantidade: 1, // Adicionando o campo quantidade
     observacao: "", // Adicionando o campo observação
@@ -141,6 +143,7 @@ export default function NovoPedido() {
       !dataSelecionada ||
       !periodoInicio ||
       !periodoFim ||
+      !category ||
       !fornecedorSelecionado ||
       itensPedido.length === 0
     ) {
@@ -154,6 +157,7 @@ export default function NovoPedido() {
       dataPedido: dataSelecionada,
       periodoInicio,
       periodoFim,
+      category,
       fornecedor: dadosFornecedor,
       produtos: itensPedido,
       status: "Pendente", // Status inicial do pedido
@@ -175,6 +179,7 @@ export default function NovoPedido() {
       setDataSelecionada("");
       setPeriodoInicio("");
       setPeriodoFim("");
+      setCategory("");
       setFornecedorSelecionado(null);
       setItensPedido([]);
     } catch (error) {
@@ -358,7 +363,7 @@ export default function NovoPedido() {
                 style={styles.input}
               />
             </div>
-            <div>
+              <div>
               <label>Período: </label>
               <div style={{ display: "flex", gap: "10px" }}>
                 <input
@@ -373,6 +378,21 @@ export default function NovoPedido() {
                   onChange={(e) => setPeriodoFim(e.target.value)}
                   style={styles.input}
                 />
+              </div>
+            </div>
+            <div>
+              <label>Selecione a categoria: </label>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={styles.input}
+               >
+                <option value="Selecionar">Selecione a Categoria do pedido</option>
+                <option value="Proteina">Proteina</option>
+                <option value="Mantimento">Mantimento</option>
+                <option value="Hortaliças">Hortaliças</option>
+                </select> 
               </div>
             </div>
           </div>
