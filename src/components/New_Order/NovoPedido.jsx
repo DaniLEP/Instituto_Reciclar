@@ -101,8 +101,9 @@ export default function NovoPedido() {
       name: product.name,
       tipo: product.tipo,
       marca: product.marca,
-      category: product.category,
+      peso: product.peso,
       unit: product.unit,
+      category: product.category,
       quantidade: " ", // Inicializando quantidade
       observacao: "", // Inicializando observação
     });
@@ -123,6 +124,7 @@ export default function NovoPedido() {
         sku: "",
         name: "",
         tipo: "",
+        peso: "",
         unit: "",
         marca: "",
         category: "",
@@ -559,6 +561,7 @@ export default function NovoPedido() {
                         <th style={styles.tableCell}>Tipo</th>
                         <th style={styles.tableCell}>Marca</th>
                         <th style={styles.tableCell}>Grupo</th>
+                        <th style={styles.tableCell}>Peso</th>
                         <th style={styles.tableCell}>Unidade</th>
                         <th style={styles.tableCell}>Ação</th>
                       </tr>
@@ -570,6 +573,7 @@ export default function NovoPedido() {
                           <td style={styles.tableCell}>{product.tipo}</td>
                           <td style={styles.tableCell}>{product.marca}</td>
                           <td style={styles.tableCell}>{product.category}</td>
+                          <td style={styles.tableCell}>{product.peso}</td>
                           <td style={styles.tableCell}>{product.unit}</td>
                           <td style={styles.tableCell}>
                             <button
@@ -640,6 +644,15 @@ export default function NovoPedido() {
                   />
                 </div>
                 <div>
+                  <label>Peso: </label>
+                  <input
+                    type="text"
+                    value={dadosProduct.peso}
+                    readOnly
+                    style={styles.input}
+                  />
+                </div>
+                <div>
                   <label>Unidade de Medida: </label>
                   <input
                     type="text"
@@ -697,6 +710,7 @@ export default function NovoPedido() {
                   <th style={styles.tableCell}>Tipo</th>
                   <th style={styles.tableCell}>Marca</th>
                   <th style={styles.tableCell}>Grupo</th>
+                  <th>Peso</th>
                   <th style={styles.tableCell}>Unidade de Medida</th>
                   <th style={styles.tableCell}>Quantidade</th>
                   <th style={styles.tableCell}>Observação</th>
@@ -710,6 +724,7 @@ export default function NovoPedido() {
                     <td style={styles.tableCell}>{item.tipo}</td>
                     <td style={styles.tableCell}>{item.marca}</td>
                     <td style={styles.tableCell}>{item.category}</td>
+                    <td style={styles.tableCell}>{item.peso}</td>
                     <td style={styles.tableCell}>{item.unit}</td>
                     <td style={styles.tableCell}>{item.quantidade}</td>
                     <td style={styles.tableCell}>{item.observacao}</td>
