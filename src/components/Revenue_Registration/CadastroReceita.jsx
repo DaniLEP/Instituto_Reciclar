@@ -273,6 +273,9 @@ export default function CadastroRefeicoes() {
               fontSize: "16px",
               borderRadius: "5px",
               border: "1px solid #ddd",
+              height: "150px", // Altura inicial fixa
+              resize: "vertical", // Permite redimensionar apenas na vertical
+              overflowY: "auto", // Adiciona rolagem quando necessário
             }}
           />
           <div
@@ -367,6 +370,9 @@ export default function CadastroRefeicoes() {
               fontSize: "16px",
               borderRadius: "5px",
               border: "1px solid #ddd",
+              height: "150px", // Altura inicial fixa
+              resize: "vertical", // Permite redimensionar apenas na vertical
+              overflowY: "auto", // Adiciona rolagem quando necessário
             }}
           />
           <div
