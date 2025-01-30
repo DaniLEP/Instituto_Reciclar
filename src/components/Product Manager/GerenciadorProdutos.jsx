@@ -298,8 +298,8 @@ function Gerenciador() {
                 <td data-label="Nome">{product.name}</td>
                 <td data-label="Marca">{product.marca}</td>
                 <td data-label="Fornecedor">{product.supplier}</td>
-                <td data-label="Peso (KG)">{product.peso} {product.pesoUnit}</td>
-                <td data-label="Unidade de Medida">{product.unitMeasure}</td>
+                <td data-label="Peso (KG)">{product.peso} {product.unitMeasure}</td>
+                <td data-label="Unidade de Medida">{product.unit}</td>
                 <td data-label="Categoria">{product.category}</td>
                 <td data-label="Tipo">{product.tipo}</td>
                 <td>
@@ -366,10 +366,10 @@ function Gerenciador() {
               <input
                 type="number"
                 name="peso"
-                value={editingProduct.peso || ""}
+                value={editingProduct.peso  || ""}
                 onChange={handleInputChange}
                 style={{
-                  width: "70%",
+                  width: "100%",
                   padding: "10px",
                   border: "1px solid #ccc",
                   borderRadius: "8px",
@@ -377,11 +377,30 @@ function Gerenciador() {
                 }}
                 placeholder="Digite o peso"
               />
-            </div>
-            <label>Unidade de Medida:</label>
-            <select
+              <select
               name="unitMeasure"
               value={editingProduct.unitMeasure || ""}
+              onChange={handleInputChange}
+              style={{
+                width: "100%",
+                display: 'flex',
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                fontSize: "1rem",
+              }}
+            >
+              <option value="g">Gramas</option>
+              <option value="kg">Quilos</option>
+              <option value="L">Litros</option>
+              <option value="ml">Mili-Litros</option>
+            </select>
+            </div>
+            <label>Unidade de Medida:</label>
+             <select
+              name="unit"
+              value={editingProduct.unit || ""}
               onChange={handleInputChange}
               style={{
                 width: "100%",
@@ -392,9 +411,9 @@ function Gerenciador() {
                 fontSize: "1rem",
               }}
             >
-              <option value="g">Gramas</option>
-              <option value="kg">Quilos</option>
-              <option value="un">Unidade</option>
+               <option value="un">Unidade</option>
+            <option value="fd">Fardo</option>
+            <option value="cx">Caixa</option>
             </select>
             <label>Categoria:</label>
             <select
