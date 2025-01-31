@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
+import "./css/Estoque.css"; // Importando o arquivo CSS
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -27,6 +28,8 @@ export default function Estoque() {
   const [totalPeso, setTotalPeso] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const [isSearched, setIsSearched] = useState(false);
+  const [filtroInicio, setFiltroInicio] = useState("");
+  const [filtroFim, setFiltroFim] = useState("");
   const navigate = useNavigate();
 
   // Buscar produtos no banco
@@ -63,6 +66,11 @@ export default function Estoque() {
     setTotalQuantity(totalQuantity);
     setTotalPeso(totalPeso);
     setTotalPrice(totalPrice);
+  };
+
+  const resetTime = (date) => {
+    date.setHours(0, 0, 0, 0); // Reseta as horas, minutos, segundos e milissegundos para 0
+    return date;
   };
 
   // Função de filtro para buscar produtos
@@ -132,195 +140,186 @@ export default function Estoque() {
     return expirationDate < today;
   };
 
-  // Estilo inline simplificado
-  const containerStyle = {
-    fontFamily: "Arial, sans-serif",
-    padding: "30px",
-    backgroundColor: "#f4f6f9",
-    margin: "0 auto",
-    maxWidth: "1200px",
+  const handleDateFilter = () => {
+    const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
+    const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
+
+    // Filtra os produtos com base nas datas de cadastro
+    const filteredByDate = productsData.filter((item) => {
+      const dataCadastro = resetTime(new Date(item.dateAdded));
+
+      if (
+        (!inicio || dataCadastro >= inicio) &&
+        (!fim || dataCadastro <= fim)
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    setFilteredProducts(filteredByDate);
+    calculateTotals(filteredByDate);
   };
 
-  const searchContainerStyle = {
-    marginBottom: "30px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  };
-
-  const searchInputStyle = {
-    width: "100%",
-    maxWidth: "500px",
-    padding: "12px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    marginBottom: "10px",
-    boxSizing: "border-box",
-  };
-
-  const tableContainerStyle = {
-    overflowX: "auto",
-    marginTop: "20px",
-  };
-
-  const tableStyle = {
-    width: "100%",
-    borderCollapse: "collapse",
-    border: "1px solid #ccc",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-  };
-
-  const tableHeaderStyle = {
-    backgroundColor: "#4CAF50",
-    color: "white",
-  };
-
-  const tableCellStyle = {
-    padding: "12px",
-    textAlign: "center",
-    border: "1px solid #ddd",
-  };
-
-  const backButtonStyle = {
-    padding: "10px 20px",
-    backgroundColor: "#007bff",
-    color: "white",
-    fontSize: "1rem",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    marginTop: "20px",
+  const clearDateFilter = () => {
+    setFiltroInicio(""); // Limpa o filtro de início
+    setFiltroFim(""); // Limpa o filtro de fim
+    setFilteredProducts(productsData); // Restaura todos os produtos
+    calculateTotals(productsData); // Recalcula os totais para todos os produtos
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={{ textAlign: "center", marginBottom: "30px" }}>
-        <h1 style={{ fontSize: "2.5rem", color: "#333" }}>Consulta de Estoque</h1>
-      </div>
+      <div className="container">
+        <div className="header">
+          <h1>Consulta de Estoque</h1>
+        </div>
 
-      <div style={searchContainerStyle}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
-          style={searchInputStyle}
-        />
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="search-container">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
+            className="search-input"
+          />
+          <div className="button-container">
+            <button onClick={handleSearch} className="search-button">
+              Consultar
+            </button>
+            {isSearched && (
+              <button onClick={handleBack} className="clear-button">
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="date-container">
+  <p>Período de:</p>
+  <input
+    type="date"
+    value={filtroInicio}
+    onChange={(e) => setFiltroInicio(e.target.value)}
+    className="date-input"
+  />
+  
+  <p>até:</p>
+  <input
+    type="date"
+    value={filtroFim}
+    onChange={(e) => setFiltroFim(e.target.value)}
+    className="date-input"
+  />
+
           <button
-            onClick={handleSearch}
+            onClick={handleDateFilter}
+            className="date-input"
             style={{
-              padding: "10px 20px",
-              fontSize: "1rem",
-              backgroundColor: "#4CAF50",
+              background:
+                "linear-gradient(135deg,rgb(93, 192, 118),rgb(54, 204, 62))",
               color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
             }}
           >
-            Consultar
+            Filtrar por Data
           </button>
-          {isSearched && (
-            <button
-              onClick={handleBack}
-              style={{
-                padding: "10px 20px",
-                fontSize: "1rem",
-                backgroundColor: "#f44336",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              Limpar
-            </button>
-          )}
+          <button
+            onClick={clearDateFilter}
+            className="date-input"
+            style={{
+              background:
+                "linear-gradient(135deg,rgb(199, 81, 81),rgb(230, 110, 110))",
+              color: "white",
+            }}
+          >
+            Limpar
+          </button>
+
+</div>
+        {isSearched && filteredProducts.length === 0 && (
+          <p className="error-message">Produto não encontrado.</p>
+        )}
+
+        {filteredProducts.length > 0 && (
+          <div className="text-center mt-10">
+            <h3>Quantidade Total de Produtos: {totalQuantity}</h3>
+            <h3>
+              Valor Total no Estoque: R${" "}
+              {totalPrice.toFixed(2).replace(".", ",")}
+            </h3>
+            <h3>
+              Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
+            </h3>
+            <strong>
+              <li className="text-[red]">
+                Linha vermelha, indentifica produtos que já passaram da data de
+                vencimento
+              </li>
+            </strong>
+          </div>
+        )}
+
+        <div className="table-container">
+          <table className="table">
+            <thead>
+              <tr className="table-header">
+                <th className="table-cell">SKU</th>
+                <th className="table-cell">Nome</th>
+                <th className="table-cell">Fornecedor</th>
+                <th className="table-cell">Marca</th>
+                <th className="table-cell">Categoria</th>
+                <th className="table-cell">Tipo</th>
+                <th className="table-cell">Peso Unitário</th>
+                <th className="table-cell">Unidade de Medida</th>
+                <th className="table-cell">Quantidade</th>
+                <th className="table-cell">Valor Unitário</th>
+                <th className="table-cell">Valor Total</th>
+                <th className="table-cell">Data de Cadastro</th>
+                <th className="table-cell">Data de Vencimento</th>
+                <th className="table-cell">Dias para Consumo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map((item, index) => {
+                const daysForConsumption = calculateConsumptionDays(
+                  item.dateAdded,
+                  item.expiryDate
+                );
+
+                const expired = isExpired(item.expiryDate);
+
+                return (
+                  <tr
+                    key={`${item.sku}-${index}`}
+                    className={expired ? "expired" : ""}
+                  >
+                    <td className="table-cell">{item.sku}</td>
+                    <td className="table-cell">{item.name}</td>
+                    <td className="table-cell">{item.supplier}</td>
+                    <td className="table-cell">{item.marca}</td>
+                    <td className="table-cell">{item.category || "N/A"}</td>
+                    <td className="table-cell">{item.tipo || "N/A"}</td>
+                    <td className="table-cell">{item.peso}</td>
+                    <td className="table-cell">{item.unitMeasure}</td>
+                    <td className="table-cell">{item.quantity}</td>
+                    <td className="table-cell">{item.unitPrice}</td>
+                    <td className="table-cell">{item.totalPrice}</td>
+                    <td className="table-cell">{formatDate(item.dateAdded)}</td>
+                    <td className="table-cell">
+                      {formatDate(item.expiryDate)}
+                    </td>
+                    <td className="table-cell">
+                      {daysForConsumption >= 0 ? daysForConsumption : 0}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+
+        <button onClick={voltar} className="back-button">
+          Voltar
+        </button>
       </div>
-
-      {isSearched && filteredProducts.length === 0 && (
-        <p style={{ color: "red", textAlign: "center" }}>Produto não encontrado.</p>
-      )}
-
-      {filteredProducts.length > 0 && (
-        <div style={{ marginBottom: "30px", textAlign: 'center', fontFamily: 'Chakra-Petch', fontSize: '20px' }}>
-          <h3>
-            Quantidade Total de Produtos: {totalQuantity}
-          </h3>
-          <h3>
-            Valor Total no Estoque: R$ {totalPrice.toFixed(2).replace(".", ",")}
-          </h3>
-          <h3>
-            Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
-          </h3>
-          <strong><li style={{color: 'red'}}>Linha vermelha, indentifica produtos que já passaram da data de vencimento</li></strong>
-        </div>
-
-      )}
-
-      <div style={tableContainerStyle}>
-        <table style={tableStyle}>
-          <thead>
-            <tr style={tableHeaderStyle}>
-              <th style={tableCellStyle}>SKU</th>
-              <th style={tableCellStyle}>Nome</th>
-              <th style={tableCellStyle}>Fornecedor</th>
-              <th style={tableCellStyle}>Marca</th>
-              <th style={tableCellStyle}>Categoria</th>
-              <th style={tableCellStyle}>Tipo</th>
-              <th style={tableCellStyle}>Peso Unitário</th>
-              <th style={tableCellStyle}>Unidade de Medida</th>
-              <th style={tableCellStyle}>Quantidade</th>
-              <th style={tableCellStyle}>Valor Unitário</th>
-              <th style={tableCellStyle}>Valor Total</th>
-              <th style={tableCellStyle}>Data de Cadastro</th>
-              <th style={tableCellStyle}>Data de Vencimento</th>
-              <th style={tableCellStyle}>Dias para Consumo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((item, index) => {
-              const daysForConsumption = calculateConsumptionDays(
-                item.dateAdded,
-                item.expiryDate
-              );
-              return (
-                <tr
-                  key={`${item.sku}-${index}`}
-                  style={{
-                    backgroundColor: isExpired(item.expiryDate) ? "red" : "",
-                    color: isExpired(item.expiryDate) ? "white" : "",
-                  }}
-                >
-                  <td style={tableCellStyle}>{item.sku}</td>
-                  <td style={tableCellStyle}>{item.name}</td>
-                  <td style={tableCellStyle}>{item.supplier}</td>
-                  <td style={tableCellStyle}>{item.marca}</td>
-                  <td style={tableCellStyle}>{item.category || "N/A"}</td>
-                  <td style={tableCellStyle}>{item.tipo || "N/A"}</td>
-                  <td style={tableCellStyle}>{item.peso}</td>
-                  <td style={tableCellStyle}>{item.unitMeasure}</td>
-                  <td style={tableCellStyle}>{item.quantity}</td>
-                  <td style={tableCellStyle}>{item.unitPrice}</td>
-                  <td style={tableCellStyle}>{item.totalPrice}</td>
-                  <td style={tableCellStyle}>{formatDate(item.dateAdded)}</td>
-                  <td style={tableCellStyle}>{formatDate(item.expiryDate)}</td>
-                  <td style={tableCellStyle}>
-                    {daysForConsumption >= 0 ? daysForConsumption : 0}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <button onClick={voltar} style={backButtonStyle}>
-        Voltar
-      </button>
-    </div>
   );
 }

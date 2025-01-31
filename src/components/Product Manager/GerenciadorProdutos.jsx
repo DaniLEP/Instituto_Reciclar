@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, update, onValue } from "firebase/database";
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import debounce from 'lodash.debounce'; // Certifique-se que está aqui
 import "react-toastify/dist/ReactToastify.css";
 
 // Estilos Globais
@@ -111,7 +112,6 @@ const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 `;
-
 const TableWrapper = styled.div`
   width: 100%;
   overflow-x: auto;
@@ -122,63 +122,92 @@ const ResponsiveTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Sombra suave na tabela */
+  border-radius: 8px; /* Bordas arredondadas */
+  background-color: #fff; /* Cor de fundo para a tabela */
 
   thead {
     background-color: #007bff;
+    color: white;
 
     th {
-      padding: 12px;
-      color: white;
+      padding: 15px 20px;
       text-align: center;
       font-weight: bold;
+      border-bottom: 2px solid #ddd;
     }
   }
 
   tbody {
-    background-color: rgb(248, 248, 248);
-
+    background-color: #f8f8f8;
+    
     td {
-      padding: 12px;
-      border: 1px solid #ddd;
+      padding: 15px 20px;
       text-align: center;
+      border: 1px solid #ddd;
       word-wrap: break-word;
+      font-size: 14px; /* Ajuste no tamanho da fonte */
+      transition: background-color 0.3s ease; /* Efeito suave ao passar o mouse */
+    }
+
+    td:hover {
+      background-color: #f1f1f1; /* Destaca a célula ao passar o mouse */
     }
   }
 
+  /* Responsividade */
   @media (max-width: 768px) {
     font-size: 14px;
 
-    thead th {
-      display: none;
+    thead {
+      display: none; /* Esconde os cabeçalhos da tabela */
+    }
+
+    tbody {
+      display: block;
     }
 
     tbody td {
       display: block;
-      padding: 8px;
+      padding: 12px 10px;
       text-align: left;
       position: relative;
+      border: none;
+      background-color: #fff;
+      border-radius: 4px;
+      margin-bottom: 10px; /* Espaço entre as linhas */
+    }
 
-      &:before {
-        content: attr(data-label);
-        font-weight: bold;
-        text-transform: uppercase;
-        display: block;
-        margin-bottom: 4px;
-        color: #555;
-      }
+    tbody td:before {
+      content: attr(data-label); /* Exibe o nome da coluna como rótulo */
+      font-weight: bold;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
     }
 
     tbody tr {
       margin-bottom: 10px;
       display: block;
-      border: 1px solid #ddd;
       border-radius: 8px;
-      background-color: #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave nas linhas */
+    }
+  }
+
+  /* Ajuste para telas menores */
+  @media (max-width: 480px) {
+    font-size: 12px;
+
+    td {
+      padding: 10px;
+    }
+
+    tbody td:before {
+      font-size: 12px; /* Tamanho da fonte menor */
     }
   }
 `;
-
 const Title = styled.h1`
   text-align: center;
   font-size: 50px;
@@ -186,6 +215,28 @@ const Title = styled.h1`
   color: white;
   margin-bottom: 15px;
 `;
+
+const SearchWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const SearchInput = styled.input`
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: center;
+`;
+
+const tableContainerStyle = {
+  overflowX: "auto",
+  marginTop: "20px",
+};
+
 
 // Firebase Configuração
 const firebaseConfig = {
@@ -204,24 +255,36 @@ function Gerenciador() {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true); // Indicador de carregamento
   const db = getDatabase();
 
   useEffect(() => {
     const dbRef = ref(db, "EntradaProdutos");
     onValue(dbRef, (snapshot) => {
+      setLoading(false);
       const data = snapshot.val();
       if (data) {
-        const loadedProducts = Object.keys(data).map((key) => ({
-          ...data[key],
-          id: key,
-        }));
-
-        loadedProducts.sort((a, b) => a.name.localeCompare(b.name));
-
+        const loadedProducts = Object.keys(data).map((key) => ({ ...data[key], id: key }));
         setProducts(loadedProducts);
       }
     });
   }, [db]);
+
+  // Função de debouncing para a busca
+  const handleSearchChange = debounce((value) => {
+    setSearchTerm(value);
+  }, 500);
+
+  const filteredProducts = products.filter((product) => {
+    return (
+      (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.supplier && product.supplier.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.tipo && product.tipo.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
 
   const openModal = (product) => {
     setEditingProduct(product);
@@ -237,32 +300,25 @@ function Gerenciador() {
     if (editingProduct) {
       const productRef = ref(db, `EntradaProdutos/${editingProduct.id}`);
       update(productRef, {
-        ...editingProduct, // Isso garante que todos os campos do produto sejam atualizados
+        ...editingProduct,
       })
         .then(() => {
-          // Recarga os produtos após a atualização
           const dbRef = ref(db, "EntradaProdutos");
           onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-              const loadedProducts = Object.keys(data).map((key) => ({
-                ...data[key],
-                id: key,
-              }));
-
-              loadedProducts.sort((a, b) => a.name.localeCompare(b.name));
-
-              setProducts(loadedProducts); // Atualiza o estado com os dados mais recentes
+              const loadedProducts = Object.keys(data).map((key) => ({ ...data[key], id: key }));
+              setProducts(loadedProducts);
             }
           });
-
           toast.success("Produto atualizado com sucesso!");
           closeModal();
         })
-        .catch((error) => toast.error("Erro ao atualizar: " + error.message));
+        .catch((error) => {
+          toast.error("Erro ao atualizar: " + error.message);
+        });
     }
   };
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -274,42 +330,54 @@ function Gerenciador() {
       <GlobalStyle />
       <ToastContainer />
       <Title>Cadastro de Produtos</Title>
-
+      <SearchWrapper>
+      <SearchInput
+        type="text"
+        placeholder="Filtrar por SKU, Nome, Fornecedor, Categoria ou Tipo..."
+        onChange={(e) => handleSearchChange(e.target.value)}
+      />
+      </SearchWrapper>
       <BackButton to="/Cadastro">Voltar</BackButton>
-      <TableWrapper>
-        <ResponsiveTable>
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Nome</th>
-              <th>Marca</th>
-              <th>Fornecedor</th>
-              <th>Peso (KG)</th>
-              <th>Unidade de Medida</th>
-              <th>Categoria</th>
-              <th>Tipo</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td data-label="SKU">{product.sku}</td>
-                <td data-label="Nome">{product.name}</td>
-                <td data-label="Marca">{product.marca}</td>
-                <td data-label="Fornecedor">{product.supplier}</td>
-                <td data-label="Peso (KG)">{product.peso} {product.unitMeasure}</td>
-                <td data-label="Unidade de Medida">{product.unit}</td>
-                <td data-label="Categoria">{product.category}</td>
-                <td data-label="Tipo">{product.tipo}</td>
-                <td>
-                  <Button onClick={() => openModal(product)}>Editar</Button>
-                </td>
+      {loading ? (
+        <div style={{ textAlign: "center", color: "#fff", fontSize: "18px" }}>
+          Carregando produtos...
+        </div>
+      ) : (
+        <div style={tableContainerStyle}>
+        <TableWrapper>
+          <ResponsiveTable>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Produto</th>
+                <th>Fornecedor</th>
+                <th>Tipo</th>
+                <th>Grupo</th>
+                <th>Peso (KG)</th>
+                <th>Unidade de Medida</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </ResponsiveTable>
-      </TableWrapper>
+            </thead>
+            <tbody>
+              {filteredProducts.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.sku}</td>
+                  <td>{product.name}</td>
+                  <td>{product.supplier}</td>
+                  <td>{product.tipo}</td>
+                  <td>{product.category}</td>
+                  <td>{product.peso} {product.unitMeasure}</td>
+                  <td>{product.unit}</td>
+                  <td>
+                    <Button onClick={() => openModal(product)}>Editar</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </ResponsiveTable>
+        </TableWrapper>
+        </div>
+      )}
 
       {isModalOpen && (
         <>

@@ -1,0 +1,176 @@
+/* Estoque.css */
+
+/* Container principal */
+.body{
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+.container {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f7f7;
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  /* Título */
+  .header {
+    text-align: center;
+    color: #333;
+    margin-bottom: 40px;
+    font-size: 3rem;
+    font-weight: 700;
+  }
+  
+  /* Estilo do container de busca */
+  .search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+    gap: 20px;
+  }
+  
+  /* Estilo do input de busca */
+  .search-input {
+    padding: 12px 20px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1.2rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+  }
+  
+  /* Estilo dos botões de busca */
+  .search-button,
+  .clear-button {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .search-button {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .clear-button {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .search-button:hover,
+  .clear-button:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Filtro de Data */
+  .date-filter-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  
+  .date-input {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    width: 200px;
+    box-sizing: border-box;
+  }
+  
+  /* Tabela */
+  .table-container {
+    overflow-x: auto;
+    margin-top: 40px;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 40px;
+  }
+  
+  .table-header {
+    background-color: #4CAF50;
+    color: #fff;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .table-cell {
+    padding: 15px 20px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .table-row.expired {
+    background-color: #FF4C4C;
+    color: #fff;
+  }
+  
+  /* Rodapé */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 1.1rem;
+    color: #555;
+  }
+  
+  /* Botão de voltar */
+  .back-button {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .back-button:hover {
+    transform: scale(1.05);
+  }
+  
+  .expired {
+    background: linear-gradient(135deg, rgb(199, 81, 81), rgb(230, 110, 110));
+    color: white;
+  }
+
+  .date-container {
+    display: flex;
+    align-items: center;  /* Alinha os itens verticalmente */
+    gap: 10px;  /* Espaçamento entre os itens */
+  }
+  
+  .date-container p {
+    margin: 0 auto; 
+    font-size: 1rem;  /* Define um tamanho consistente para o texto */
+    width: auto;  /* Garante que o texto ocupe apenas o necessário */
+  }
+  
+  .date-input {
+    padding: 10px;
+    width: 200px;  /* Ajusta o tamanho do input */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;  /* Ajusta o tamanho da fonte */
+  }
+  

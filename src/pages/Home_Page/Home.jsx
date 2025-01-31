@@ -99,7 +99,6 @@ export default function Home() {
         <div
           style={{
             background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-            /* "#0D2E6E"- ESCURO  "#146FDF"- CLARO  */
           }}
         >
           <Header />
@@ -112,62 +111,54 @@ export default function Home() {
             background: "linear-gradient(135deg, #6a11cb, #2575fc)",
             minHeight: "100vh",
             padding: "20px 0",
-            marginBottom: "50px"
+            marginBottom: "50px",
           }}
         >
           <div
-            className="container mx-auto px-4"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4"
             style={{
-              maxWidth: "1460px",
-              textAlign: "center",
+              marginTop: "80px",
             }}
           >
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4"
-              style={{
-                marginTop: "80px",
-              }}
-            >
-              {/* Cards */}
-              <Card
-                to="/Pedidos"
-                imgSrc="/listaPedidos.svg"
-                imgAlt="Pedidos"
-                title="Pedidos"
-              />
-              <Card
-                to="/Cadastro"
-                imgSrc="/cadastro.svg"
-                imgAlt="Cadastro"
-                title="Cadastros"
-              />   
+            {/* Cards */}
+            <Card
+              to="/Pedidos"
+              imgSrc="/listaPedidos.svg"
+              imgAlt="Pedidos"
+              title="Pedidos"
+            />
+            <Card
+              to="/Cadastro"
+              imgSrc="/cadastro.svg"
+              imgAlt="Cadastro"
+              title="Cadastros"
+            />   
 
-              <Card
+            <Card
               to="/Estoque"
               imgSrc="/estoque.png"
               imgAlt="Estoque"
               title="Estoque"
             />
 
-              <Card
-                to="/Dashboard"
-                imgSrc="/relatorio.svg"
-                imgAlt="Relatórios"
-                title="Relatórios"
-              />
-              <Card
-                to="/Retirada"
-                imgSrc="/retirada.svg"
-                imgAlt="Retirada"
-                title="Retirada"
-              />
-              <Card
-                to="/Verificacao_Usuario"
-                imgSrc="/users-control.png"
-                imgAlt="Controle de Usuários"
-                title="Controle de Usuários"
-              />
-            </div>
+            <Card
+              to="/Dashboard"
+              imgSrc="/relatorio.svg"
+              imgAlt="Relatórios"
+              title="Relatórios"
+            />
+            <Card
+              to="/Retirada"
+              imgSrc="/retirada.svg"
+              imgAlt="Retirada"
+              title="Retirada"
+            />
+            <Card
+              to="/Verificacao_Usuario"
+              imgSrc="/users-control.png"
+              imgAlt="Controle de Usuários"
+              title="Controle de Usuários"
+            />
           </div>
         </div>
 
@@ -192,8 +183,8 @@ export default function Home() {
             width: '30vh',
             height: 'auto'
           }}>
-              <img src="/Logo.png"/>
-            </div>
+            <img src="/Logo.png"/>
+          </div>
           <div style={{fontSize:  '15px'}}>Seja bem-vindo <br />{usuario.nome || "Usuário não encontrado"}</div> {/* Exibe o nome do usuário */}
           <div
             style={{
@@ -208,3 +199,4 @@ export default function Home() {
     </>
   );
 }
+

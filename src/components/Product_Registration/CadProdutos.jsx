@@ -268,7 +268,6 @@ function CadProdutos() {
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [unit, setUnit] = useState("");
-
   const [unitMeasure, setUnitMeasure] = useState("g"); // Adicionando estado para a unidade de medida
   const [showModal, setShowModal] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
@@ -335,13 +334,28 @@ function CadProdutos() {
       };
       const newProductRef = push(ref(db, "EntradaProdutos"));
       set(newProductRef, newProduct)
-        .then(() => toast.success("Produto salvo com sucesso!"))
+        .then(() => {
+          toast.success("Produto salvo com sucesso!");
+          handleClearFields(); // Limpa os campos após salvar
+        })
         .catch((error) =>
           toast.error("Erro ao salvar o produto: " + error.message)
         );
     } else {
       toast.warn("Preencha todos os campos obrigatórios!");
     }
+  };
+
+  const handleClearFields = () => {
+    setSku("");
+    setName("");
+    setMarca("");
+    setSupplier("");
+    setPeso("");
+    setUnitMeasure("g");
+    setUnit("");
+    setCategory("");
+    setTipo("");
   };
 
   const handlePesoChange = (e) => {
