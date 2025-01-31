@@ -20,9 +20,10 @@ export default function ListaPedidos() {
 
         }}
       >
-        <div className="container mx-auto px-4 text-center">
+
+        <div className=" mx-auto px-4 text-center">
           {/* Título Responsivo */}
-          <h1 className="text-white font-bold font-[Novatica Bold] text-6xl lg:text-8xl">
+          <h1 className="text-white font-bold font-[Novatica Bold] text-6xl lg:text-8xl ">
             Lista de Pedidos
           </h1>
 
