@@ -131,7 +131,6 @@ const RetiradaProdutos = () => {
     setCategory(produto.category);
     setTipo(produto.tipo);
     setPeso(produto.peso);
-
     setIsModalOpen(false);
   };
 
@@ -205,7 +204,7 @@ const RetiradaProdutos = () => {
         >
           <option value="Selecionar">Escolha o Responsável</option>
           <option value="Maria José">Maria José</option>
-          <option value="Maria Miselene">Maria Mislene</option>
+          <option value="Maria Miselene">Mislene</option>
           <option value="Rose">Rose</option>
 
         </select>
