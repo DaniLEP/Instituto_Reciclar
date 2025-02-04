@@ -1,0 +1,127 @@
+/* Estilo para o contêiner principal */
+.container {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  padding: 20px;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Estilo para o título */
+h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Estilo para a seção de filtros */
+.filters {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.filters label {
+  margin: 0 10px;
+  font-size: 1rem;
+}
+
+.filters button {
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.filters button:hover {
+  background-color: #45a049;
+}
+
+/* Estilo para a tabela */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+th,
+td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  word-wrap: break-word;
+}
+
+th {
+  background-color: #2575fc;
+  color: white;
+  text-align: center;
+}
+
+td {
+  background-color: #f9f9f9;
+  color: black;
+}
+
+td:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+/* Ajuste para tabelas em telas pequenas */
+@media (max-width: 768px) {
+  table {
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+
+  .filters button {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Estilo para o botão de voltar */
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #ff5733;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #ff3d00;
+}
+
+/* Estilo para os campos de edição */
+input[type="text"] {
+  padding: 10px;
+  font-size: 1rem;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  margin-top: 5px;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+/* Responsividade para inputs */
+@media (max-width: 768px) {
+  input[type="text"] {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}

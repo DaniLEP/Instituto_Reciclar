@@ -47,7 +47,7 @@ export default function CadastroRefeicoes() {
     desperdicioQtd: "",
   });
 
-  const [setRefeicoes] = useState([]);
+  const [refeicoes, setRefeicoes] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -241,6 +241,24 @@ export default function CadastroRefeicoes() {
         }}
       >
         <div style={{ marginBottom: "20px" }}>
+        <button
+          type="button"
+          onClick={handleBack}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#F20DE7",
+            color: "white",
+            borderRadius: "5px",
+            border: "none",
+            fontSize: "16px",
+            cursor: "pointer",
+            marginBottom: "20px",
+            width: "100%",
+            transition: "background 0.3s ease",
+          }}
+        >
+          Voltar
+        </button>
           <label style={{ fontSize: "18px", fontWeight: "bold" }}>
             Data da Refeição
           </label>
@@ -708,24 +726,6 @@ export default function CadastroRefeicoes() {
         >
           {" "}
           Salvar
-        </button>
-        <button
-          type="button"
-          onClick={handleBack}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#F20DE7",
-            color: "white",
-            borderRadius: "5px",
-            border: "none",
-            fontSize: "16px",
-            cursor: "pointer",
-            marginTop: "20px",
-            width: "100%",
-            transition: "background 0.3s ease",
-          }}
-        >
-          Voltar
         </button>
       </section>
       <ToastContainer />

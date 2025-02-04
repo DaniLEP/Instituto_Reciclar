@@ -1,202 +1,160 @@
 import { useEffect, useState } from "react";
-import { getDatabase, ref, get } from "firebase/database";
+import { getDatabase, ref, get, update } from "firebase/database";
+import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
+import './css/ExibirRefeicoes.css';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.firebasestorage.app",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 export default function ExibirRefeicoes() {
   const [refeicoes, setRefeicoes] = useState([]);
   const [filtroInicio, setFiltroInicio] = useState("");
   const [filtroFim, setFiltroFim] = useState("");
   const navigate = useNavigate();
+  const [valorEditado, setValorEditado] = useState("");
+  const [editando, setEditando] = useState(null);
 
-  // Função para formatar a data levando em conta o fuso horário
+  // Função para formatar a data
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
-    let date;
-    if (typeof timestamp === "number") {
-      date = new Date(timestamp);
-    } else if (typeof timestamp === "string") {
-      date = new Date(Date.parse(timestamp));
-    } else {
-      return "Data inválida";
-    }
+    let date = new Date(timestamp);
+
     if (isNaN(date.getTime())) return "Data inválida";
 
-    // Ajustando a data para o fuso horário local
-    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000); // Ajuste para o fuso horário local
     const day = String(localDate.getDate()).padStart(2, "0");
-    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const month = String(localDate.getMonth() + 1).padStart(2, "0"); // Meses começam de 0
     const year = localDate.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
   useEffect(() => {
-    const database = getDatabase();
     const refeicoesRef = ref(database, "refeicoesServidas");
 
-    get(refeicoesRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const refeicoesData = [];
-          snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            refeicoesData.push({
-              key: childSnapshot.key,
-              dataRefeicao: formatDate(data.dataRefeicao),
-              dataRefeicaoObj: new Date(data.dataRefeicao), // Adicionando o objeto Date sem formatar
-              ...data,
-            });
+    get(refeicoesRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const refeicoesData = [];
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          refeicoesData.push({
+            key: childSnapshot.key,
+            dataRefeicao: formatDate(data.dataRefeicao),
+            dataRefeicaoObj: new Date(data.dataRefeicao),
+            ...data,
           });
-          setRefeicoes(refeicoesData);
-        } else {
-          console.log("Nenhuma refeição encontrada");
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao ler dados do Firebase:", error);
-      });
+        });
+        setRefeicoes(refeicoesData);
+      } else {
+        console.log("Nenhuma refeição encontrada");
+      }
+    }).catch((error) => {
+      console.error("Erro ao ler dados do Firebase:", error);
+    });
   }, []);
 
-  const filtrarRefeicoes = () => {
-    // Ajustando o início e fim para comparar apenas as datas
-    const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
-    const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
-
-    // Filtrar refeições, comparando apenas as datas
-    const refeicoesFiltradas = refeicoes.filter((refeicao) => {
-      const dataRefeicao = resetTime(refeicao.dataRefeicaoObj);  // Reseta a hora da data
-
-      if (
-        (!inicio || dataRefeicao >= inicio) &&
-        (!fim || dataRefeicao <= fim)
-      ) {
-        return true;
-      }
-      return false;
-    });
-
-    setRefeicoes(refeicoesFiltradas);
+  const handleDoubleClick = (id, field, value) => {
+    setEditando({ id, field });
+    setValorEditado(value);
   };
 
-  // Função para remover a parte de hora, minuto e segundo de uma data
+  const handleChange = (e) => setValorEditado(e.target.value);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      // Atualiza no estado local primeiro
+      setRefeicoes((prev) =>
+        prev.map((refeicao) =>
+          refeicao.key === editando.id ? { ...refeicao, [editando.field]: valorEditado } : refeicao
+        )
+      );
+      
+      // Salva a atualização no Firebase
+      const refeicaoRef = ref(database, `refeicoesServidas/${editando.id}`);
+      update(refeicaoRef, {
+        [editando.field]: valorEditado,
+      }).then(() => {
+        setEditando(null);
+      }).catch((error) => {
+        console.error("Erro ao atualizar no Firebase:", error);
+      });
+    }
+  };
+
+  const handleBlur = () => {
+    // Salva a atualização no Firebase se perder o foco
+    const refeicaoRef = ref(database, `refeicoesServidas/${editando.id}`);
+    update(refeicaoRef, {
+      [editando.field]: valorEditado,
+    }).then(() => {
+      setEditando(null);
+    }).catch((error) => {
+      console.error("Erro ao atualizar no Firebase:", error);
+    });
+  };
+
   const resetTime = (date) => {
-    date.setHours(0, 0, 0, 0); // Zera a hora para garantir a comparação apenas de data
+    date.setHours(0, 0, 0, 0);
     return date;
   };
 
+  const filtrarRefeicoes = () => {
+    const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
+    const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
+    setRefeicoes((prev) => prev.filter(({ dataRefeicaoObj }) => {
+      const data = resetTime(new Date(dataRefeicaoObj));
+      return (!inicio || data >= inicio) && (!fim || data <= fim);
+    }));
+  };
+
+  const limparFiltros = () => {
+    setFiltroInicio("");
+    setFiltroFim("");
+    // Recarrega todas as refeições sem filtro
+    const refeicoesRef = ref(database, "refeicoesServidas");
+    get(refeicoesRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const refeicoesData = [];
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          refeicoesData.push({
+            key: childSnapshot.key,
+            dataRefeicao: formatDate(data.dataRefeicao),
+            dataRefeicaoObj: new Date(data.dataRefeicao),
+            ...data,
+          });
+        });
+        setRefeicoes(refeicoesData);
+      }
+    });
+  };
+
   return (
-    <div
-      style={{
-        background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        color: "#fff",
-        minHeight: "100vh",
-      }}
-    >
-      <h2
-        style={{
-          color: "#fff",
-          fontSize: "2.4rem",
-          textAlign: "center",
-          marginBottom: "2rem",
-          fontWeight: "bold",
-        }}
-      >
-        Resultados Cadastrados de Refeições
-      </h2>
-
-      <div style={{ marginBottom: "20px", textAlign: "center" }}>
-        <label style={{ marginRight: "10px", color: "#fff" }}>
-          Data Início:
-          <input
-            type="date"
-            value={filtroInicio}
-            onChange={(e) => setFiltroInicio(e.target.value)}
-            style={{
-              marginLeft: "10px",
-              padding: "5px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              color: "black",
-            }}
-          />
-        </label>
-        <label style={{ marginRight: "10px", color: "#fff" }}>
-          Data Fim:
-          <input
-            type="date"
-            value={filtroFim}
-            onChange={(e) => setFiltroFim(e.target.value)}
-            style={{
-              marginLeft: "10px",
-              padding: "5px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              color: "black",
-            }}
-          />
-        </label>
-        <button
-          onClick={filtrarRefeicoes}
-          style={{
-            padding: "10px 20px",
-            borderRadius: "5px",
-            backgroundColor: "#2575fc",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Filtrar
-        </button>
+    <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)", padding: "20px", color: "#fff", minHeight: "100vh" }}>
+      <h2 style={{ textAlign: "center" }}>Resultados Cadastrados de Refeições</h2>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <label>Data Início: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} /></label>
+        <label>Data Fim: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} /></label>
+        <button style={{marginRight: '10px', background: 'green'}} onClick={filtrarRefeicoes}>Filtrar</button>
+        <button onClick={limparFiltros}>Limpar Filtro</button>
       </div>
-
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          padding: "10px 20px",
-          borderRadius: "5px",
-          backgroundColor: "#ff4d4d",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        Voltar
-      </button>
-
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          backgroundColor: "#fff",
-          padding: "30px",
-          borderRadius: "10px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          overflowX: "auto",
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "20px",
-            fontSize: "14px",
-            color: "#333",
-          }}
-        >
+      <button onClick={() => navigate(-1)}>Voltar</button>
+      <div style={{ overflowX: "auto" }}>
+        <table>
           <thead>
-            <tr
-              style={{
-                backgroundColor: "#2575fc",
-                color: "white",
-                fontSize: "16px",
-              }}
-            >
-              {[
-                "Data Refeição",
+            <tr>
+              {["Data Refeição",
                 "Café Descrição",
                 "Café Total (kg)",
                 "Café Funcionários",
@@ -215,59 +173,40 @@ export default function ExibirRefeicoes() {
                 "Outras Ref. Jovens",
                 "Sobras",
                 "Observação",
-                "Desperdícios (kg)",
-              ].map((header, index) => (
-                <th
-                  key={index}
-                  style={{
-                    padding: "20px",
-                    border: "1px solid #ddd",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {header}
-                </th>
+                "Desperdícios (kg)"].map((header, index) => (
+                <th key={index}>{header}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {refeicoes.map((refeicao) => (
               <tr key={refeicao.key}>
-                {[
-                  formatDate(refeicao.dataRefeicao),
-                  refeicao.cafeDescricao,
-                  refeicao.cafeTotalQtd,
-                  refeicao.cafeFuncionariosQtd,
-                  refeicao.cafeJovensQtd,
-                  refeicao.almocoDescricao,
-                  refeicao.almocoTotalQtd,
-                  refeicao.almocoFuncionariosQtd,
-                  refeicao.almocoJovensQtd,
-                  refeicao.lancheDescricao,
-                  refeicao.lancheTotalQtd,
-                  refeicao.lancheFuncionariosQtd,
-                  refeicao.lancheJovensQtd,
-                  refeicao.outrasDescricao,
-                  refeicao.outrasTotalQtd,
-                  refeicao.outrasFuncionariosQtd,
-                  refeicao.outrasJovensQtd,
-                  refeicao.sobrasDescricao,
-                  refeicao.observacaoDescricao,
-                  refeicao.desperdicioQtd,
-                ].map((value, index) => (
-                  <td
-                    key={index}
-                    style={{
-                      padding: "20px 10px",
-                      border: "1px solid #ddd",
-                      textAlign: "center",
-                      backgroundColor:
-                        index % 2 === 0 ? "#f9f9f9" : "transparent",
-                    }}
-                  >
-                    {value}
+                {['dataRefeicao',
+                  'cafeDescricao',
+                  'cafeTotalQtd',
+                  'cafeFuncionariosQtd',
+                  'cafeJovensQtd',
+                  'almocoDescricao',
+                  'almocoTotalQtd',
+                  'almocoFuncionariosQtd',
+                  'almocoJovensQtd',
+                  'lancheDescricao',
+                  'lancheTotalQtd',
+                  'lancheFuncionariosQtd',
+                  'lancheJovensQtd',
+                  'outrasDescricao',
+                  'outrasTotalQtd',
+                  'outrasFuncionariosQtd',
+                  'outrasJovensQtd',
+                  'sobrasDescricao',
+                  'observacaoDescricao',
+                  'desperdicioQtd'].map((field) => (
+                  <td key={field} onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}>
+                    {editando?.id === refeicao.key && editando.field === field ? (
+                      <input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} autoFocus />
+                    ) : (
+                      field === 'dataRefeicao' ? formatDate(refeicao[field]) : refeicao[field]
+                    )}
                   </td>
                 ))}
               </tr>
@@ -278,4 +217,3 @@ export default function ExibirRefeicoes() {
     </div>
   );
 }
- 
