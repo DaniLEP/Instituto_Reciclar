@@ -14,7 +14,7 @@ export default function Relatorio() {
 
         }}
       >
-        <div className="container mx-auto px-4 text-center">
+        <div className=" mx-auto px-4 text-center">
           {/* Título Responsivo */}
           <span className="text-white font-bold  font-[Novatica Bold] text-8xl md:text-6xl lg:text-8xl mb-[10px]">
             Relatórios

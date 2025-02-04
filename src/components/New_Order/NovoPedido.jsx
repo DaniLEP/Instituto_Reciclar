@@ -26,6 +26,7 @@ export default function NovoPedido() {
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFim, setPeriodoFim] = useState("");
   const [category, setCategory] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
   const [dadosFornecedor, setDadosFornecedor] = useState({
@@ -236,6 +237,19 @@ export default function NovoPedido() {
       maxWidth: "200px",
       margin: "0.5rem auto",
     },
+    buttonExcluir: {
+      padding: "10px 10px",
+      fontSize: "1rem",
+      backgroundColor: "red",
+      color: "#fff",
+      border: "none",
+      borderRadius: "5px",
+      cursor: "pointer",
+      transition: "background-color 0.3s",
+      width: "100%",
+      maxWidth: "200px",
+      margin: "0.5rem auto",
+    },
     modal: {
       position: "fixed",
       top: "0",
@@ -330,6 +344,25 @@ export default function NovoPedido() {
   const handleVoltar = () => {
     navigate(-1); // Volta para a página anterior
   };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleDelete = (index) => {
+    const updatedItens = [...itensPedido];
+    updatedItens.splice(index, 1); // Remove o item com o índice dado
+    setItensPedido(updatedItens); // Atualiza o estado com a lista modificada
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(lowerSearchTerm) ||
+      product.tipo.toLowerCase().includes(lowerSearchTerm) ||
+      product.category.toLowerCase().includes(lowerSearchTerm)
+    );
+  });
   return (
     <>
       <div
@@ -365,7 +398,7 @@ export default function NovoPedido() {
                 style={styles.input}
               />
             </div>
-              <div>
+            <div>
               <label>Período: </label>
               <div style={{ display: "flex", gap: "10px" }}>
                 <input
@@ -389,12 +422,14 @@ export default function NovoPedido() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   style={styles.input}
-               >
-                <option value="Selecionar">Selecione a Categoria do pedido</option>
-                <option value="Proteina">Proteina</option>
-                <option value="Mantimento">Mantimento</option>
-                <option value="Hortaliças">Hortaliças</option>
-                </select> 
+                >
+                  <option value="Selecionar">
+                    Selecione a Categoria do pedido
+                  </option>
+                  <option value="Proteina">Proteina</option>
+                  <option value="Mantimento">Mantimento</option>
+                  <option value="Hortaliças">Hortaliças</option>
+                </select>
               </div>
             </div>
           </div>
@@ -554,39 +589,54 @@ export default function NovoPedido() {
               <div style={styles.modal}>
                 <div style={styles.modalContent}>
                   <h4>Selecione um Produto</h4>
-                  <table style={styles.table}>
-                    <thead style={styles.tableHeader}>
-                      <tr>
-                        <th style={styles.tableCell}>Produto</th>
-                        <th style={styles.tableCell}>Tipo</th>
-                        <th style={styles.tableCell}>Marca</th>
-                        <th style={styles.tableCell}>Grupo</th>
-                        <th style={styles.tableCell}>Peso</th>
-                        <th style={styles.tableCell}>Unidade</th>
-                        <th style={styles.tableCell}>Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((product) => (
-                        <tr key={product.sku}>
-                          <td style={styles.tableCell}>{product.name}</td>
-                          <td style={styles.tableCell}>{product.tipo}</td>
-                          <td style={styles.tableCell}>{product.marca}</td>
-                          <td style={styles.tableCell}>{product.category}</td>
-                          <td style={styles.tableCell}>{product.peso}</td>
-                          <td style={styles.tableCell}>{product.unit}</td>
-                          <td style={styles.tableCell}>
-                            <button
-                              onClick={() => handleProductSelect(product)}
-                              style={styles.button}
-                            >
-                              Selecionar
-                            </button>
-                          </td>
+                  <div style={styles.filterSection}>
+                    <input
+                      type="text"
+                      placeholder="Filtrar por Produto, Tipo ou Grupo"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      style={styles.input}
+                    />
+                  </div>
+
+                  <div style={{ overflowY: "auto", maxHeight: "400px" }}>
+                    <table style={styles.table}>
+                      <thead style={styles.tableHeader}>
+                        <tr>
+                          <th style={styles.tableCell}>Produto</th>
+                          <th style={styles.tableCell}>Tipo</th>
+                          <th style={styles.tableCell}>Marca</th>
+                          <th style={styles.tableCell}>Grupo</th>
+                          <th style={styles.tableCell}>Peso</th>
+                          <th style={styles.tableCell}>Unidade</th>
+                          <th style={styles.tableCell}>Ação</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {filteredProducts.map((product) => (
+                          <tr key={product.sku}>
+                            <td style={styles.tableCell}>{product.name}</td>
+                            <td style={styles.tableCell}>{product.tipo}</td>
+                            <td style={styles.tableCell}>{product.marca}</td>
+                            <td style={styles.tableCell}>{product.category}</td>
+                            <td style={styles.tableCell}>
+                              {product.peso}
+                              {product.unitMeasure}
+                            </td>
+                            <td style={styles.tableCell}>{product.unit}</td>
+                            <td style={styles.tableCell}>
+                              <button
+                                onClick={() => handleProductSelect(product)}
+                                style={styles.button}
+                              >
+                                Selecionar
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                   <button
                     onClick={() => setShowModalProduto(false)}
                     style={styles.button}
@@ -596,8 +646,9 @@ export default function NovoPedido() {
                 </div>
               </div>
             )}
+
             {dadosProduct.sku && (
-              <div style={{ marginTop: "20px" }}>
+              <div style={{ marginTop: "20px", overflow: "scroll" }}>
                 <div>
                   <label>SKU: </label>
                   <input
@@ -647,7 +698,9 @@ export default function NovoPedido() {
                   <label>Peso: </label>
                   <input
                     type="text"
-                    value={dadosProduct.peso}
+                    value={`${dadosProduct.peso || ""} ${
+                      dadosProduct.unitMeasure || ""
+                    }`}
                     readOnly
                     style={styles.input}
                   />
@@ -710,10 +763,12 @@ export default function NovoPedido() {
                   <th style={styles.tableCell}>Tipo</th>
                   <th style={styles.tableCell}>Marca</th>
                   <th style={styles.tableCell}>Grupo</th>
-                  <th>Peso</th>
+                  <th style={styles.tableCell}>Peso</th>
                   <th style={styles.tableCell}>Unidade de Medida</th>
                   <th style={styles.tableCell}>Quantidade</th>
                   <th style={styles.tableCell}>Observação</th>
+                  <th style={styles.tableCell}>Ações</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -724,10 +779,15 @@ export default function NovoPedido() {
                     <td style={styles.tableCell}>{item.tipo}</td>
                     <td style={styles.tableCell}>{item.marca}</td>
                     <td style={styles.tableCell}>{item.category}</td>
-                    <td style={styles.tableCell}>{item.peso}</td>
+                    <td style={styles.tableCell}>
+                      {item.peso} {item.unitMeasure}
+                    </td>
                     <td style={styles.tableCell}>{item.unit}</td>
                     <td style={styles.tableCell}>{item.quantidade}</td>
                     <td style={styles.tableCell}>{item.observacao}</td>
+                    <td style={styles.tableCell}>
+                <button style={styles.buttonExcluir} onClick={() => handleDelete(index)}>Excluir</button> {/* Botão para excluir */}
+              </td>
                   </tr>
                 ))}
               </tbody>
