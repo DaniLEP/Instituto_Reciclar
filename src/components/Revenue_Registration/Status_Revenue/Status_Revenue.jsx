@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getDatabase, ref, get, update } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 import './css/ExibirRefeicoes.css';
 
 const firebaseConfig = {
@@ -92,6 +93,14 @@ export default function ExibirRefeicoes() {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(refeicoes);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Refeições");
+    XLSX.writeFile(workbook, "Refeicoes.xlsx");
+  };
+
+
   const handleBlur = () => {
     // Salva a atualização no Firebase se perder o foco
     const refeicaoRef = ref(database, `refeicoesServidas/${editando.id}`);
@@ -149,6 +158,9 @@ export default function ExibirRefeicoes() {
         <button style={{padding: '8px 15px', backgroundColor: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem', marginRight: '10px'}} onClick={filtrarRefeicoes}>Filtrar</button>
         <button style={{padding: '8px 15px', backgroundColor: '#f44336', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}} onClick={limparFiltros}>Limpar Filtro</button>
       </div>
+      <button onClick={exportToExcel} style={{ padding: "10px 20px", marginBottom: "20px", marginRight: '10px', backgroundColor: "#4CAF50", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }}>
+        Exportar para Excel
+      </button>
       <button onClick={() => navigate(-1)} style={{marginTop: '20px', padding: '10px 20px', backgroundColor: '#ff5733', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}}>
         Voltar
       </button>
@@ -221,3 +233,82 @@ export default function ExibirRefeicoes() {
     </div>
   );
 }
+
+
+// import { useEffect, useState } from "react";
+// import { getDatabase, ref, get, update } from "firebase/database";
+// import { initializeApp } from "firebase/app";
+// import { useNavigate } from "react-router-dom";
+// import './css/ExibirRefeicoes.css';
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+//   authDomain: "bancoestoquecozinha.firebaseapp.com",
+//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+//   projectId: "bancoestoquecozinha",
+//   storageBucket: "bancoestoquecozinha.firebasestorage.app",
+//   messagingSenderId: "71775149511",
+//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+// };
+
+// const app = initializeApp(firebaseConfig);
+// const database = getDatabase(app);
+
+// export default function ExibirRefeicoes() {
+//   const [refeicoes, setRefeicoes] = useState([]);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const refeicoesRef = ref(database, "refeicoesServidas");
+//     get(refeicoesRef).then((snapshot) => {
+//       if (snapshot.exists()) {
+//         const refeicoesData = [];
+//         snapshot.forEach((childSnapshot) => {
+//           const data = childSnapshot.val();
+//           refeicoesData.push({
+//             key: childSnapshot.key,
+//             ...data,
+//           });
+//         });
+//         setRefeicoes(refeicoesData);
+//       }
+//     }).catch((error) => {
+//       console.error("Erro ao ler dados do Firebase:", error);
+//     });
+//   }, []);
+
+
+//   return (
+//     <div style={{ padding: "20px", background: "#f4f4f4", minHeight: "100vh" }}>
+//       <h2 style={{ textAlign: "center" }}>Resultados Cadastrados de Refeições</h2>
+
+//       <button onClick={() => navigate(-1)} style={{ marginLeft: "10px", padding: "10px 20px", backgroundColor: "#ff5733", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }}>
+//         Voltar
+//       </button>
+//       <div style={{ overflowX: "auto" }}>
+//         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", textAlign: "center" }}>
+//           <thead>
+//             <tr>
+//               {["Data Refeição", "Café Descrição", "Café Total (kg)", "Café Funcionários", "Café Jovens", "Almoço Descrição", "Almoço Total (kg)", "Almoço Funcionários", "Almoço Jovens", "Lanche Descrição", "Lanche Total (kg)", "Lanche Funcionários", "Lanche Jovens", "Outras Descrição", "Outras Ref. Total (kg)", "Outras Ref. Funcionários", "Outras Ref. Jovens", "Sobras", "Observação", "Desperdícios (kg)"].map((header, index) => (
+//                 <th key={index} style={{ backgroundColor: "#2575fc", color: "white", textAlign: "center", padding: '12px', border: '1px solid #ddd' }}>
+//                   {header}
+//                 </th>
+//               ))}
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {refeicoes.map((refeicao) => (
+//               <tr key={refeicao.key}>
+//                 {["dataRefeicao", "cafeDescricao", "cafeTotalQtd", "cafeFuncionariosQtd", "cafeJovensQtd", "almocoDescricao", "almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd", "lancheDescricao", "lancheTotalQtd", "lancheFuncionariosQtd", "lancheJovensQtd", "outrasDescricao", "outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd", "sobrasDescricao", "observacaoDescricao", "desperdicioQtd"].map((field) => (
+//                   <td key={field} style={{ padding: '12px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', color: 'black' }}>
+//                     {refeicao[field] || '-'}
+//                   </td>
+//                 ))}
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+//     </div>
+//   );
+// }
