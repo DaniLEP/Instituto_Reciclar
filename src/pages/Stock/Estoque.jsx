@@ -169,157 +169,153 @@ export default function Estoque() {
   };
 
   return (
-      <div className="container">
-        <div className="header">
-          <h1>Consulta de Estoque</h1>
-        </div>
+    <div className="container">
+      <div className="header">
+        <h1>Consulta de Estoque</h1>
+      </div>
 
-        <div className="search-container">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
-            className="search-input"
-          />
-          <div className="button-container">
-            <button onClick={handleSearch} className="search-button">
-              Consultar
+      <div className="search-container">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
+          className="search-input"
+        />
+        <div className="button-container">
+          <button onClick={handleSearch} className="search-button">
+            Consultar
+          </button>
+          {isSearched && (
+            <button onClick={handleBack} className="clear-button">
+              Limpar
             </button>
-            {isSearched && (
-              <button onClick={handleBack} className="clear-button">
-                Limpar
-              </button>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
-        <div className="date-container">
-  <p>Período de:</p>
-  <input
-    type="date"
-    value={filtroInicio}
-    onChange={(e) => setFiltroInicio(e.target.value)}
-    className="date-input"
-  />
-  
-  <p>até:</p>
-  <input
-    type="date"
-    value={filtroFim}
-    onChange={(e) => setFiltroFim(e.target.value)}
-    className="date-input"
-  />
+      <div className="date-container">
+        <p>Período de:</p>
+        <input
+          type="date"
+          value={filtroInicio}
+          onChange={(e) => setFiltroInicio(e.target.value)}
+          className="date-input"
+        />
 
-          <button
-            onClick={handleDateFilter}
-            className="date-input"
-            style={{
-              background:
-                "linear-gradient(135deg,rgb(93, 192, 118),rgb(54, 204, 62))",
-              color: "white",
-            }}
-          >
-            Filtrar por Data
-          </button>
-          <button
-            onClick={clearDateFilter}
-            className="date-input"
-            style={{
-              background:
-                "linear-gradient(135deg,rgb(199, 81, 81),rgb(230, 110, 110))",
-              color: "white",
-            }}
-          >
-            Limpar
-          </button>
+        <p>até:</p>
+        <input
+          type="date"
+          value={filtroFim}
+          onChange={(e) => setFiltroFim(e.target.value)}
+          className="date-input"
+        />
 
-</div>
-        {isSearched && filteredProducts.length === 0 && (
-          <p className="error-message">Produto não encontrado.</p>
-        )}
-
-        {filteredProducts.length > 0 && (
-          <div className="text-center mt-10">
-            <h3>Quantidade Total de Produtos: {totalQuantity}</h3>
-            <h3>
-              Valor Total no Estoque: R${" "}
-              {totalPrice.toFixed(2).replace(".", ",")}
-            </h3>
-            <h3>
-              Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
-            </h3>
-            <strong>
-              <li className="text-[red]">
-                Linha vermelha, indentifica produtos que já passaram da data de
-                vencimento
-              </li>
-            </strong>
-          </div>
-        )}
-
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr className="table-header">
-                <th className="table-cell">SKU</th>
-                <th className="table-cell">Nome</th>
-                <th className="table-cell">Fornecedor</th>
-                <th className="table-cell">Marca</th>
-                <th className="table-cell">Categoria</th>
-                <th className="table-cell">Tipo</th>
-                <th className="table-cell">Peso Unitário</th>
-                <th className="table-cell">Unidade de Medida</th>
-                <th className="table-cell">Quantidade</th>
-                <th className="table-cell">Valor Unitário</th>
-                <th className="table-cell">Valor Total</th>
-                <th className="table-cell">Data de Cadastro</th>
-                <th className="table-cell">Data de Vencimento</th>
-                <th className="table-cell">Dias para Consumo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((item, index) => {
-                const daysForConsumption = calculateConsumptionDays(
-                  item.dateAdded,
-                  item.expiryDate
-                );
-
-                const expired = isExpired(item.expiryDate);
-
-                return (
-                  <tr
-                    key={`${item.sku}-${index}`}
-                    className={expired ? "expired" : ""}
-                  >
-                    <td className="table-cell">{item.sku}</td>
-                    <td className="table-cell">{item.name}</td>
-                    <td className="table-cell">{item.supplier}</td>
-                    <td className="table-cell">{item.marca}</td>
-                    <td className="table-cell">{item.category || "N/A"}</td>
-                    <td className="table-cell">{item.tipo || "N/A"}</td>
-                    <td className="table-cell">{item.peso}</td>
-                    <td className="table-cell">{item.unitMeasure}</td>
-                    <td className="table-cell">{item.quantity}</td>
-                    <td className="table-cell">{item.unitPrice}</td>
-                    <td className="table-cell">{item.totalPrice}</td>
-                    <td className="table-cell">{formatDate(item.dateAdded)}</td>
-                    <td className="table-cell">
-                      {formatDate(item.expiryDate)}
-                    </td>
-                    <td className="table-cell">
-                      {daysForConsumption >= 0 ? daysForConsumption : 0}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <button onClick={voltar} className="back-button">
-          Voltar
+        <button
+          onClick={handleDateFilter}
+          className="date-input"
+          style={{
+            background:
+              "linear-gradient(135deg,rgb(93, 192, 118),rgb(54, 204, 62))",
+            color: "white",
+          }}
+        >
+          Filtrar por Data
+        </button>
+        <button
+          onClick={clearDateFilter}
+          className="date-input"
+          style={{
+            background:
+              "linear-gradient(135deg,rgb(199, 81, 81),rgb(230, 110, 110))",
+            color: "white",
+          }}
+        >
+          Limpar
         </button>
       </div>
+      {isSearched && filteredProducts.length === 0 && (
+        <p className="error-message">Produto não encontrado.</p>
+      )}
+
+      {filteredProducts.length > 0 && (
+        <div className="text-center mt-10">
+          <h3>Quantidade Total de Produtos: {totalQuantity}</h3>
+          <h3>
+            Valor Total no Estoque: R$ {totalPrice.toFixed(2).replace(".", ",")}
+          </h3>
+          <h3>
+            Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
+          </h3>
+          <strong>
+            <li className="text-[red]">
+              Linha vermelha, indentifica produtos que já passaram da data de
+              vencimento
+            </li>
+          </strong>
+        </div>
+      )}
+
+      <div className="table-container">
+        <table className="table">
+          <thead>
+            <tr className="table-header">
+              <th className="table-cell">SKU</th>
+              <th className="table-cell">Nome</th>
+              <th className="table-cell">Fornecedor</th>
+              <th className="table-cell">Marca</th>
+              <th className="table-cell">Categoria</th>
+              <th className="table-cell">Tipo</th>
+              <th className="table-cell">Peso Unitário</th>
+              <th className="table-cell">Unidade de Medida</th>
+              <th className="table-cell">Quantidade</th>
+              <th className="table-cell">Valor Unitário</th>
+              <th className="table-cell">Valor Total</th>
+              <th className="table-cell">Data de Cadastro</th>
+              <th className="table-cell">Data de Vencimento</th>
+              <th className="table-cell">Dias para Consumo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((item, index) => {
+              const daysForConsumption = calculateConsumptionDays(
+                item.dateAdded,
+                item.expiryDate
+              );
+
+              const expired = isExpired(item.expiryDate);
+
+              return (
+                <tr
+                  key={`${item.sku}-${index}`}
+                  className={expired ? "expired" : ""}
+                >
+                  <td className="table-cell">{item.sku}</td>
+                  <td className="table-cell">{item.name}</td>
+                  <td className="table-cell">{item.supplier}</td>
+                  <td className="table-cell">{item.marca}</td>
+                  <td className="table-cell">{item.category || "N/A"}</td>
+                  <td className="table-cell">{item.tipo || "N/A"}</td>
+                  <td className="table-cell">{item.peso}</td>
+                  <td className="table-cell">{item.unitMeasure}</td>
+                  <td className="table-cell">{item.quantity}</td>
+                  <td className="table-cell">{item.unitPrice}</td>
+                  <td className="table-cell">{item.totalPrice}</td>
+                  <td className="table-cell">{formatDate(item.dateAdded)}</td>
+                  <td className="table-cell">{formatDate(item.expiryDate)}</td>
+                  <td className="table-cell">
+                    {daysForConsumption >= 0 ? daysForConsumption : 0}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <button onClick={voltar} className="back-button">
+        Voltar
+      </button>
+    </div>
   );
 }

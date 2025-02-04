@@ -33,15 +33,17 @@ const TabelaFornecedores = () => {
     const fornecedoresRef = ref(db, "CadastroFornecedores");
     onValue(fornecedoresRef, (snapshot) => {
       const data = snapshot.val();
+      console.log(data);  // Verifique o conteúdo de 'data'
       if (data) {
         const fornecedoresList = Object.keys(data).map((key) => ({
           ...data[key],
           id: key,
         }));
         setFornecedores(fornecedoresList);
-        setFilteredFornecedores(fornecedoresList); // Inicializa com todos os fornecedores
+        setFilteredFornecedores(fornecedoresList);
       }
     });
+    
   }, []);
 
   const handleShowDetails = (fornecedor) => {

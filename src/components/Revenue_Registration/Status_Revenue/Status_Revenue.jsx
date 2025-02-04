@@ -142,16 +142,18 @@ export default function ExibirRefeicoes() {
 
   return (
     <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)", padding: "20px", color: "#fff", minHeight: "100vh" }}>
-      <h2 style={{ textAlign: "center" }}>Resultados Cadastrados de Refeições</h2>
+      <h2 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "20px" }}>Resultados Cadastrados de Refeições</h2>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <label>Data Início: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} /></label>
         <label>Data Fim: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} /></label>
-        <button style={{marginRight: '10px', background: 'green'}} onClick={filtrarRefeicoes}>Filtrar</button>
-        <button onClick={limparFiltros}>Limpar Filtro</button>
+        <button style={{padding: '8px 15px', backgroundColor: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem', marginRight: '10px'}} onClick={filtrarRefeicoes}>Filtrar</button>
+        <button style={{padding: '8px 15px', backgroundColor: '#f44336', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}} onClick={limparFiltros}>Limpar Filtro</button>
       </div>
-      <button onClick={() => navigate(-1)}>Voltar</button>
+      <button onClick={() => navigate(-1)} style={{marginTop: '20px', padding: '10px 20px', backgroundColor: '#ff5733', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}}>
+        Voltar
+      </button>
       <div style={{ overflowX: "auto" }}>
-        <table>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", textAlign: "center" }}>
           <thead>
             <tr>
               {["Data Refeição",
@@ -174,7 +176,9 @@ export default function ExibirRefeicoes() {
                 "Sobras",
                 "Observação",
                 "Desperdícios (kg)"].map((header, index) => (
-                <th key={index}>{header}</th>
+                <th key={index} style={{ backgroundColor: "#2575fc", color: "white", textAlign: "center", padding: '12px', border: '1px solid #ddd' }}>
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
@@ -201,9 +205,9 @@ export default function ExibirRefeicoes() {
                   'sobrasDescricao',
                   'observacaoDescricao',
                   'desperdicioQtd'].map((field) => (
-                  <td key={field} onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}>
+                  <td key={field} onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])} style={{ padding: '12px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', color: 'black' }}>
                     {editando?.id === refeicao.key && editando.field === field ? (
-                      <input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} autoFocus />
+                      <input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} autoFocus style={{ padding: '10px', fontSize: '1rem', width: '100%', borderRadius: '4px', border: '1px solid #ddd', backgroundColor: '#fff' }} />
                     ) : (
                       field === 'dataRefeicao' ? formatDate(refeicao[field]) : refeicao[field]
                     )}

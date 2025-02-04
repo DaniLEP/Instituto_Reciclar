@@ -309,7 +309,23 @@ function CadProdutos() {
     setShowModal(false);
   };
 
-  const handleSave = () => {
+  const checkExistingSku = async (sku) => {
+    try {
+      const productsRef = ref(db, "EntradaProdutos"); // Ref para o nó de produtos
+      const snapshot = await get(productsRef); // Obter todos os produtos
+      if (snapshot.exists()) {
+        const products = snapshot.val();
+        const existingSku = Object.values(products).find((product) => product.sku === sku);
+        return existingSku; // Retorna o produto se encontrar o SKU
+      }
+      return null; // Se não encontrar, retorna null
+    } catch (error) {
+      toast.error("Erro ao verificar SKU: " + error.message);
+      return null; // Caso ocorra algum erro, retorna null
+    }
+  };
+  
+  const handleSave = async () => {
     if (
       sku &&
       name &&
@@ -321,6 +337,13 @@ function CadProdutos() {
       category &&
       tipo
     ) {
+      // Verifica se o SKU já existe
+      const existingProduct = await checkExistingSku(sku);
+      if (existingProduct) {
+        toast.error("SKU já cadastrado. Por favor, insira um SKU diferente.");
+        return; // Não permite salvar o produto caso o SKU já exista
+      }
+  
       const newProduct = {
         sku,
         name,
@@ -332,6 +355,7 @@ function CadProdutos() {
         category,
         tipo,
       };
+  
       const newProductRef = push(ref(db, "EntradaProdutos"));
       set(newProductRef, newProduct)
         .then(() => {
@@ -341,8 +365,9 @@ function CadProdutos() {
         .catch((error) =>
           toast.error("Erro ao salvar o produto: " + error.message)
         );
-    } 
+    }
   };
+  
 
   const handleClearFields = () => {
     setSku("");
@@ -419,7 +444,6 @@ function CadProdutos() {
             value={peso}
             onChange={handlePesoChange}
             placeholder="Digite o peso (ex: 100)"
-            
           />
           <Select value={unitMeasure} onChange={handleUnitMeasureChange}>
             <option value="g">Gramas</option>
@@ -431,7 +455,7 @@ function CadProdutos() {
         <div>
           <label style={{ display: "flex" }}>Escolha a unidade de peso:</label>
           <Select value={unit} onChange={handleUnitChange}>
-          <option value="selecione">Selecione uma unidade de medida</option>
+            <option value="selecione">Selecione uma unidade de medida</option>
             <option value="un">Unidade</option>
             <option value="fd">Fardo</option>
             <option value="cx">Caixa</option>
@@ -455,13 +479,13 @@ function CadProdutos() {
           <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="">Selecione o tipo</option>
             <option value="Frutas">Frutas</option>
-              <option value="Legumes">Legumes</option>
-              <option value="Verduras">Verduras</option>
-              <option value="Bovina">Bovina</option>
-              <option value="Ave">Ave</option>
-              <option value="Suína">Suína</option>
-              <option value="Pescado">Pescado</option>
-              <option value="Mercado">Mercado</option>
+            <option value="Legumes">Legumes</option>
+            <option value="Verduras">Verduras</option>
+            <option value="Bovina">Bovina</option>
+            <option value="Ave">Ave</option>
+            <option value="Suína">Suína</option>
+            <option value="Pescado">Pescado</option>
+            <option value="Mercado">Mercado</option>
           </Select>
         </div>
 
