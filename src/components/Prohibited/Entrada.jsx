@@ -311,44 +311,86 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const Modal = ({ products, onSelectProduct, onClose }) => (
-  <ModalBackdrop>
-    <ModalContainer>
-      <h2>Escolha um Produto</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Nome</th>
-            <th>Marca</th>
-            <th>Fornecedor</th>
-            <th>Peso(KG)</th>
-            <th>Unidade</th>
-            <th>Categoria</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id} onClick={() => onSelectProduct(product)}>
-              <td>{product.sku}</td>
-              <td>{product.name}</td>
-              <td>{product.marca}</td>
-              <td>{product.supplier}</td>
-              <td>{product.peso}</td>
-              <td>{product.unitMeasure}</td>
-              <td>{product.category}</td>
-              <td>
-                <button>Selecionar</button>
-              </td>
+const Modal = ({ products, onSelectProduct, onClose }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  useEffect(() => {
+    if (!products || products.length === 0) {
+      console.log("Nenhum produto carregado");
+      return;
+    }
+    setFilteredProducts(products);
+  }, [products]);
+
+  useEffect(() => {
+    if (!products) return;
+    const filtered = products.filter((product) =>
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+
+  if (!products || products.length === 0) {
+    return (
+      <ModalBackdrop>
+        <ModalContainer>
+          <h2>Escolha um Produto</h2>
+          <p>Carregando produtos...</p>
+          <CloseButton onClick={onClose}>Fechar</CloseButton>
+        </ModalContainer>
+      </ModalBackdrop>
+    );
+  }
+
+  return (
+    <ModalBackdrop>
+      <ModalContainer>
+        <h2>Escolha um Produto</h2>
+        <input
+          type="text"
+          placeholder="Buscar por SKU ou Nome"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Nome</th>
+              <th>Marca</th>
+              <th>Fornecedor</th>
+              <th>Peso(KG)</th>
+              <th>Unidade</th>
+              <th>Categoria</th>
+              <th>Ação</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <CloseButton onClick={onClose}>Fechar</CloseButton>
-    </ModalContainer>
-  </ModalBackdrop>
-);
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => (
+              <tr key={product.id}>
+                <td>{product.sku}</td>
+                <td>{product.name}</td>
+                <td>{product.marca}</td>
+                <td>{product.supplier}</td>
+                <td>{product.peso}</td>
+                <td>{product.unitMeasure}</td>
+                <td>{product.category}</td>
+                <td>
+                  <button onClick={() => onSelectProduct(product)}>Selecionar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <CloseButton onClick={onClose}>Fechar</CloseButton>
+      </ModalContainer>
+    </ModalBackdrop>
+  );
+};
+
 
 const EntradaProdutos = () => {
   const [sku, setSku] = useState("");
@@ -394,7 +436,7 @@ const EntradaProdutos = () => {
     setCategory(product.category);
     setTipo(product.tipo);
     setUnitPrice(product.unitPrice);
-    setTotalPrice(product.totalPrice)
+    setTotalPrice(product.totalPrice);
     setQuantity(product.quantity);
     setDateAdded(product.dateAdded);
     setExpiryDate(product.expiryDate);
@@ -597,11 +639,11 @@ const EntradaProdutos = () => {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-          <option value="">Selecione a categoria:</option>
-          <option value="Proteína">Proteína</option>
-          <option value="Mantimento">Mantimento</option>
-          <option value="Hortaliças">Hortaliças</option>
-          <option value="Doações">Doações</option>
+            <option value="">Selecione a categoria:</option>
+            <option value="Proteína">Proteína</option>
+            <option value="Mantimento">Mantimento</option>
+            <option value="Hortaliças">Hortaliças</option>
+            <option value="Doações">Doações</option>
           </Select>
         </FormGroup>
 
