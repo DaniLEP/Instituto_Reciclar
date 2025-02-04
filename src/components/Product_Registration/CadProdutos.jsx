@@ -341,9 +341,7 @@ function CadProdutos() {
         .catch((error) =>
           toast.error("Erro ao salvar o produto: " + error.message)
         );
-    } else {
-      toast.warn("Preencha todos os campos obrigatórios!");
-    }
+    } 
   };
 
   const handleClearFields = () => {
@@ -421,6 +419,7 @@ function CadProdutos() {
             value={peso}
             onChange={handlePesoChange}
             placeholder="Digite o peso (ex: 100)"
+            
           />
           <Select value={unitMeasure} onChange={handleUnitMeasureChange}>
             <option value="g">Gramas</option>
@@ -432,6 +431,7 @@ function CadProdutos() {
         <div>
           <label style={{ display: "flex" }}>Escolha a unidade de peso:</label>
           <Select value={unit} onChange={handleUnitChange}>
+          <option value="selecione">Selecione uma unidade de medida</option>
             <option value="un">Unidade</option>
             <option value="fd">Fardo</option>
             <option value="cx">Caixa</option>
@@ -454,9 +454,14 @@ function CadProdutos() {
           <label style={{ display: "flex" }}>Tipo:</label>
           <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="">Selecione o tipo</option>
-            <option value="Alimento">Alimento</option>
-            <option value="Bebida">Bebida</option>
-            <option value="Higiene">Higiene</option>
+            <option value="Frutas">Frutas</option>
+              <option value="Legumes">Legumes</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Bovina">Bovina</option>
+              <option value="Ave">Ave</option>
+              <option value="Suína">Suína</option>
+              <option value="Pescado">Pescado</option>
+              <option value="Mercado">Mercado</option>
           </Select>
         </div>
 
