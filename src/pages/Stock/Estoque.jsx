@@ -297,7 +297,7 @@ export default function Estoque() {
                   <td className="table-cell">{item.category || "N/A"}</td>
                   <td className="table-cell">{item.tipo || "N/A"}</td>
                   <td className="table-cell">{item.peso}</td>
-                  <td className="table-cell">{item.unitMeasure}</td>
+                  <td className="table-cell">{item.unitmeasure}</td>
                   <td className="table-cell">{item.quantity}</td>
                   <td className="table-cell">{item.unitPrice}</td>
                   <td className="table-cell">{item.totalPrice}</td>
