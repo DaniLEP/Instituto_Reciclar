@@ -325,9 +325,10 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
 
   useEffect(() => {
     if (!products) return;
-    const filtered = products.filter((product) =>
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = products.filter(
+      (product) =>
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
@@ -346,51 +347,50 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
 
   return (
     <ModalBackdrop>
-      <ModalContainer>
-        <h2>Escolha um Produto</h2>
-        <input
-          type="text"
-          placeholder="Buscar por SKU ou Nome"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-        <table>
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Nome</th>
-              <th>Marca</th>
-              <th>Fornecedor</th>
-              <th>Peso(KG)</th>
-              <th>Unidade</th>
-              <th>Categoria</th>
-              <th>Ação</th>
+    <ModalContainer>
+      <h2>Escolha um Produto</h2>
+      <input
+        type="text"
+        placeholder="Buscar por SKU ou Nome"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+      />
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Nome</th>
+            <th>Marca</th>
+            <th>Fornecedor</th>
+            <th>Peso(KG)</th>
+            <th>Unidade de Medida</th>
+            <th>Categoria</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredProducts.map((product) => (
+            <tr key={product.sku}>
+              <td>{product.sku}</td>
+              <td>{product.name}</td>
+              <td>{product.marca}</td>
+              <td>{product.supplier}</td>
+              <td>{product.peso}{product.unitMeasure}</td>
+              <td>{product.unit}</td>
+              <td>{product.category}</td>
+              <td>
+                <button onClick={() => onSelectProduct(product)}>Selecionar</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id}>
-                <td>{product.sku}</td>
-                <td>{product.name}</td>
-                <td>{product.marca}</td>
-                <td>{product.supplier}</td>
-                <td>{product.peso}</td>
-                <td>{product.unitMeasure}</td>
-                <td>{product.category}</td>
-                <td>
-                  <button onClick={() => onSelectProduct(product)}>Selecionar</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <CloseButton onClick={onClose}>Fechar</CloseButton>
-      </ModalContainer>
-    </ModalBackdrop>
-  );
+          ))}
+        </tbody>
+      </table>
+      <CloseButton onClick={onClose}>Fechar</CloseButton>
+    </ModalContainer>
+  </ModalBackdrop>
+);
 };
-
 
 const EntradaProdutos = () => {
   const [sku, setSku] = useState("");
@@ -511,6 +511,11 @@ const EntradaProdutos = () => {
       const totalPeso = peso * quantity; // Calcula o peso total
       setPesoTotal(totalPeso);
     }
+    
+    if (unitPrice && quantity){
+      const totalPrice = unitPrice * quantity;
+      setTotalPrice(totalPrice);
+    }
   };
 
   const handleUnitPriceChange = (e) => {
@@ -526,21 +531,6 @@ const EntradaProdutos = () => {
     }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
 
     setUnitPrice(formattedValue);
-    setTotalPrice(formattedValue);
-  };
-
-  const handledUnitPriceChange = (e) => {
-    let inputValue = e.target.value;
-
-    // Remove tudo que não for número (para processar corretamente)
-    inputValue = inputValue.replace(/\D/g, "");
-
-    // Formata no estilo moeda brasileira
-    const formattedValue = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
-
     setTotalPrice(formattedValue);
   };
 
@@ -668,16 +658,11 @@ const EntradaProdutos = () => {
         </FormGroup>
         <FormGroup>
           <Label>Valor Total (R$):</Label>
-          <Input
-            type="text"
-            value={totalPrice}
-            onChange={handledUnitPriceChange}
-            placeholder="R$ 0,00"
-          />
+          <Input type="text" value={totalPrice} onChange={handleQuantityChange} placeholder="R$ 0,00" />
         </FormGroup>
 
         <FormGroup>
-          <Label>Data de Adição:</Label>
+          <Label>Data de Entrada:</Label>
           <Input
             type="date"
             value={dateAdded}

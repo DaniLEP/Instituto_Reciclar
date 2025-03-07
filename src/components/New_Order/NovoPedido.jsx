@@ -3,7 +3,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get, push, set } from "firebase/database";
-import { useNavigate } from "react-router-dom"; // Importando o hook useNavigate
+import { Link, useNavigate } from "react-router-dom"; // Importando o hook useNavigate
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -236,6 +236,20 @@ export default function NovoPedido() {
       width: "100%",
       maxWidth: "200px",
       margin: "0.5rem auto",
+    },
+    buttonCadastro: {
+      padding: "10px 10px",
+      fontSize: "1rem",
+      backgroundColor: "#F20DE7",
+      color: "#fff",
+      border: "none",
+      borderRadius: "5px",
+      cursor: "pointer",
+      transition: "background-color 0.3s",
+      width: "100%",
+      maxWidth: "200px",
+      margin: "0.5rem auto",
+      marginLeft: "10px",
     },
     buttonExcluir: {
       padding: "10px 10px",
@@ -643,6 +657,12 @@ export default function NovoPedido() {
                   >
                     Fechar
                   </button>
+                  <Link to={"/Cadastro_Geral"}>
+                    {" "}
+                    <button style={styles.buttonCadastro}>
+                      Cadastrar Novo Item
+                    </button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -768,7 +788,6 @@ export default function NovoPedido() {
                   <th style={styles.tableCell}>Quantidade</th>
                   <th style={styles.tableCell}>Observação</th>
                   <th style={styles.tableCell}>Ações</th>
-
                 </tr>
               </thead>
               <tbody>
@@ -780,14 +799,20 @@ export default function NovoPedido() {
                     <td style={styles.tableCell}>{item.marca}</td>
                     <td style={styles.tableCell}>{item.category}</td>
                     <td style={styles.tableCell}>
+                      {" "}
                       {item.peso} {item.unitMeasure}
                     </td>
                     <td style={styles.tableCell}>{item.unit}</td>
                     <td style={styles.tableCell}>{item.quantidade}</td>
                     <td style={styles.tableCell}>{item.observacao}</td>
                     <td style={styles.tableCell}>
-                <button style={styles.buttonExcluir} onClick={() => handleDelete(index)}>Excluir</button> {/* Botão para excluir */}
-              </td>
+                      <button
+                        style={styles.buttonExcluir}
+                        onClick={() => handleDelete(index)}
+                      >
+                        Excluir
+                      </button>{" "}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -798,7 +823,6 @@ export default function NovoPedido() {
               Finalizar Pedido
             </button>
           </div>
-
           <button
             onClick={handleVoltar}
             style={{ marginBottom: "20px", width: "100%" }}
