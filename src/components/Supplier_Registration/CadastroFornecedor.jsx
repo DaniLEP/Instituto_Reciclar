@@ -43,14 +43,14 @@ const CadastroFornecedores = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-  
+
     // Valida o CEP para garantir que é um número com 8 dígitos
     if (name === "cep" && /^[0-9]{0,8}$/.test(value)) {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value,
       }));
-  
+
       // Se o CEP tiver 8 dígitos, tenta buscar o endereço
       if (value.length === 8) {
         fetchAddress(value);
@@ -206,7 +206,7 @@ const CadastroFornecedores = () => {
           animation: "slideIn 1s ease-in-out",
         }}
       >
-        {[ 
+        {[
           { label: "CNPJ", name: "cnpj" },
           { label: "Razão Social", name: "razaoSocial" },
           { label: "CEP", name: "cep" },
@@ -221,10 +221,16 @@ const CadastroFornecedores = () => {
           { label: "Telefone", name: "telefone" },
           { label: "E-mail", name: "email" },
           { label: "Grupo", name: "grupo" },
-          { label: "Status", name: "status" },  // Campo de status
+          { label: "Status", name: "status" }, // Campo de status
         ].map((field) => (
-          <div key={field.name} style={{ display: "flex", flexDirection: "column" }}>
-            <label htmlFor={field.name} style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
+          <div
+            key={field.name}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            <label
+              htmlFor={field.name}
+              style={{ fontSize: "0.9rem", fontWeight: "bold" }}
+            >
               {field.label}:
             </label>
             {field.name === "status" ? (
@@ -257,8 +263,9 @@ const CadastroFornecedores = () => {
                   fontSize: "1rem",
                 }}
                 disabled={
-                  ["endereco", "bairro", "municipio", "uf"].includes(field.name) &&
-                  field.name !== "cep"
+                  ["endereco", "bairro", "municipio", "uf"].includes(
+                    field.name
+                  ) && field.name !== "cep"
                 }
               />
             )}
@@ -304,5 +311,3 @@ const CadastroFornecedores = () => {
 };
 
 export default CadastroFornecedores;
-
-

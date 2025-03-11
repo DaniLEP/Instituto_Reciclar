@@ -78,15 +78,15 @@ export default function Estoque() {
     const filtered = productsData.filter((item) => {
       const lowerSearchTerm = searchTerm.toLowerCase();
       return (
-        item.sku.includes(lowerSearchTerm) ||
+        String(item.sku).includes(lowerSearchTerm) || // Conversão explícita para string
         item.name.toLowerCase().includes(lowerSearchTerm) ||
         item.supplier.toLowerCase().includes(lowerSearchTerm) ||
         item.marca.toLowerCase().includes(lowerSearchTerm) ||
-        item.category?.toLowerCase().includes(lowerSearchTerm) ||
-        item.tipo?.toLowerCase().includes(lowerSearchTerm)
+        (item.category?.toLowerCase().includes(lowerSearchTerm) || false) ||
+        (item.tipo?.toLowerCase().includes(lowerSearchTerm) || false)
       );
     });
-
+  
     if (filtered.length > 0) {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
       setFilteredProducts(filtered);
@@ -100,6 +100,7 @@ export default function Estoque() {
       setTotalPrice(0);
     }
   };
+  
 
   const handleBack = () => {
     setSearchTerm("");
@@ -203,7 +204,7 @@ export default function Estoque() {
           className="date-input"
         />
 
-        <p>até:</p>
+        <p>Até:</p>
         <input
           type="date"
           value={filtroFim}

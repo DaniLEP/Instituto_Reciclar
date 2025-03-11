@@ -151,6 +151,7 @@ const HistoricoRetiradas = () => {
           }}
         >
           <option value="">Selecione o Responsável:</option>
+          <option value="Camila">Camila</option>
           <option value="Mislene">Mislene</option>
           <option value="Maria Jose">Maria Jose</option>
           <option value="Rose">Rose</option>

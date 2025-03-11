@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, push, update, remove } from "firebase/database";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -46,7 +46,10 @@ const RetiradaProdutos = () => {
       const snapshot = await get(produtosRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const produtosList = Object.entries(data).map(([id, produto]) => ({ id, ...produto }));
+        const produtosList = Object.entries(data).map(([id, produto]) => ({
+          id,
+          ...produto,
+        }));
         setProdutos(produtosList);
         setFilteredProdutos(produtosList); // Inicializa os produtos filtrados com todos os produtos
       }
@@ -59,16 +62,26 @@ const RetiradaProdutos = () => {
     if (searchTerm.trim() === "") {
       setFilteredProdutos(produtos);
     } else {
-      const filtered = produtos.filter((produto) =>
-        produto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        produto.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = produtos.filter(
+        (produto) =>
+          produto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          produto.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProdutos(filtered);
     }
   }, [searchTerm, produtos]);
 
   const handleRetirada = async () => {
-    if (!sku || !name || !category || !tipo || !quantity || !peso || !retirante || !data) {
+    if (
+      !sku ||
+      !name ||
+      !category ||
+      !tipo ||
+      !quantity ||
+      !peso ||
+      !retirante ||
+      !data
+    ) {
       toast.error("Por favor, preencha todos os campos.");
       return;
     }
@@ -100,7 +113,9 @@ const RetiradaProdutos = () => {
 
     if (novaQuantidade === 0 && novoPeso === 0) {
       await remove(produtoRef);
-      setProdutos((prevProdutos) => prevProdutos.filter((p) => p.id !== produto.id));
+      setProdutos((prevProdutos) =>
+        prevProdutos.filter((p) => p.id !== produto.id)
+      );
     } else {
       await update(produtoRef, atualizacao);
       setProdutos((prevProdutos) =>
@@ -111,10 +126,21 @@ const RetiradaProdutos = () => {
     }
 
     const retiradaRef = ref(database, "Retiradas");
-    const retiradaData = { sku, name, category, tipo, quantity, peso, retirante, data };
+    const retiradaData = {
+      sku,
+      name,
+      category,
+      tipo,
+      quantity,
+      peso,
+      retirante,
+      data,
+    };
     await push(retiradaRef, retiradaData);
 
-    toast.success(`Retirada registrada com sucesso por ${retirante}. Estoque atualizado.`);
+    toast.success(
+      `Retirada registrada com sucesso por ${retirante}. Estoque atualizado.`
+    );
     setSku("");
     setName("");
     setCategory("");
@@ -147,45 +173,112 @@ const RetiradaProdutos = () => {
   };
 
   return (
-    <div style={{ background: "#f4f4f9", minHeight: "100vh", padding: "20px", color: "#333", display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div
+      style={{
+        background: "#f4f4f9",
+        minHeight: "100vh",
+        padding: "20px",
+        color: "#333",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <ToastContainer />
-      <h1 style={{ fontSize: "2rem", color: "#2b2d42", marginBottom: "20px" }}>Retirada de Produtos</h1>
-      <div style={{ background: "#ffffff", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", padding: "20px", width: "100%", maxWidth: "400px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <h1 style={{ fontSize: "2rem", color: "#2b2d42", marginBottom: "20px" }}>
+        Retirada de Produtos
+      </h1>
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "10px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+          padding: "20px",
+          width: "100%",
+          maxWidth: "400px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         <input
           type="text"
           placeholder="SKU"
           value={sku}
           onClick={() => setIsModalOpen(true)}
           readOnly
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            color: "#333",
+          }}
         />
         <input
           type="text"
           placeholder="Nome do Produto"
           value={name}
           readOnly
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            background: "#f0f0f0",
+            color: "#888",
+          }}
         />
         <input
           type="text"
           placeholder="Categoria"
           value={category}
           readOnly
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            background: "#f0f0f0",
+            color: "#888",
+          }}
         />
         <input
           type="text"
           placeholder="Tipo"
           value={tipo}
           readOnly
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            background: "#f0f0f0",
+            color: "#888",
+          }}
         />
         <input
           type="number"
           placeholder="Quantidade"
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            color: "#333",
+          }}
         />
         <input
           type="number"
@@ -193,42 +286,123 @@ const RetiradaProdutos = () => {
           value={peso}
           readOnly
           onChange={(e) => setPeso(Number(e.target.value))}
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            color: "#333",
+          }}
         />
         <select
           type="text"
           placeholder="Responsável"
           value={retirante}
           onChange={(e) => setRetirante(e.target.value)}
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", color: "#333" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            color: "#333",
+          }}
         >
           <option value="Selecionar">Escolha o Responsável</option>
+          <option value="Camila">Camila</option>
           <option value="Maria José">Maria José</option>
           <option value="Maria Miselene">Mislene</option>
           <option value="Rose">Rose</option>
-
         </select>
         <input
           type="text"
           placeholder="Data"
           value={data}
           readOnly
-          style={{ width: "90%", padding: "10px", marginBottom: "10px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "1rem", background: "#f0f0f0", color: "#888" }}
+          style={{
+            width: "90%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            background: "#f0f0f0",
+            color: "#888",
+          }}
         />
-        <button onClick={handleRetirada} style={{ width: "90%", padding: "10px", background: "#F20DE7", color: "#ffffff", border: "none", borderRadius: "5px", fontSize: "1rem", cursor: "pointer", transition: "background 0.3s" }}>
+        <button
+          onClick={handleRetirada}
+          style={{
+            width: "90%",
+            padding: "10px",
+            background: "#F20DE7",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "5px",
+            fontSize: "1rem",
+            cursor: "pointer",
+            transition: "background 0.3s",
+          }}
+        >
           Registrar Retirada
         </button>
         <Link to={"/Retirada"}>
-          <button style={{ width: "90%", padding: "10px", color: "black", border: "none", borderRadius: "5px", fontSize: "1rem", cursor: "pointer", transition: "background 0.3s", marginTop: "10px" }}>
+          <button
+            style={{
+              width: "90%",
+              padding: "10px",
+              color: "black",
+              border: "none",
+              borderRadius: "5px",
+              fontSize: "1rem",
+              cursor: "pointer",
+              transition: "background 0.3s",
+              marginTop: "10px",
+            }}
+          >
             Voltar
           </button>
         </Link>
       </div>
 
       {isModalOpen && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "10px", width: "90%", maxWidth: "800px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)" }}>
-            <h2 style={{ fontSize: "1.5rem", marginBottom: "20px", textAlign: "center" }}>Produtos Disponíveis</h2>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "90%",
+              maxWidth: "800px",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
+              maxHeight: "80vh", // Definindo uma altura máxima para o modal
+              overflowY: "auto", // Habilitando o scroll vertical
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "1.5rem",
+                marginBottom: "20px",
+                textAlign: "center",
+              }}
+            >
+              Produtos Disponíveis
+            </h2>
             <input
               type="text"
               placeholder="Buscar por nome ou SKU"
@@ -241,10 +415,16 @@ const RetiradaProdutos = () => {
                 border: "1px solid #ddd",
                 borderRadius: "5px",
                 fontSize: "1rem",
-                color: "#333"
+                color: "#333",
               }}
             />
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginBottom: "20px",
+              }}
+            >
               <thead>
                 <tr style={{ textAlign: "center" }}>
                   <th>Nome</th>
@@ -274,7 +454,7 @@ const RetiradaProdutos = () => {
                           padding: "5px 10px",
                           border: "none",
                           borderRadius: "5px",
-                          cursor: "pointer"
+                          cursor: "pointer",
                         }}
                       >
                         Selecionar
@@ -284,7 +464,17 @@ const RetiradaProdutos = () => {
                 ))}
               </tbody>
             </table>
-            <button onClick={() => setIsModalOpen(false)} style={{ backgroundColor: "#00009c", color: "#fff", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                backgroundColor: "#00009c",
+                color: "#fff",
+                padding: "10px 20px",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+              }}
+            >
               Fechar
             </button>
           </div>

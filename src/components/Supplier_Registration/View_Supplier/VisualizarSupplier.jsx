@@ -26,6 +26,7 @@ const TabelaFornecedores = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFornecedor, setSelectedFornecedor] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [telefone, setTelefone] = useState("");
   const [cep, setCep] = useState(""); // Estado para o CEP
   const navigate = useNavigate();
 
@@ -33,7 +34,7 @@ const TabelaFornecedores = () => {
     const fornecedoresRef = ref(db, "CadastroFornecedores");
     onValue(fornecedoresRef, (snapshot) => {
       const data = snapshot.val();
-      console.log(data);  // Verifique o conteúdo de 'data'
+      console.log(data); // Verifique o conteúdo de 'data'
       if (data) {
         const fornecedoresList = Object.keys(data).map((key) => ({
           ...data[key],
@@ -43,7 +44,6 @@ const TabelaFornecedores = () => {
         setFilteredFornecedores(fornecedoresList);
       }
     });
-    
   }, []);
 
   const handleShowDetails = (fornecedor) => {
@@ -131,20 +131,22 @@ const TabelaFornecedores = () => {
   };
 
   const handleCepChange = async (e) => {
-    const cepValue = e.target.value.replace(/\D/g, ''); // Remover qualquer caractere não numérico
+    const cepValue = e.target.value.replace(/\D/g, ""); // Remover qualquer caractere não numérico
     setCep(cepValue); // Atualiza o estado do CEP
-  
+
     // Verifica se o CEP tem exatamente 8 dígitos (sem o hífen)
     if (cepValue.length === 8) {
       try {
-        const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
+        const response = await fetch(
+          `https://viacep.com.br/ws/${cepValue}/json/`
+        );
         const data = await response.json();
-  
+
         if (data.erro) {
           toast.error("CEP não encontrado.");
           return;
         }
-  
+
         // Atualiza os dados do fornecedor com o endereço retornado do ViaCEP
         setSelectedFornecedor((prevData) => ({
           ...prevData,
@@ -154,30 +156,38 @@ const TabelaFornecedores = () => {
           uf: data.uf || "",
           pais: "Brasil", // O país será fixo ou ajustado conforme necessário
         }));
-  
+
         toast.success("Endereço preenchido automaticamente!");
       } catch (error) {
         toast.error("Erro ao buscar o CEP.");
       }
     }
   };
-  
+
   const formatCNPJ = (value) => {
     return value
       .replace(/\D/g, "") // Remove tudo o que não for número
       .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
   };
 
-  const formatTelefone = (value) => {
+
+  const formatPhone = (value) => {
     return value
-      .replace(/\D/g, "") // Remove tudo o que não for número
-      .replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+      .replace(/\D/g, "")
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2")
+      .slice(0, 15);
   };
 
   const formatCEP = (value) => {
     return value
-      .replace(/\D/g, '') // Remove tudo o que não for número
-      .replace(/^(\d{5})(\d{3})$/, '$1-$2'); // Formata no padrão 'xxxxx-xxx'
+      .replace(/\D/g, "") // Remove tudo o que não for número
+      .replace(/^(\d{5})(\d{3})$/, "$1-$2"); // Formata no padrão 'xxxxx-xxx'
+  };
+
+  const handleChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ""); // Remove caracteres não numéricos
+    setTelefone(value);
   };
 
   return (
@@ -358,26 +368,26 @@ const TabelaFornecedores = () => {
               />
             </div>
             <div>
-  <label>CEP:</label>
-  <input
-    type="text"
-    name="cep"
-    value={formatCEP(cep)} // Aplique a máscara do CEP
-    onChange={handleCepChange} // Chama o método de consulta ao CEP
-    maxLength="9" // Limita o número de caracteres
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
-<div>
-  <label>Endereço:</label>
-  <input
-    type="text"
-    name="endereco"
-    value={selectedFornecedor.endereco || ""} // Preenche automaticamente com o valor do CEP
-    onChange={handleInputChange}
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
+              <label>CEP:</label>
+              <input
+                type="text"
+                name="cep"
+                value={formatCEP(cep)} // Aplique a máscara do CEP
+                onChange={handleCepChange} // Chama o método de consulta ao CEP
+                maxLength="9" // Limita o número de caracteres
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>Endereço:</label>
+              <input
+                type="text"
+                name="endereco"
+                value={selectedFornecedor.endereco || ""} // Preenche automaticamente com o valor do CEP
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
             <div>
               <label>Número:</label>
               <input
@@ -399,45 +409,45 @@ const TabelaFornecedores = () => {
               />
             </div>
             <div>
-  <label>Bairro:</label>
-  <input
-    type="text"
-    name="bairro"
-    value={selectedFornecedor.bairro || ""}
-    onChange={handleInputChange}
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
-<div>
-  <label>Município:</label>
-  <input
-    type="text"
-    name="municipio"
-    value={selectedFornecedor.municipio || ""}
-    onChange={handleInputChange}
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
+              <label>Bairro:</label>
+              <input
+                type="text"
+                name="bairro"
+                value={selectedFornecedor.bairro || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
             <div>
-  <label>UF:</label>
-  <input
-    type="text"
-    name="uf"
-    value={selectedFornecedor.uf || ""}
-    onChange={handleInputChange}
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
-<div>
-  <label>País:</label>
-  <input
-    type="text"
-    name="pais"
-    value={selectedFornecedor.pais || ""}
-    onChange={handleInputChange}
-    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-  />
-</div>
+              <label>Município:</label>
+              <input
+                type="text"
+                name="municipio"
+                value={selectedFornecedor.municipio || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>UF:</label>
+              <input
+                type="text"
+                name="uf"
+                value={selectedFornecedor.uf || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
+            <div>
+              <label>País:</label>
+              <input
+                type="text"
+                name="pais"
+                value={selectedFornecedor.pais || ""}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+              />
+            </div>
             <div>
               <label>Contato:</label>
               <input
@@ -451,9 +461,9 @@ const TabelaFornecedores = () => {
             <div>
               <label>Telefone:</label>
               <input
-                type="number"
+                type="tel"
                 name="telefone"
-                value={selectedFornecedor.telefone || ""}
+                value={formatPhone(selectedFornecedor.telefone || "")}
                 onChange={handleInputChange}
                 style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
               />
