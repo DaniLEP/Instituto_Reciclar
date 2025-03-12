@@ -82,11 +82,13 @@ export default function Estoque() {
         item.name.toLowerCase().includes(lowerSearchTerm) ||
         item.supplier.toLowerCase().includes(lowerSearchTerm) ||
         item.marca.toLowerCase().includes(lowerSearchTerm) ||
-        (item.category?.toLowerCase().includes(lowerSearchTerm) || false) ||
-        (item.tipo?.toLowerCase().includes(lowerSearchTerm) || false)
+        item.category?.toLowerCase().includes(lowerSearchTerm) ||
+        false ||
+        item.tipo?.toLowerCase().includes(lowerSearchTerm) ||
+        false
       );
     });
-  
+
     if (filtered.length > 0) {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
       setFilteredProducts(filtered);
@@ -100,7 +102,6 @@ export default function Estoque() {
       setTotalPrice(0);
     }
   };
-  
 
   const handleBack = () => {
     setSearchTerm("");
@@ -116,7 +117,7 @@ export default function Estoque() {
   // Função para calcular os dias para o consumo
   const calculateConsumptionDays = (dateAdded, expiryDate) => {
     const today = new Date();
-    const addedDate = new Date(dateAdded);
+    const addedDate = new Date(dateAdded  );
     const expirationDate = new Date(expiryDate);
 
     const timeToExpiry = expirationDate - today;

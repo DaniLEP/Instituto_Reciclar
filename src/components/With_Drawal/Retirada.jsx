@@ -97,18 +97,12 @@ const RetiradaProdutos = () => {
       return;
     }
 
-    if (produto.peso < peso) {
-      toast.error("Estoque insuficiente para o peso!");
-      return;
-    }
-
     const novaQuantidade = produto.quantity - quantity;
     const novoPeso = produto.peso - peso;
 
     const produtoRef = ref(database, `Estoque/${produto.id}`);
     const atualizacao = {
       quantity: novaQuantidade,
-      peso: novoPeso,
     };
 
     if (novaQuantidade === 0 && novoPeso === 0) {
