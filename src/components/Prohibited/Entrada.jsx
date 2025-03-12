@@ -347,49 +347,54 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
 
   return (
     <ModalBackdrop>
-    <ModalContainer>
-      <h2>Escolha um Produto</h2>
-      <input
-        type="text"
-        placeholder="Buscar por SKU ou Nome"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-      />
-      <table>
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Nome</th>
-            <th>Marca</th>
-            <th>Fornecedor</th>
-            <th>Peso(KG)</th>
-            <th>Unidade de Medida</th>
-            <th>Categoria</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredProducts.map((product) => (
-            <tr key={product.sku}>
-              <td>{product.sku}</td>
-              <td>{product.name}</td>
-              <td>{product.marca}</td>
-              <td>{product.supplier}</td>
-              <td>{product.peso}{product.unitMeasure}</td>
-              <td>{product.unit}</td>
-              <td>{product.category}</td>
-              <td>
-                <button onClick={() => onSelectProduct(product)}>Selecionar</button>
-              </td>
+      <ModalContainer>
+        <h2>Escolha um Produto</h2>
+        <input
+          type="text"
+          placeholder="Buscar por SKU ou Nome"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Nome</th>
+              <th>Marca</th>
+              <th>Fornecedor</th>
+              <th>Peso(KG)</th>
+              <th>Unidade de Medida</th>
+              <th>Categoria</th>
+              <th>Ação</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <CloseButton onClick={onClose}>Fechar</CloseButton>
-    </ModalContainer>
-  </ModalBackdrop>
-);
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => (
+              <tr key={product.sku}>
+                <td>{product.sku}</td>
+                <td>{product.name}</td>
+                <td>{product.marca}</td>
+                <td>{product.supplier}</td>
+                <td>
+                  {product.peso}
+                  {product.unitmeasure}
+                </td>
+                <td>{product.unit}</td>
+                <td>{product.category}</td>
+                <td>
+                  <button onClick={() => onSelectProduct(product)}>
+                    Selecionar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <CloseButton onClick={onClose}>Fechar</CloseButton>
+      </ModalContainer>
+    </ModalBackdrop>
+  );
 };
 
 const EntradaProdutos = () => {
@@ -400,7 +405,7 @@ const EntradaProdutos = () => {
   const [quantity, setQuantity] = useState("");
   const [peso, setPeso] = useState("");
   const [pesoTotal, setPesoTotal] = useState("");
-  const [unitMeasure, setUnitMeasure] = useState("");
+  const [unitmeasure, setUnitmeasure] = useState("");
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
@@ -432,7 +437,7 @@ const EntradaProdutos = () => {
     setMarca(product.marca);
     setSupplier(product.supplier);
     setPeso(product.peso);
-    setUnitMeasure(product.unitMeasure);
+    setUnitmeasure(product.unitmeasure);
     setCategory(product.category);
     setTipo(product.tipo);
     setUnitPrice(product.unitPrice);
@@ -445,12 +450,15 @@ const EntradaProdutos = () => {
 
   // Função para salvar o produto
   const handleSave = () => {
+    // Verifique se todos os campos estão preenchidos
+    console.log({ sku, name, supplier, peso, unitmeasure, quantity, category, tipo, unitPrice, totalPrice, dateAdded, expiryDate });
+
     if (
       sku &&
       name &&
       supplier &&
       peso &&
-      unitMeasure &&
+      unitmeasure &&
       quantity &&
       category &&
       tipo &&
@@ -465,7 +473,7 @@ const EntradaProdutos = () => {
         marca,
         supplier,
         peso,
-        unitMeasure,
+        unitmeasure,
         quantity,
         category,
         tipo,
@@ -474,7 +482,7 @@ const EntradaProdutos = () => {
         dateAdded,
         expiryDate,
       };
-
+  
       const newProductRef = ref(db, `Estoque/${new Date().getTime()}`);
       set(newProductRef, newProduct)
         .then(() => {
@@ -483,7 +491,7 @@ const EntradaProdutos = () => {
         .catch((error) => {
           toast.error("Erro ao salvar: " + error.message);
         });
-
+  
       // Limpar campos
       setSku("");
       setName("");
@@ -491,7 +499,7 @@ const EntradaProdutos = () => {
       setSupplier("");
       setQuantity("");
       setPeso("");
-      setUnitMeasure("");
+      setUnitmeasure("");
       setCategory("");
       setTipo("");
       setUnitPrice("");
@@ -502,7 +510,6 @@ const EntradaProdutos = () => {
       toast.warning("Preencha todos os campos!");
     }
   };
-
   const handleQuantityChange = (e) => {
     const quantity = e.target.value;
     setQuantity(quantity);
@@ -511,8 +518,10 @@ const EntradaProdutos = () => {
       const totalPeso = peso * quantity; // Calcula o peso total
       setPesoTotal(totalPeso);
     }
-    
-    if (unitPrice && quantity){
+
+    // Atualizando o preço total com o valor correto de unidade e quantidade
+    if (unitPrice && quantity) {
+      const unitPrice = parseFloat(unitPrice.replace(/\D/g, "")) / 100; // Remove formatação de moeda e converte para número
       const totalPrice = unitPrice * quantity;
       setTotalPrice(totalPrice);
     }
@@ -524,14 +533,19 @@ const EntradaProdutos = () => {
     // Remove tudo que não for número (para processar corretamente)
     inputValue = inputValue.replace(/\D/g, "");
 
-    // Formata no estilo moeda brasileira
+    // Atualiza o preço unitário sem a formatação de moeda
     const formattedValue = new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(inputValue / 100); // Divide por 100 para ajuste dos centavos
 
-    setUnitPrice(formattedValue);
-    setTotalPrice(formattedValue);
+    setUnitPrice(formattedValue); // Armazena o valor formatado
+    // Chama novamente a função handleQuantityChange para recalcular o totalPrice
+    if (quantity) {
+      const unitPrice = parseFloat(formattedValue.replace(/\D/g, "")) / 100;
+      const totalPrice = unitPrice * quantity;
+      setTotalPrice(totalPrice);
+    }
   };
 
   const handlePesoChange = (e) => {
@@ -613,6 +627,18 @@ const EntradaProdutos = () => {
             placeholder="Peso unitário"
           />
         </FormGroup>
+
+        
+        <FormGroup>
+          <Label>Unidade de Medida:</Label>
+          <Input
+            type="text"
+            value={unitmeasure}
+            onChange={(e) => setUnitmeasure(e.target.value)}            
+            placeholder="Unidade de Medida"
+          />
+        </FormGroup>
+
         <FormGroup>
           <Label>Peso Total (kg):</Label>
           <Input
@@ -658,7 +684,13 @@ const EntradaProdutos = () => {
         </FormGroup>
         <FormGroup>
           <Label>Valor Total (R$):</Label>
-          <Input type="text" value={totalPrice} onChange={handleQuantityChange} placeholder="R$ 0,00" />
+          <Input
+            type="text"
+            value={totalPrice}
+            disabled // Desabilita para não edição manual
+            onChange={handleQuantityChange}
+            placeholder="R$ 0,00"
+          />
         </FormGroup>
 
         <FormGroup>
