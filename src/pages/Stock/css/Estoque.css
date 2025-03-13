@@ -1,5 +1,4 @@
 body {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
   margin: 0;
   padding: 0;
   font-family: 'Chakra-Petch', sans-serif;
@@ -119,11 +118,22 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.table-row.expired {
-  background: linear-gradient(135deg, #871a34, #ff4b2b) !important;
-  color: #fff !important;
+.low-stock-badge,
+.expired-badge {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 10px;
 }
 
+.low-stock-badge {
+  background-color: #FFC000;
+}
+
+.expired-badge {
+  background-color: red;
+}
 .back-button {
   padding: 12px 25px;
   font-size: 1.1rem;
