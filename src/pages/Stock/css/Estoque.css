@@ -1,68 +1,68 @@
-/* Container principal */
-.body {
+body {
   background: linear-gradient(135deg, #6a11cb, #2575fc);
+  margin: 0;
+  padding: 0;
+  font-family: 'Chakra-Petch', sans-serif;
 }
 
 .container {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f7f7f7;
+  background-color: white;
   margin: 0 auto;
-  max-width: 1200px;
-  padding: 40px;
+  max-width: 1100px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  width: 90%;
 }
 
-/* Título */
 .header {
   text-align: center;
   color: #333;
   margin-bottom: 40px;
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 700;
 }
 
-/* Estilo do container de busca */
 .search-container {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 40px;
-  gap: 20px;
 }
 
-/* Estilo do input de busca */
 .search-input {
   padding: 12px 20px;
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
   border-radius: 8px;
   border: 1px solid #ddd;
   font-size: 1.2rem;
   box-sizing: border-box;
-  transition: all 0.3s ease;
 }
 
-/* Estilo dos botões de busca */
 .search-button,
 .clear-button {
-  padding: 12px 25px;
-  font-size: 1.1rem;
+  padding: 12px 20px;
+  font-size: 1rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: 0.3s;
+  white-space: nowrap;
 }
 
 .search-button {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
   color: white;
 }
 
 .clear-button {
-  background-color: #f44336;
+  background: linear-gradient(135deg, #c13354, #ff654a);
   color: white;
+  margin-left: 10px;
 }
 
 .search-button:hover,
@@ -70,10 +70,10 @@
   transform: scale(1.05);
 }
 
-/* Filtro de Data */
 .date-filter-container {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
   margin-bottom: 30px;
 }
@@ -87,14 +87,11 @@
   box-sizing: border-box;
 }
 
-/* Tabela */
 .table-container {
-  max-height: 400px;  /* Define uma altura máxima para a tabela */
-  overflow-y: auto;   /* Adiciona uma barra de rolagem vertical se necessário */
-  overflow-x: auto;   /* Adiciona uma barra de rolagem horizontal se necessário */
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
 }
-
-
 
 .table {
   width: 100%;
@@ -107,7 +104,7 @@
 }
 
 .table-header {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
   color: #fff;
   text-align: center;
   font-size: 1.1rem;
@@ -118,32 +115,15 @@
   padding: 15px 20px;
   text-align: center;
   border-bottom: 1px solid #ddd;
-  font-size: 1rem;
+  font-size: 15px;
   transition: background-color 0.3s ease;
 }
 
 .table-row.expired {
-  background-color: #FF4C4C;
-  color: #fff;
+  background: linear-gradient(135deg, #871a34, #ff4b2b) !important;
+  color: #fff !important;
 }
 
-.editable-input {
-  width: 100px;
-  padding: 5px;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Rodapé */
-.footer {
-  text-align: center;
-  margin-top: 40px;
-  font-size: 1.1rem;
-  color: #555;
-}
-
-/* Botão de voltar */
 .back-button {
   padding: 12px 25px;
   font-size: 1.1rem;
@@ -153,92 +133,68 @@
   border-radius: 8px;
   cursor: pointer;
   margin-top: 30px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: 0.3s;
 }
 
 .back-button:hover {
   transform: scale(1.05);
 }
 
-.expired {
-  background: linear-gradient(135deg, rgb(199, 81, 81), rgb(230, 110, 110));
-  color: white;
-}
-
 .date-container {
   display: flex;
-  align-items: center;  /* Alinha os itens verticalmente */
-  gap: 10px;  /* Espaçamento entre os itens */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
 }
 
 .date-container p {
-  margin: 0 auto; 
-  font-size: 1rem;  /* Define um tamanho consistente para o texto */
-  width: auto;  /* Garante que o texto ocupe apenas o necessário */
+  margin: 0;
+  font-size: 1rem;
+  width: auto;
 }
 
-.date-input {
-  padding: 10px;
-  width: 200px;  /* Ajusta o tamanho do input */
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 1rem;  /* Ajusta o tamanho da fonte */
+@media (max-width: 1024px) {
+  .container {
+    padding: 30px;
+  }
+  .header {
+    font-size: 2rem;
+  }
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
   .container {
-      padding: 20px;
+    padding: 20px;
   }
-
   .header {
-      font-size: 2rem;
+    font-size: 1.8rem;
   }
-
   .search-container {
-      flex-direction: row;
-      gap: 10px;
+    flex-direction: column;
   }
-
-  .search-input {
-      width: 100%;
-      max-width: 100%;
-  }
-
-  .table-container {
-      margin-top: 20px;
-  }
-
   .table-cell {
-      padding: 12px 10px;
+    padding: 10px;
+    font-size: 0.9rem;
   }
-
-  .footer {
-      font-size: 1rem;
-  }
-
   .back-button {
-      padding: 10px 20px;
-      font-size: 1rem;
+    padding: 10px 20px;
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .header {
-      font-size: 1.5rem;
+    font-size: 1.5rem;
   }
-
   .search-input {
-      font-size: 1rem;
+    font-size: 1rem;
   }
-
   .table-cell {
-      padding: 10px 8px;
-      font-size: 0.9rem;
+    font-size: 0.8rem;
   }
-
   .back-button {
-      padding: 8px 15px;
-      font-size: 0.9rem;
+    padding: 8px 15px;
+    font-size: 0.9rem;
   }
 }

@@ -34,7 +34,7 @@ export default function Estoque() {
 
   // Buscar produtos no banco
   useEffect(() => {
-    onValue(dbProdutos, (snapshot) => {
+    const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const products = Object.keys(data).map((key) => ({
@@ -42,12 +42,13 @@ export default function Estoque() {
           ...data[key],
         }));
         setProductsData(products);
-        setFilteredProducts(products); // Exibe todos os produtos inicialmente
+        setFilteredProducts(products);
         calculateTotals(products);
       }
     });
-  }, []);
 
+    return () => unsubscribe(); // Cleanup para evitar vazamento de memória
+  }, []);
   // Função para calcular totais
   const calculateTotals = (products) => {
     const totalQuantity = products.reduce(
@@ -77,15 +78,19 @@ export default function Estoque() {
   const handleSearch = () => {
     const filtered = productsData.filter((item) => {
       const lowerSearchTerm = searchTerm.toLowerCase();
+
+      // Se a pesquisa for um número, comparar exatamente o SKU
+      if (!isNaN(searchTerm) && searchTerm.trim() !== "") {
+        return String(item.sku) === searchTerm.trim();
+      }
+
+      // Caso contrário, continuar com a pesquisa parcial
       return (
-        String(item.sku).includes(lowerSearchTerm) || // Conversão explícita para string
         item.name.toLowerCase().includes(lowerSearchTerm) ||
         item.supplier.toLowerCase().includes(lowerSearchTerm) ||
         item.marca.toLowerCase().includes(lowerSearchTerm) ||
         item.category?.toLowerCase().includes(lowerSearchTerm) ||
-        false ||
-        item.tipo?.toLowerCase().includes(lowerSearchTerm) ||
-        false
+        item.tipo?.toLowerCase().includes(lowerSearchTerm)
       );
     });
 
@@ -117,7 +122,7 @@ export default function Estoque() {
   // Função para calcular os dias para o consumo
   const calculateConsumptionDays = (dateAdded, expiryDate) => {
     const today = new Date();
-    const addedDate = new Date(dateAdded  );
+    const addedDate = new Date(dateAdded);
     const expirationDate = new Date(expiryDate);
 
     const timeToExpiry = expirationDate - today;
@@ -137,8 +142,14 @@ export default function Estoque() {
 
   // Função para verificar se o produto está vencido
   const isExpired = (expiryDate) => {
+    if (!expiryDate) return false; // Evita erro se não houver data
+
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Garante que só a data é comparada
+
     const expirationDate = new Date(expiryDate);
+    expirationDate.setHours(0, 0, 0, 0);
+
     return expirationDate < today;
   };
 
@@ -173,7 +184,7 @@ export default function Estoque() {
   return (
     <div className="container">
       <div className="header">
-        <h1>Consulta de Estoque</h1>
+        <h1>Estoque de Alimentos </h1>
       </div>
 
       <div className="search-container">
@@ -186,31 +197,33 @@ export default function Estoque() {
         />
         <div className="button-container">
           <button onClick={handleSearch} className="search-button">
-            Consultar
+            Consultar Item
           </button>
           {isSearched && (
             <button onClick={handleBack} className="clear-button">
-              Limpar
+              Limpar Consulta
             </button>
           )}
         </div>
       </div>
 
       <div className="date-container">
-        <p>Período de:</p>
+        <p style={{ fontSize: "20px" }}>Período de:</p>
         <input
           type="date"
           value={filtroInicio}
           onChange={(e) => setFiltroInicio(e.target.value)}
           className="date-input"
+          style={{ fontSize: "15px" }}
         />
 
-        <p>Até:</p>
+        <p style={{ fontSize: "20px" }}>Até:</p>
         <input
           type="date"
           value={filtroFim}
           onChange={(e) => setFiltroFim(e.target.value)}
           className="date-input"
+          style={{ fontSize: "15px" }}
         />
 
         <button
@@ -222,18 +235,18 @@ export default function Estoque() {
             color: "white",
           }}
         >
-          Filtrar por Data
+          Consultar Data
         </button>
         <button
           onClick={clearDateFilter}
           className="date-input"
           style={{
             background:
-              "linear-gradient(135deg,rgb(199, 81, 81),rgb(230, 110, 110))",
+              "linear-gradient(135deg,rgb(199, 81, 81),hsla(0, 100.00%, 58.40%, 0.91))",
             color: "white",
           }}
         >
-          Limpar
+          Limpar Consulta
         </button>
       </div>
       {isSearched && filteredProducts.length === 0 && (
@@ -241,16 +254,35 @@ export default function Estoque() {
       )}
 
       {filteredProducts.length > 0 && (
-        <div className="text-center mt-10">
-          <h3>Quantidade Total de Produtos: {totalQuantity}</h3>
-          <h3>
-            Valor Total no Estoque: R$ {totalPrice.toFixed(2).replace(".", ",")}
-          </h3>
-          <h3>
-            Peso Total no Estoque: {totalPeso.toFixed(2).replace(".", ",")} KG
-          </h3>
+        <div className="mt-5 mb-7">
+          <table className="table">
+            <thead>
+              <tr
+                style={{
+                  background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+                  color: "white",
+                }}
+              >
+                <th className="table-cell">Valor Total</th>
+                <th className="table-cell">Peso Total</th>
+                <th className="table-cell">Quantidade Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="table-cell">
+                  R$ {totalPrice.toFixed(2).replace(".", ",")}
+                </td>
+                <td className="table-cell">
+                  {totalPeso.toFixed(2).replace(".", ".")}{" "}
+                </td>
+                <td className="table-cell">{totalQuantity}</td>
+              </tr>
+            </tbody>
+          </table>
           <strong>
-            <li className="text-[red]">
+            <li className="text-[red] text-center">
+              {" "}
               Linha vermelha, indentifica produtos que já passaram da data de
               vencimento
             </li>
@@ -285,12 +317,10 @@ export default function Estoque() {
                 item.expiryDate
               );
 
-              const expired = isExpired(item.expiryDate);
-
               return (
                 <tr
                   key={`${item.sku}-${index}`}
-                  className={expired ? "expired" : ""}
+                  className={isExpired(item.expiryDate) ? "expired" : ""}
                 >
                   <td className="table-cell">{item.sku}</td>
                   <td className="table-cell">{item.name}</td>
