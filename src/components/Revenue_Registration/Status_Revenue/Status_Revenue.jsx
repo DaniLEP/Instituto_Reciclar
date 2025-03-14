@@ -3,7 +3,7 @@ import { getDatabase, ref, get, update } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import './css/ExibirRefeicoes.css';
+import "./css/ExibirRefeicoes.css";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -34,7 +34,9 @@ export default function ExibirRefeicoes() {
 
     if (isNaN(date.getTime())) return "Data inválida";
 
-    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000); // Ajuste para o fuso horário local
+    const localDate = new Date(
+      date.getTime() + date.getTimezoneOffset() * 60000
+    ); // Ajuste para o fuso horário local
     const day = String(localDate.getDate()).padStart(2, "0");
     const month = String(localDate.getMonth() + 1).padStart(2, "0"); // Meses começam de 0
     const year = localDate.getFullYear();
@@ -44,25 +46,27 @@ export default function ExibirRefeicoes() {
   useEffect(() => {
     const refeicoesRef = ref(database, "refeicoesServidas");
 
-    get(refeicoesRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const refeicoesData = [];
-        snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-          refeicoesData.push({
-            key: childSnapshot.key,
-            dataRefeicao: formatDate(data.dataRefeicao),
-            dataRefeicaoObj: new Date(data.dataRefeicao),
-            ...data,
+    get(refeicoesRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const refeicoesData = [];
+          snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            refeicoesData.push({
+              key: childSnapshot.key,
+              dataRefeicao: formatDate(data.dataRefeicao),
+              dataRefeicaoObj: new Date(data.dataRefeicao),
+              ...data,
+            });
           });
-        });
-        setRefeicoes(refeicoesData);
-      } else {
-        console.log("Nenhuma refeição encontrada");
-      }
-    }).catch((error) => {
-      console.error("Erro ao ler dados do Firebase:", error);
-    });
+          setRefeicoes(refeicoesData);
+        } else {
+          console.log("Nenhuma refeição encontrada");
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao ler dados do Firebase:", error);
+      });
   }, []);
 
   const handleDoubleClick = (id, field, value) => {
@@ -77,19 +81,23 @@ export default function ExibirRefeicoes() {
       // Atualiza no estado local primeiro
       setRefeicoes((prev) =>
         prev.map((refeicao) =>
-          refeicao.key === editando.id ? { ...refeicao, [editando.field]: valorEditado } : refeicao
+          refeicao.key === editando.id
+            ? { ...refeicao, [editando.field]: valorEditado }
+            : refeicao
         )
       );
-      
+
       // Salva a atualização no Firebase
       const refeicaoRef = ref(database, `refeicoesServidas/${editando.id}`);
       update(refeicaoRef, {
         [editando.field]: valorEditado,
-      }).then(() => {
-        setEditando(null);
-      }).catch((error) => {
-        console.error("Erro ao atualizar no Firebase:", error);
-      });
+      })
+        .then(() => {
+          setEditando(null);
+        })
+        .catch((error) => {
+          console.error("Erro ao atualizar no Firebase:", error);
+        });
     }
   };
 
@@ -100,17 +108,18 @@ export default function ExibirRefeicoes() {
     XLSX.writeFile(workbook, "Refeicoes.xlsx");
   };
 
-
   const handleBlur = () => {
     // Salva a atualização no Firebase se perder o foco
     const refeicaoRef = ref(database, `refeicoesServidas/${editando.id}`);
     update(refeicaoRef, {
       [editando.field]: valorEditado,
-    }).then(() => {
-      setEditando(null);
-    }).catch((error) => {
-      console.error("Erro ao atualizar no Firebase:", error);
-    });
+    })
+      .then(() => {
+        setEditando(null);
+      })
+      .catch((error) => {
+        console.error("Erro ao atualizar no Firebase:", error);
+      });
   };
 
   const resetTime = (date) => {
@@ -121,10 +130,12 @@ export default function ExibirRefeicoes() {
   const filtrarRefeicoes = () => {
     const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
     const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
-    setRefeicoes((prev) => prev.filter(({ dataRefeicaoObj }) => {
-      const data = resetTime(new Date(dataRefeicaoObj));
-      return (!inicio || data >= inicio) && (!fim || data <= fim);
-    }));
+    setRefeicoes((prev) =>
+      prev.filter(({ dataRefeicaoObj }) => {
+        const data = resetTime(new Date(dataRefeicaoObj));
+        return (!inicio || data >= inicio) && (!fim || data <= fim);
+      })
+    );
   };
 
   const limparFiltros = () => {
@@ -150,25 +161,121 @@ export default function ExibirRefeicoes() {
   };
 
   return (
-    <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)", padding: "20px", color: "#fff", minHeight: "100vh" }}>
-      <h2 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "20px" }}>Resultados Cadastrados de Refeições</h2>
+    <div
+      style={{
+        background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+        padding: "20px",
+        color: "#fff",
+        minHeight: "100vh",
+      }}
+    >
+      <h2
+        style={{ textAlign: "center", fontSize: "2rem", marginBottom: "20px" }}
+      >
+        Resultados Cadastrados de Refeições
+      </h2>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <label>Data Início: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} /></label>
-        <label>Data Fim: <input type="date" style={{borderRadius: '10px', padding: '10px', color:"black", marginRight:'10px'}} value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} /></label>
-        <button style={{padding: '8px 15px', backgroundColor: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem', marginRight: '10px'}} onClick={filtrarRefeicoes}>Filtrar</button>
-        <button style={{padding: '8px 15px', backgroundColor: '#f44336', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}} onClick={limparFiltros}>Limpar Filtro</button>
+        <label>
+          Data Início:{" "}
+          <input
+            type="date"
+            style={{
+              borderRadius: "10px",
+              padding: "10px",
+              color: "black",
+              marginRight: "10px",
+            }}
+            value={filtroInicio}
+            onChange={(e) => setFiltroInicio(e.target.value)}
+          />
+        </label>
+        <label>
+          Data Fim:{" "}
+          <input
+            type="date"
+            style={{
+              borderRadius: "10px",
+              padding: "10px",
+              color: "black",
+              marginRight: "10px",
+            }}
+            value={filtroFim}
+            onChange={(e) => setFiltroFim(e.target.value)}
+          />
+        </label>
+        <button
+          style={{
+            padding: "8px 15px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            borderRadius: "4px",
+            fontSize: "1rem",
+            marginRight: "10px",
+          }}
+          onClick={filtrarRefeicoes}
+        >
+          Filtrar
+        </button>
+        <button
+          style={{
+            padding: "8px 15px",
+            backgroundColor: "#f44336",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            borderRadius: "4px",
+            fontSize: "1rem",
+          }}
+          onClick={limparFiltros}
+        >
+          Limpar Filtro
+        </button>
       </div>
-      <button onClick={exportToExcel} style={{ padding: "10px 20px", marginBottom: "20px", marginRight: '10px', backgroundColor: "#4CAF50", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }}>
+      <button
+        onClick={exportToExcel}
+        style={{
+          padding: "10px 20px",
+          marginBottom: "20px",
+          marginRight: "10px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+          borderRadius: "5px",
+        }}
+      >
         Exportar para Excel
       </button>
-      <button onClick={() => navigate(-1)} style={{marginTop: '20px', padding: '10px 20px', backgroundColor: '#ff5733', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem'}}>
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          backgroundColor: "#ff5733",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+          borderRadius: "4px",
+          fontSize: "1rem",
+        }}
+      >
         Voltar
       </button>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", textAlign: "center" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "20px",
+            textAlign: "center",
+          }}
+        >
           <thead>
             <tr>
-              {["Data Refeição",
+              {[
+                "Data Refeição",
                 "Café Descrição",
                 "Café Total (kg)",
                 "Café Funcionários",
@@ -187,8 +294,18 @@ export default function ExibirRefeicoes() {
                 "Outras Ref. Jovens",
                 "Sobras",
                 "Observação",
-                "Desperdícios (kg)"].map((header, index) => (
-                <th key={index} style={{ backgroundColor: "#2575fc", color: "white", textAlign: "center", padding: '12px', border: '1px solid #ddd' }}>
+                "Desperdícios (kg)",
+              ].map((header, index) => (
+                <th
+                  key={index}
+                  style={{
+                    backgroundColor: "#2575fc",
+                    color: "white",
+                    textAlign: "center",
+                    padding: "12px",
+                    border: "1px solid #ddd",
+                  }}
+                >
                   {header}
                 </th>
               ))}
@@ -197,31 +314,62 @@ export default function ExibirRefeicoes() {
           <tbody>
             {refeicoes.map((refeicao) => (
               <tr key={refeicao.key}>
-                {['dataRefeicao',
-                  'cafeDescricao',
-                  'cafeTotalQtd',
-                  'cafeFuncionariosQtd',
-                  'cafeJovensQtd',
-                  'almocoDescricao',
-                  'almocoTotalQtd',
-                  'almocoFuncionariosQtd',
-                  'almocoJovensQtd',
-                  'lancheDescricao',
-                  'lancheTotalQtd',
-                  'lancheFuncionariosQtd',
-                  'lancheJovensQtd',
-                  'outrasDescricao',
-                  'outrasTotalQtd',
-                  'outrasFuncionariosQtd',
-                  'outrasJovensQtd',
-                  'sobrasDescricao',
-                  'observacaoDescricao',
-                  'desperdicioQtd'].map((field) => (
-                  <td key={field} onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])} style={{ padding: '12px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', color: 'black' }}>
-                    {editando?.id === refeicao.key && editando.field === field ? (
-                      <input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} autoFocus style={{ padding: '10px', fontSize: '1rem', width: '100%', borderRadius: '4px', border: '1px solid #ddd', backgroundColor: '#fff' }} />
+                {[
+                  "dataRefeicao",
+                  "cafeDescricao",
+                  "cafeTotalQtd",
+                  "cafeFuncionariosQtd",
+                  "cafeJovensQtd",
+                  "almocoDescricao",
+                  "almocoTotalQtd",
+                  "almocoFuncionariosQtd",
+                  "almocoJovensQtd",
+                  "lancheDescricao",
+                  "lancheTotalQtd",
+                  "lancheFuncionariosQtd",
+                  "lancheJovensQtd",
+                  "outrasDescricao",
+                  "outrasTotalQtd",
+                  "outrasFuncionariosQtd",
+                  "outrasJovensQtd",
+                  "sobrasDescricao",
+                  "observacaoDescricao",
+                  "desperdicioQtd",
+                ].map((field) => (
+                  <td
+                    key={field}
+                    onDoubleClick={() =>
+                      handleDoubleClick(refeicao.key, field, refeicao[field])
+                    }
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #ddd",
+                      backgroundColor: "#f9f9f9",
+                      color: "black",
+                    }}
+                  >
+                    {editando?.id === refeicao.key &&
+                    editando.field === field ? (
+                      <input
+                        type="text"
+                        value={valorEditado}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onBlur={handleBlur}
+                        autoFocus
+                        style={{
+                          padding: "10px",
+                          fontSize: "1rem",
+                          width: "100%",
+                          borderRadius: "4px",
+                          border: "1px solid #ddd",
+                          backgroundColor: "#fff",
+                        }}
+                      />
+                    ) : field === "dataRefeicao" ? (
+                      formatDate(refeicao[field])
                     ) : (
-                      field === 'dataRefeicao' ? formatDate(refeicao[field]) : refeicao[field]
+                      refeicao[field]
                     )}
                   </td>
                 ))}
@@ -233,82 +381,3 @@ export default function ExibirRefeicoes() {
     </div>
   );
 }
-
-
-// import { useEffect, useState } from "react";
-// import { getDatabase, ref, get, update } from "firebase/database";
-// import { initializeApp } from "firebase/app";
-// import { useNavigate } from "react-router-dom";
-// import './css/ExibirRefeicoes.css';
-
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-//   authDomain: "bancoestoquecozinha.firebaseapp.com",
-//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-//   projectId: "bancoestoquecozinha",
-//   storageBucket: "bancoestoquecozinha.firebasestorage.app",
-//   messagingSenderId: "71775149511",
-//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-// };
-
-// const app = initializeApp(firebaseConfig);
-// const database = getDatabase(app);
-
-// export default function ExibirRefeicoes() {
-//   const [refeicoes, setRefeicoes] = useState([]);
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const refeicoesRef = ref(database, "refeicoesServidas");
-//     get(refeicoesRef).then((snapshot) => {
-//       if (snapshot.exists()) {
-//         const refeicoesData = [];
-//         snapshot.forEach((childSnapshot) => {
-//           const data = childSnapshot.val();
-//           refeicoesData.push({
-//             key: childSnapshot.key,
-//             ...data,
-//           });
-//         });
-//         setRefeicoes(refeicoesData);
-//       }
-//     }).catch((error) => {
-//       console.error("Erro ao ler dados do Firebase:", error);
-//     });
-//   }, []);
-
-
-//   return (
-//     <div style={{ padding: "20px", background: "#f4f4f4", minHeight: "100vh" }}>
-//       <h2 style={{ textAlign: "center" }}>Resultados Cadastrados de Refeições</h2>
-
-//       <button onClick={() => navigate(-1)} style={{ marginLeft: "10px", padding: "10px 20px", backgroundColor: "#ff5733", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }}>
-//         Voltar
-//       </button>
-//       <div style={{ overflowX: "auto" }}>
-//         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px", textAlign: "center" }}>
-//           <thead>
-//             <tr>
-//               {["Data Refeição", "Café Descrição", "Café Total (kg)", "Café Funcionários", "Café Jovens", "Almoço Descrição", "Almoço Total (kg)", "Almoço Funcionários", "Almoço Jovens", "Lanche Descrição", "Lanche Total (kg)", "Lanche Funcionários", "Lanche Jovens", "Outras Descrição", "Outras Ref. Total (kg)", "Outras Ref. Funcionários", "Outras Ref. Jovens", "Sobras", "Observação", "Desperdícios (kg)"].map((header, index) => (
-//                 <th key={index} style={{ backgroundColor: "#2575fc", color: "white", textAlign: "center", padding: '12px', border: '1px solid #ddd' }}>
-//                   {header}
-//                 </th>
-//               ))}
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {refeicoes.map((refeicao) => (
-//               <tr key={refeicao.key}>
-//                 {["dataRefeicao", "cafeDescricao", "cafeTotalQtd", "cafeFuncionariosQtd", "cafeJovensQtd", "almocoDescricao", "almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd", "lancheDescricao", "lancheTotalQtd", "lancheFuncionariosQtd", "lancheJovensQtd", "outrasDescricao", "outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd", "sobrasDescricao", "observacaoDescricao", "desperdicioQtd"].map((field) => (
-//                   <td key={field} style={{ padding: '12px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', color: 'black' }}>
-//                     {refeicao[field] || '-'}
-//                   </td>
-//                 ))}
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// }

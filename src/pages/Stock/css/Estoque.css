@@ -118,17 +118,22 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.low-stock-badge,
+.low-stock-badge, .stocked-badge,
 .expired-badge {
   display: inline-block;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   margin-left: 10px;
+  text-align: center;
 }
 
 .low-stock-badge {
   background-color: #FFC000;
+}
+
+.stocked-badge {
+  background-color: green;
 }
 
 .expired-badge {
