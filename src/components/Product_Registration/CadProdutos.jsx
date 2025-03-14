@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push, get } from "firebase/database";
+import { getDatabase, ref, set, get } from "firebase/database";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -118,14 +118,15 @@ const Button = styled.button`
   font-size: 1.1rem;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  background: linear-gradient(135deg,rgb(179, 66, 244),rgb(132, 26, 232));
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  margin-bottom: 10px;
   transition: background 0.3s ease-in-out, transform 0.2s;
 
   &:hover {
-    background: linear-gradient(135deg, #4285f4, #1a73e8);
+    background: linear-gradient(135deg,rgba(179, 66, 244, 0.68),rgba(132, 26, 232, 0.6));
     transform: translateY(-2px);
   }
 
@@ -142,6 +143,36 @@ const Button = styled.button`
 const Input = styled.input`
   width: 100%;
   max-width: 750px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26, 115, 232, 0.4);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    padding: 10px 14px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
   padding: 12px 16px;
   margin: 10px 0;
   border: 2px solid #ddd;
@@ -190,36 +221,6 @@ const Container = styled.div`
   }
 `;
 
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  margin: 10px 0;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-
-  &:focus {
-    border-color: #1a73e8;
-    box-shadow: 0 0 8px rgba(26, 115, 232, 0.4);
-  }
-
-  &::placeholder {
-    color: #999;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.95rem;
-    padding: 10px 14px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-`;
-
 const Title = styled.h1`
   text-align: center;
   font-size: 2.5rem;
@@ -251,15 +252,17 @@ const Modal = styled.div`
 `;
 
 const CloseButton = styled(Button)`
-  background-color: #ff4d4d;
-  margin-top: 10px;
+  background: linear-gradient(135deg,rgb(78, 66, 244),rgb(57, 26, 232));
+
+  margin-top: 40px;
 
   &:hover {
-    background-color: #ff1a1a;
+  background: linear-gradient(135deg,rgba(78, 66, 244, 0.64),rgba(57, 26, 232, 0.54));
+
   }
 `;
 
-function CadProdutos() {
+export default function CadProdutos() {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [marca, setMarca] = useState("");
@@ -268,10 +271,12 @@ function CadProdutos() {
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [unit, setUnit] = useState("");
-  const [unitMeasure, setUnitMeasure] = useState("g"); // Adicionando estado para a unidade de medida
+  const [unitMeasure, setUnitMeasure] = useState("g");
   const [showModal, setShowModal] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [saveLoading, setSaveLoading] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -311,63 +316,73 @@ function CadProdutos() {
 
   const checkExistingSku = async (sku) => {
     try {
-      const productsRef = ref(db, "EntradaProdutos"); // Ref para o nó de produtos
-      const snapshot = await get(productsRef); // Obter todos os produtos
+      const productsRef = ref(db, "EntradaProdutos");
+      const snapshot = await get(productsRef);
       if (snapshot.exists()) {
         const products = snapshot.val();
         const existingSku = Object.values(products).find((product) => product.sku === sku);
-        return existingSku; // Retorna o produto se encontrar o SKU
+        return existingSku;
       }
-      return null; // Se não encontrar, retorna null
+      return null;
     } catch (error) {
       toast.error("Erro ao verificar SKU: " + error.message);
-      return null; // Caso ocorra algum erro, retorna null
+      return null;
     }
   };
-  
+
   const handleSave = async () => {
+    // Verificação se todos os campos obrigatórios estão preenchidos
     if (
-      sku &&
-      name &&
-      marca &&
-      supplier &&
-      peso &&
-      unitMeasure &&
-      unit &&
-      category &&
-      tipo
+      !sku ||
+      !name ||
+      !marca ||
+      !supplier ||
+      !peso ||
+      !unitMeasure ||
+      !unit ||
+      !category ||
+      !tipo
     ) {
-      // Verifica se o SKU já existe
-      const existingProduct = await checkExistingSku(sku);
-      if (existingProduct) {
-        toast.error("SKU já cadastrado. Por favor, insira um SKU diferente.");
-        return; // Não permite salvar o produto caso o SKU já exista
-      }
-  
-      const newProduct = {
-        sku,
-        name,
-        marca,
-        supplier,
-        peso,
-        unitMeasure,
-        unit,
-        category,
-        tipo,
-      };
-  
-      const newProductRef = push(ref(db, "EntradaProdutos"));
-      set(newProductRef, newProduct)
-        .then(() => {
-          toast.success("Produto salvo com sucesso!");
-          handleClearFields(); // Limpa os campos após salvar
-        })
-        .catch((error) =>
-          toast.error("Erro ao salvar o produto: " + error.message)
-        );
+      toast.error("Por favor, preencha todos os campos obrigatórios!");
+      return;
     }
-  };
   
+    const existingProduct = await checkExistingSku(sku);
+    if (existingProduct) {
+      toast.error("SKU já cadastrado. Por favor, insira um SKU diferente.");
+      return;
+    }
+  
+    const newProduct = {
+      sku,
+      name,
+      marca,
+      supplier,
+      peso,
+      unitMeasure,
+      unit,
+      category,
+      tipo,
+    };
+  
+    const newProductRef = ref(db, "EntradaProdutos/" + sku);
+    
+    // Desabilitar botão enquanto o produto está sendo salvo
+    setSaveLoading(true);
+  
+    set(newProductRef, newProduct)
+      .then(() => {
+        toast.success("Produto salvo com sucesso!");
+        handleClearFields();
+      })
+      .catch((err) => {
+        toast.error("Erro ao salvar o produto: " + err.message);
+      })
+      .finally(() => {
+        // Reabilitar o botão após a tentativa de salvar
+        setSaveLoading(false);
+      });
+  };
 
   const handleClearFields = () => {
     setSku("");
@@ -382,17 +397,17 @@ function CadProdutos() {
   };
 
   const handlePesoChange = (e) => {
-    const value = e.target.value.trim();
-    setPeso(value);
+    setPeso(e.target.value.trim());
   };
 
   const handleUnitMeasureChange = (e) => {
-    setUnitMeasure(e.target.value); // Atualiza a unidade de medida
+    setUnitMeasure(e.target.value);
   };
 
   const handleUnitChange = (e) => {
-    setUnit(e.target.value); // Atualiza a unidade de medida
+    setUnit(e.target.value);
   };
+
   const handleBack = () => navigate(-1);
 
   return (
@@ -401,7 +416,7 @@ function CadProdutos() {
       <Container>
         <Title>Cadastro de Produtos</Title>
         <div>
-          <label style={{ display: "flex" }}>SKU:</label>
+          <label>SKU:</label>
           <Input
             type="text"
             value={sku}
@@ -410,7 +425,7 @@ function CadProdutos() {
           />
         </div>
         <div>
-          <label style={{ display: "flex" }}>Nome do Produto:</label>
+          <label>Nome do Produto:</label>
           <Input
             type="text"
             value={name}
@@ -419,7 +434,7 @@ function CadProdutos() {
           />
         </div>
         <div>
-          <label style={{ display: "flex" }}>Marca:</label>
+          <label>Marca:</label>
           <Input
             type="text"
             value={marca}
@@ -428,7 +443,7 @@ function CadProdutos() {
           />
         </div>
         <div>
-          <label style={{ display: "flex" }}>Fornecedor:</label>
+          <label>Fornecedor:</label>
           <Input
             type="text"
             value={supplier}
@@ -438,7 +453,7 @@ function CadProdutos() {
           />
         </div>
         <div>
-          <label style={{ display: "flex" }}>Peso:</label>
+          <label>Peso:</label>
           <Input
             type="number"
             value={peso}
@@ -453,57 +468,60 @@ function CadProdutos() {
           </Select>
         </div>
         <div>
-          <label style={{ display: "flex" }}>Escolha a unidade de peso:</label>
+          <label>Escolha a unidade de peso:</label>
           <Select value={unit} onChange={handleUnitChange}>
             <option value="selecione">Selecione uma unidade de medida</option>
             <option value="un">Unidade</option>
             <option value="fd">Fardo</option>
+            <option value="pc">Peça</option>
             <option value="cx">Caixa</option>
           </Select>
         </div>
         <div>
-          <label style={{ display: "flex" }}>Categoria:</label>
+          <label>Categoria:</label>
           <Select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="">Selecione a categoria</option>
-            <option value="Proteína">Proteína</option>
-            <option value="Mantimento">Mantimento</option>
-            <option value="Hortaliça">Hortaliça</option>
-            <option value="Doações">Doações</option>
+            <option value="alimentos">Alimentos</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="materiais">Materiais</option>
           </Select>
         </div>
         <div>
-          <label style={{ display: "flex" }}>Tipo:</label>
-          <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="">Selecione o tipo</option>
-            <option value="Frutas">Frutas</option>
-            <option value="Legumes">Legumes</option>
-            <option value="Verduras">Verduras</option>
-            <option value="Bovina">Bovina</option>
-            <option value="Ave">Ave</option>
-            <option value="Suína">Suína</option>
-            <option value="Pescado">Pescado</option>
-            <option value="Mercado">Mercado</option>
+          <label>Tipo:</label>
+          <Select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+          >
+              <option value="Frutas">Frutas</option>
+              <option value="Legumes">Legumes</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Bovina">Bovina</option>
+              <option value="Ave">Ave</option>
+              <option value="Suína">Suína</option>
+              <option value="Pescado">Pescado</option>
+              <option value="Mercado">Mercado</option>
           </Select>
         </div>
+        <Button onClick={handleSave} disabled={saveLoading}>
+  {saveLoading ? "Salvando..." : "Salvar"}
+</Button>        <Button onClick={handleBack}>Voltar</Button>
+      </Container>
 
-        <Button onClick={handleSave}>Salvar Produto</Button>
-        <Button onClick={handleBack} style={{ marginTop: "10px" }}>
-          Voltar
-        </Button>
-
-        {showModal && (
-          <Modal>
-            <ModalContent>
-              <h2>Selecione o Fornecedor</h2>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Pesquisar fornecedor..."
-              />
+      {showModal && (
+        <Modal>
+          <ModalContent>
+            <h2>Escolha um Fornecedor</h2>
+            <Input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Pesquisar fornecedor"
+            />
+            {filteredSuppliers.length === 0 ? (
+              <p>Nenhum fornecedor encontrado</p>
+            ) : (
               <TableWrapper>
                 <table>
                   <thead>
@@ -514,17 +532,13 @@ function CadProdutos() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSuppliers.map((sup, index) => (
-                      <tr key={index}>
-                        <td>{sup.razaoSocial}</td>
-                        <td>{sup.contato}</td>
-                        <td>{sup.cnpj}</td>
+                    {filteredSuppliers.map((supplier) => (
+                      <tr key={supplier.cnpj}>
+                        <td>{supplier.razaoSocial}</td>
+                        <td>{supplier.contato}</td>
+                        <td>{supplier.cnpj}</td>
                         <td>
-                          <Button
-                            onClick={() =>
-                              handleSupplierSelect(sup.razaoSocial)
-                            }
-                          >
+                          <Button onClick={() => handleSupplierSelect(supplier.razaoSocial)}>
                             Selecionar
                           </Button>
                         </td>
@@ -533,16 +547,13 @@ function CadProdutos() {
                   </tbody>
                 </table>
               </TableWrapper>
-              <CloseButton onClick={() => setShowModal(false)}>
-                Fechar
-              </CloseButton>
-            </ModalContent>
-          </Modal>
-        )}
-      </Container>
+            )}
+            <CloseButton onClick={() => setShowModal(false)}>Fechar</CloseButton>
+          </ModalContent>
+        </Modal>
+      )}
+
       <ToastContainer />
     </>
   );
 }
-
-export default CadProdutos;

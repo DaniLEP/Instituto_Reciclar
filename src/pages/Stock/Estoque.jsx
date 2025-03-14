@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, update } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx"; // Importando a biblioteca para exportação Excel
 import "./css/Estoque.css"; // Importando o arquivo CSS
 
 // Configuração do Firebase
@@ -30,9 +31,11 @@ export default function Estoque() {
   const [isSearched, setIsSearched] = useState(false);
   const [filtroInicio, setFiltroInicio] = useState("");
   const [filtroFim, setFiltroFim] = useState("");
+  const [valorEditado, setValorEditado] = useState("");
+  const [editando, setEditando] = useState(null);
   const navigate = useNavigate();
 
-  // Buscar produtos no banco
+  // Carregar produtos do Firebase
   useEffect(() => {
     const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
@@ -42,13 +45,15 @@ export default function Estoque() {
           ...data[key],
         }));
         setProductsData(products);
-        setFilteredProducts(products);
-        calculateTotals(products); // Chamar aqui para garantir que os totais sejam calculados
+        setFilteredProducts(products); // Inicializa a lista de produtos filtrados com todos os dados
       }
     });
-
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    calculateTotals(filteredProducts);
+  }, [filteredProducts]);
 
   // Função para calcular totais
   const calculateTotals = (products) => {
@@ -71,7 +76,7 @@ export default function Estoque() {
   };
 
   const resetTime = (date) => {
-    date.setHours(0, 0, 0, 0); // Reseta as horas, minutos, segundos e milissegundos para 0
+    date.setHours(0, 0, 0, 0);
     return date;
   };
 
@@ -79,13 +84,9 @@ export default function Estoque() {
   const handleSearch = () => {
     const filtered = productsData.filter((item) => {
       const lowerSearchTerm = searchTerm.toLowerCase();
-
-      // Se a pesquisa for um número, comparar exatamente o SKU
       if (!isNaN(searchTerm) && searchTerm.trim() !== "") {
         return String(item.sku) === searchTerm.trim();
       }
-
-      // Caso contrário, continuar com a pesquisa parcial
       return (
         item.name.toLowerCase().includes(lowerSearchTerm) ||
         item.supplier.toLowerCase().includes(lowerSearchTerm) ||
@@ -95,24 +96,15 @@ export default function Estoque() {
       );
     });
 
-    if (filtered.length > 0) {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-      setFilteredProducts(filtered);
-      setIsSearched(true);
-      calculateTotals(filtered);
-    } else {
-      setFilteredProducts([]);
-      setIsSearched(false);
-      setTotalQuantity(0);
-      setTotalPeso(0);
-      setTotalPrice(0);
-    }
+    setFilteredProducts(filtered.length > 0 ? filtered : []);
   };
 
   const handleBack = () => {
     setSearchTerm("");
-    setFilteredProducts(productsData); // Resetando o filtro
+    setFilteredProducts(productsData); // Restaurando todos os produtos
     setIsSearched(false);
+    setFiltroInicio(""); // Limpando o filtro de data
+    setFiltroFim(""); // Limpando o filtro de data
     calculateTotals(productsData);
   };
 
@@ -152,20 +144,34 @@ export default function Estoque() {
   };
 
   const handleDateFilter = () => {
-    const inicio = filtroInicio ? resetTime(new Date(filtroInicio)) : null;
-    const fim = filtroFim ? resetTime(new Date(filtroFim)) : null;
+    const inicio = filtroInicio ? new Date(filtroInicio) : null;
+    const fim = filtroFim ? new Date(filtroFim) : null;
 
-    // Filtra os produtos com base nas datas de cadastro
+    // Verifique se as datas são válidas
+    if (inicio && isNaN(inicio)) {
+      console.error("Data de início inválida");
+      return;
+    }
+    if (fim && isNaN(fim)) {
+      console.error("Data de fim inválida");
+      return;
+    }
+
+    // Filtrando os produtos com base nas datas
     const filteredByDate = productsData.filter((item) => {
-      const dataCadastro = resetTime(new Date(item.dateAdded));
+      const dataCadastro = new Date(item.dateAdded); // Convertendo para Date
 
-      if (
-        (!inicio || dataCadastro >= inicio) &&
-        (!fim || dataCadastro <= fim)
-      ) {
-        return true;
+      // Verifique se a data de cadastro do item é válida
+      if (isNaN(dataCadastro)) {
+        console.error(`Data inválida para o produto ${item.sku}`);
+        return false;
       }
-      return false;
+
+      // Comparando as datas corretamente
+      const isAfterStartDate = !inicio || dataCadastro >= inicio;
+      const isBeforeEndDate = !fim || dataCadastro <= fim;
+
+      return isAfterStartDate && isBeforeEndDate;
     });
 
     setFilteredProducts(filteredByDate);
@@ -173,11 +179,84 @@ export default function Estoque() {
   };
 
   const clearDateFilter = () => {
-    setFiltroInicio(""); // Limpa o filtro de início
-    setFiltroFim(""); // Limpa o filtro de fim
-    setFilteredProducts(productsData); // Restaura todos os produtos
-    calculateTotals(productsData); // Recalcula os totais para todos os produtos
+    setFiltroInicio("");
+    setFiltroFim("");
+    setFilteredProducts(productsData); // Restaurando todos os produtos
+    calculateTotals(productsData); // Recalcula os totais
   };
+
+  const handleDoubleClick = (sku, value) => {
+    setEditando(sku); // Identifica qual produto está sendo editado
+    setValorEditado(value ? value.slice(0, 10) : ""); // Garantir que o valor tenha o formato 'YYYY-MM-DD'
+  };
+
+  // Função para tratar a mudança no campo de data
+  const handleChange = (e) => {
+    setValorEditado(e.target.value); // Atualiza o valor editado com o que foi digitado
+  };
+
+  const handleSave = (sku) => {
+    if (!valorEditado) return; // Não salva se o valor estiver vazio
+
+    const formattedDate = new Date(valorEditado).toISOString().split("T")[0]; // Formata a data para 'YYYY-MM-DD'
+
+    const produtoRef = ref(db, `Estoque/${sku}`); // Referência do produto no banco de dados
+    console.log(`Salvando data ${formattedDate} para o produto ${sku}`);
+
+    update(produtoRef, { expiryDate: formattedDate }) // Atualiza a data no Firebase
+      .then(() => {
+        setProductsData((prevData) =>
+          prevData.map((item) =>
+            item.sku === sku ? { ...item, expiryDate: formattedDate } : item
+          )
+        );
+        setFilteredProducts((prevData) =>
+          prevData.map((item) =>
+            item.sku === sku ? { ...item, expiryDate: formattedDate } : item
+          )
+        );
+        setEditando(null); // Limpa o campo de edição
+        console.log("Data salva com sucesso!");
+      })
+      .catch((error) => console.error("Erro ao atualizar no Firebase:", error));
+  };
+
+  const exportToExcel = (products) => {
+    // Caso o filtro de data não tenha sido aplicado, use todos os produtos
+    const productsToExport = filtroInicio || filtroFim ? filteredProducts : products;
+  
+    const orderedProducts = productsToExport.map((item) => ({
+      Status:
+        item.quantity < 5
+          ? "Estoque baixo"
+          : item.expiryDate && new Date(formatDate(item.expiryDate)) < new Date()
+          ? "Produto vencido"
+          : "Estoque Abastecido",
+      SKU: item.sku,
+      Nome: item.name,
+      Marca: item.marca,
+      Peso: item.peso,
+      Quantidade: item.quantity,
+      "Unidade de Medida": item.unitmeasure,
+      "Valor Unitário": item.unitPrice,
+      "Valor Total": item.totalPrice,
+      "Data de Vencimento": item.expiryDate || "--",
+      "Dias para Consumo": calculateConsumptionDays(item.dateAdded, item.expiryDate),
+      "Data de Cadastro": formatDate(item.dateAdded),
+      Fornecedor: item.supplier,
+      Categoria: item.category || "N/A",
+      Tipo: item.tipo || "N/A",
+    }));
+  
+    // Gerando a planilha e o arquivo Excel com a nova ordem dos campos
+    const ws = XLSX.utils.json_to_sheet(orderedProducts);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+  
+    // Gerar o download do arquivo Excel
+    XLSX.writeFile(wb, "Estoque.xlsx");
+  };
+  
 
   return (
     <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)" }}>
@@ -247,10 +326,25 @@ export default function Estoque() {
           >
             Limpar Consulta
           </button>
+          <button
+            onClick={() => exportToExcel(filteredProducts)}
+            className="export-button"
+            style={{
+              background: "linear-gradient(135deg, #ff7e5f, #feb47b)",
+              color: "white",
+              padding: "10px",
+              marginTop: "10px",
+              border: "none",
+              borderRadius: '10px',
+              cursor: "pointer",
+            }}
+          >
+            Exportar para Excel
+          </button>
         </div>
 
         {filteredProducts.length > 0 && (
-          <div className="mt-5 mb-7">
+          <div className="totals-container" style={{marginTop: '5', marginBottom: '7px'}}>
             <table className="table">
               <thead>
                 <tr
@@ -373,8 +467,26 @@ export default function Estoque() {
                     <td className="table-cell">{item.unitmeasure}</td>
                     <td className="table-cell">{item.unitPrice}</td>
                     <td className="table-cell">{item.totalPrice}</td>
-                    <td className="table-cell">
-                      {formatDate(item.expiryDate)}
+                    <td
+                      className="table-cell"
+                      onDoubleClick={() =>
+                        handleDoubleClick(item.sku, item.expiryDate)
+                      }
+                    >
+                      {editando === item.sku ? (
+                        <input
+                          type="date"
+                          value={valorEditado}
+                          onChange={handleChange}
+                          onBlur={() => handleSave(item.sku)} // Salva ao sair do campo de edição
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleSave(item.sku)
+                          } // Salva ao pressionar Enter
+                          autoFocus
+                        />
+                      ) : (
+                        item.expiryDate || "--" // Formata a data
+                      )}
                     </td>
                     <td className="table-cell">
                       {daysForConsumption >= 0 ? daysForConsumption : 0}

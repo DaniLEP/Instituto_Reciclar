@@ -423,7 +423,7 @@ const EntradaProdutos = () => {
       if (data) {
         const loadedProducts = Object.keys(data).map((key) => ({
           ...data[key],
-          id: key,
+          sku: key,
         }));
         setProducts(loadedProducts);
       }
@@ -432,7 +432,7 @@ const EntradaProdutos = () => {
 
   // Função para preencher os campos automaticamente ao selecionar um produto
   const handleSelectProduct = (product) => {
-    setSku(product.sku);
+    setSku(product.sku); // Aqui você armazena o SKU do produto selecionado
     setName(product.name);
     setMarca(product.marca);
     setSupplier(product.supplier);
@@ -447,69 +447,37 @@ const EntradaProdutos = () => {
     setExpiryDate(product.expiryDate);
     setShowModal(false); // Fecha o modal após selecionar o produto
   };
+  
 
   // Função para salvar o produto
   const handleSave = () => {
-    // Verifique se todos os campos estão preenchidos
-    console.log({ sku, name, supplier, peso, unitmeasure, quantity, category, tipo, unitPrice, totalPrice, dateAdded, expiryDate });
-
-    if (
-      sku &&
-      name &&
-      supplier &&
-      peso &&
-      unitmeasure &&
-      quantity &&
-      category &&
-      tipo &&
-      unitPrice &&
-      totalPrice &&
-      dateAdded &&
-      expiryDate
-    ) {
-      const newProduct = {
-        sku,
-        name,
-        marca,
-        supplier,
-        peso,
-        unitmeasure,
-        quantity,
-        category,
-        tipo,
-        unitPrice,
-        totalPrice,
-        dateAdded,
-        expiryDate,
-      };
+    const newProduct = {
+      sku,
+      name,
+      marca,
+      supplier,
+      peso,
+      unitmeasure,
+      quantity,
+      category,
+      tipo,
+      unitPrice,
+      totalPrice,
+      dateAdded,
+      expiryDate,
+    };
   
-      const newProductRef = ref(db, `Estoque/${new Date().getTime()}`);
-      set(newProductRef, newProduct)
-        .then(() => {
-          toast.success("Produto adicionado ao Estoque!");
-        })
-        .catch((error) => {
-          toast.error("Erro ao salvar: " + error.message);
-        });
-  
-      // Limpar campos
-      setSku("");
-      setName("");
-      setMarca("");
-      setSupplier("");
-      setQuantity("");
-      setPeso("");
-      setUnitmeasure("");
-      setCategory("");
-      setTipo("");
-      setUnitPrice("");
-      setTotalPrice("");
-      setDateAdded("");
-      setExpiryDate("");
-    } else {
-      toast.warning("Preencha todos os campos!");
-    }
+    const newProductRef = ref(db, `Estoque/${sku}`); // Usa o SKU como chave
+    set(newProductRef, newProduct)
+      .then(() => {
+        toast.success("Produto adicionado ao Estoque!");
+      })
+      .catch((error) => {
+        toast.error("Erro ao salvar: " + error.message);
+      });
   };
+  
+
   const handleQuantityChange = (e) => {
     const quantity = e.target.value;
     setQuantity(quantity);
@@ -628,13 +596,12 @@ const EntradaProdutos = () => {
           />
         </FormGroup>
 
-        
         <FormGroup>
           <Label>Unidade de Medida:</Label>
           <Input
             type="text"
             value={unitmeasure}
-            onChange={(e) => setUnitmeasure(e.target.value)}            
+            onChange={(e) => setUnitmeasure(e.target.value)}
             placeholder="Unidade de Medida"
           />
         </FormGroup>
