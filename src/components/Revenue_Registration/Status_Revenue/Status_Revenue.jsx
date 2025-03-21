@@ -263,13 +263,14 @@ export default function ExibirRefeicoes() {
       >
         Voltar
       </button>
-      <div style={{ overflowX: "auto" }}>
-        <table
+      <div className="table-container">
+      <table
           style={{
             width: "100%",
             borderCollapse: "collapse",
             marginTop: "20px",
             textAlign: "center",
+            overflowX: "auto"
           }}
         >
           <thead>

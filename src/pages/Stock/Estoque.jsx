@@ -36,6 +36,7 @@ export default function Estoque() {
   const navigate = useNavigate();
 
   // Carregar produtos do Firebase
+  // Carregar produtos do Firebase
   useEffect(() => {
     const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
@@ -73,11 +74,6 @@ export default function Estoque() {
     setTotalQuantity(totalQuantity);
     setTotalPeso(totalPeso);
     setTotalPrice(totalPrice);
-  };
-
-  const resetTime = (date) => {
-    date.setHours(0, 0, 0, 0);
-    return date;
   };
 
   // Função de filtro para buscar produtos
@@ -148,11 +144,11 @@ export default function Estoque() {
     const fim = filtroFim ? new Date(filtroFim) : null;
 
     // Verifique se as datas são válidas
-    if (inicio && isNaN(inicio)) {
+    if (inicio && isNaN(inicio.getTime())) {
       console.error("Data de início inválida");
       return;
     }
-    if (fim && isNaN(fim)) {
+    if (fim && isNaN(fim.getTime())) {
       console.error("Data de fim inválida");
       return;
     }
@@ -162,7 +158,7 @@ export default function Estoque() {
       const dataCadastro = new Date(item.dateAdded); // Convertendo para Date
 
       // Verifique se a data de cadastro do item é válida
-      if (isNaN(dataCadastro)) {
+      if (isNaN(dataCadastro.getTime())) {
         console.error(`Data inválida para o produto ${item.sku}`);
         return false;
       }
@@ -223,13 +219,15 @@ export default function Estoque() {
 
   const exportToExcel = (products) => {
     // Caso o filtro de data não tenha sido aplicado, use todos os produtos
-    const productsToExport = filtroInicio || filtroFim ? filteredProducts : products;
-  
+    const productsToExport =
+      filtroInicio || filtroFim ? filteredProducts : products;
+
     const orderedProducts = productsToExport.map((item) => ({
       Status:
         item.quantity < 5
           ? "Estoque baixo"
-          : item.expiryDate && new Date(formatDate(item.expiryDate)) < new Date()
+          : item.expiryDate &&
+            new Date(formatDate(item.expiryDate)) < new Date()
           ? "Produto vencido"
           : "Estoque Abastecido",
       SKU: item.sku,
@@ -241,23 +239,24 @@ export default function Estoque() {
       "Valor Unitário": item.unitPrice,
       "Valor Total": item.totalPrice,
       "Data de Vencimento": item.expiryDate || "--",
-      "Dias para Consumo": calculateConsumptionDays(item.dateAdded, item.expiryDate),
+      "Dias para Consumo": calculateConsumptionDays(
+        item.dateAdded,
+        item.expiryDate
+      ),
       "Data de Cadastro": formatDate(item.dateAdded),
       Fornecedor: item.supplier,
       Categoria: item.category || "N/A",
       Tipo: item.tipo || "N/A",
     }));
-  
+
     // Gerando a planilha e o arquivo Excel com a nova ordem dos campos
     const ws = XLSX.utils.json_to_sheet(orderedProducts);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Estoque");
-  
+
     // Gerar o download do arquivo Excel
     XLSX.writeFile(wb, "Estoque.xlsx");
   };
-  
-
   return (
     <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)" }}>
       <div className="container">
@@ -306,6 +305,8 @@ export default function Estoque() {
 
           <button
             onClick={handleDateFilter}
+            value={filtroInicio}
+            onChange={(e) => setFiltroInicio(e.target.value)}
             className="date-input"
             style={{
               background:
@@ -317,6 +318,8 @@ export default function Estoque() {
           </button>
           <button
             onClick={clearDateFilter}
+            value={filtroFim}
+            onChange={(e) => setFiltroFim(e.target.value)}
             className="date-input"
             style={{
               background:
@@ -335,7 +338,7 @@ export default function Estoque() {
               padding: "10px",
               marginTop: "10px",
               border: "none",
-              borderRadius: '10px',
+              borderRadius: "10px",
               cursor: "pointer",
             }}
           >
@@ -344,7 +347,10 @@ export default function Estoque() {
         </div>
 
         {filteredProducts.length > 0 && (
-          <div className="totals-container" style={{marginTop: '5', marginBottom: '7px'}}>
+          <div
+            className="totals-container"
+            style={{ marginTop: "5", marginBottom: "7px" }}
+          >
             <table className="table">
               <thead>
                 <tr
@@ -485,7 +491,7 @@ export default function Estoque() {
                           autoFocus
                         />
                       ) : (
-                        item.expiryDate || "--" // Formata a data
+                        formatDate(item.expiryDate || "--") // Formata a data
                       )}
                     </td>
                     <td className="table-cell">
