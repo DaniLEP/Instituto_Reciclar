@@ -415,8 +415,8 @@ export default function Estoque() {
                 <th className="table-cell">Peso</th>
                 <th className="table-cell">Quantidade</th>
                 <th className="table-cell">Unidade de Medida</th>
-                <th className="table-cell">Valor Unitário</th>
-                <th className="table-cell">Valor Total</th>
+                <th className="p-10 text-[15px]">Valor Unitário</th>
+                <th className="p-10 text-[15px]">Valor Total </th>
                 <th className="table-cell">Data de Vencimento</th>
                 <th className="table-cell">Dias para Consumo</th>
                 <th className="table-cell">Data de Cadastro</th>
