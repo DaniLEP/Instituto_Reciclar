@@ -73,8 +73,8 @@ export default function CadastroRefeicoes() {
       });
   }, []);
 
-  const calcularTotal = (total, funcionarios) => {
-    return Math.max(0, total - funcionarios);
+  const calcularTotal = (total, funcionarios, jovens) => {
+    return Math.max(0, total - funcionarios - jovens);
   };
 
   const handleChange = (e) => {
@@ -93,26 +93,46 @@ export default function CadastroRefeicoes() {
       setFormData((prev) => {
         const novoEstado = { ...prev, [id]: valorNumerico };
 
-        // Calcula a quantidade de jovens para os diferentes tipos de refeição
-        if (id === "cafeTotalQtd" || id === "cafeFuncionariosQtd") {
-          novoEstado.cafeJovensQtd = calcularTotal(
+        // Cálculo correto para jovens tarde
+        if (
+          id === "cafeTotalQtd" ||
+          id === "cafeFuncionariosQtd" ||
+          id === "cafeJovensQtd"
+        ) {
+          novoEstado.cafeJovensTardeQtd = calcularTotal(
             novoEstado.cafeTotalQtd || 0,
-            novoEstado.cafeFuncionariosQtd || 0
+            novoEstado.cafeFuncionariosQtd || 0,
+            novoEstado.cafeJovensQtd || 0
           );
-        } else if (id === "almocoTotalQtd" || id === "almocoFuncionariosQtd") {
-          novoEstado.almocoJovensQtd = calcularTotal(
+        } else if (
+          id === "almocoTotalQtd" ||
+          id === "almocoFuncionariosQtd" ||
+          id === "almocoJovensQtd"
+        ) {
+          novoEstado.almocoJovensTardeQtd = calcularTotal(
             novoEstado.almocoTotalQtd || 0,
-            novoEstado.almocoFuncionariosQtd || 0
+            novoEstado.almocoFuncionariosQtd || 0,
+            novoEstado.almocoJovensQtd || 0
           );
-        } else if (id === "lancheTotalQtd" || id === "lancheFuncionariosQtd") {
-          novoEstado.lancheJovensQtd = calcularTotal(
+        } else if (
+          id === "lancheTotalQtd" ||
+          id === "lancheFuncionariosQtd" ||
+          id === "lancheJovensQtd"
+        ) {
+          novoEstado.lancheJovensTardeQtd = calcularTotal(
             novoEstado.lancheTotalQtd || 0,
-            novoEstado.lancheFuncionariosQtd || 0
+            novoEstado.lancheFuncionariosQtd || 0,
+            novoEstado.lancheJovensQtd || 0
           );
-        } else if (id === "outrasTotalQtd" || id === "outrasFuncionariosQtd") {
-          novoEstado.outrasJovensQtd = calcularTotal(
+        } else if (
+          id === "outrasTotalQtd" ||
+          id === "outrasFuncionariosQtd" ||
+          id === "outrasJovensQtd"
+        ) {
+          novoEstado.outrasJovensTardeQtd = calcularTotal(
             novoEstado.outrasTotalQtd || 0,
-            novoEstado.outrasFuncionariosQtd || 0
+            novoEstado.outrasFuncionariosQtd || 0,
+            novoEstado.outrasJovensQtd || 0
           );
         }
 
@@ -140,18 +160,26 @@ export default function CadastroRefeicoes() {
       cafeTotalQtd: formData.cafeTotalQtd,
       cafeFuncionariosQtd: formData.cafeFuncionariosQtd,
       cafeJovensQtd: formData.cafeJovensQtd,
+      cafeJovensTardeQtd: formData.cafeJovensTardeQtd,
+
       almocoDescricao: formData.almocoDescricao,
       almocoTotalQtd: formData.almocoTotalQtd,
       almocoFuncionariosQtd: formData.almocoFuncionariosQtd,
       almocoJovensQtd: formData.almocoJovensQtd,
+      almocoJovensTardeQtd: formData.almocoJovensTardeQtd,
+
       lancheDescricao: formData.lancheDescricao,
       lancheTotalQtd: formData.lancheTotalQtd,
       lancheFuncionariosQtd: formData.lancheFuncionariosQtd,
       lancheJovensQtd: formData.lancheJovensQtd,
+      lancheJovensTardeQtd: formData.lancheJovensTardeQtd,
+
       outrasDescricao: formData.outrasDescricao,
       outrasTotalQtd: formData.outrasTotalQtd,
       outrasFuncionariosQtd: formData.outrasFuncionariosQtd,
       outrasJovensQtd: formData.outrasJovensQtd,
+      outrasJovensTardeQtd: formData.outrasJovensTardeQtd,
+
       sobrasDescricao: formData.sobrasDescricao,
       observacaoDescricao: formData.observacaoDescricao,
       desperdicioQtd: formData.desperdicioQtd,
@@ -179,18 +207,22 @@ export default function CadastroRefeicoes() {
           cafeTotalQtd: "",
           cafeFuncionariosQtd: "",
           cafeJovensQtd: "",
+          cafeJovensTardeQtd: "",
           almocoDescricao: "",
           almocoTotalQtd: "",
           almocoFuncionariosQtd: "",
           almocoJovensQtd: "",
+          almocoJovensTardeQtd: "",
           lancheDescricao: "",
           lancheTotalQtd: "",
           lancheFuncionariosQtd: "",
           lancheJovensQtd: "",
+          lancheJovensTardeQtd: "",
           outrasDescricao: "",
           outrasTotalQtd: "",
           outrasFuncionariosQtd: "",
           outrasJovensQtd: "",
+          outrasJovensTardeQtd: "",
           sobrasDescricao: "",
           observacaoDescricao: "",
           desperdicioQtd: "",
@@ -241,24 +273,24 @@ export default function CadastroRefeicoes() {
         }}
       >
         <div style={{ marginBottom: "20px" }}>
-        <button
-          type="button"
-          onClick={handleBack}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#F20DE7",
-            color: "white",
-            borderRadius: "5px",
-            border: "none",
-            fontSize: "16px",
-            cursor: "pointer",
-            marginBottom: "20px",
-            width: "100%",
-            transition: "background 0.3s ease",
-          }}
-        >
-          Voltar
-        </button>
+          <button
+            type="button"
+            onClick={handleBack}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#F20DE7",
+              color: "white",
+              borderRadius: "5px",
+              border: "none",
+              fontSize: "16px",
+              cursor: "pointer",
+              marginBottom: "20px",
+              width: "100%",
+              transition: "background 0.3s ease",
+            }}
+          >
+            Voltar
+          </button>
           <label style={{ fontSize: "18px", fontWeight: "bold" }}>
             Data da Refeição
           </label>
@@ -354,12 +386,37 @@ export default function CadastroRefeicoes() {
                 marginRight: "10px",
               }}
             >
-              Jovens:
+              Jovens Manhã:
             </label>
             <input
               type="number"
               id="cafeJovensQtd"
               value={formData.cafeJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens Tarde:
+            </label>
+            <input
+              type="number"
+              id="cafeJovensTardeQtd"
+              value={formData.cafeJovensTardeQtd}
               onChange={handleChange}
               style={{
                 padding: "12px",
@@ -451,12 +508,38 @@ export default function CadastroRefeicoes() {
                 marginRight: "10px",
               }}
             >
-              Jovens:
+              Jovens Manhã:
             </label>
             <input
               type="number"
               id="almocoJovensQtd"
               value={formData.almocoJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens Tarde:
+            </label>
+            <input
+              type="number"
+              id="almocoJovensTardeQtd"
+              value={formData.almocoJovensTardeQtd}
               onChange={handleChange}
               style={{
                 padding: "12px",
@@ -545,12 +628,38 @@ export default function CadastroRefeicoes() {
                 marginRight: "10px",
               }}
             >
-              Jovens:
+              Jovens Manhã:
             </label>
             <input
               type="number"
               id="lancheJovensQtd"
               value={formData.lancheJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+              
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens Tarde:
+            </label>
+            <input
+              type="number"
+              id="lancheJovensTardeQtd"
+              value={formData.lancheJovensTardeQtd}
               onChange={handleChange}
               style={{
                 padding: "12px",
@@ -638,12 +747,37 @@ export default function CadastroRefeicoes() {
                 marginRight: "10px",
               }}
             >
-              Jovens:
+              Jovens Manhã:
             </label>
             <input
               type="number"
               id="outrasJovensQtd"
               value={formData.outrasJovensQtd}
+              onChange={handleChange}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                width: "100%",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <label
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginRight: "10px",
+              }}
+            >
+              Jovens Tarde:
+            </label>
+            <input
+              type="number"
+              id="outrasJovensTardeQtd"
+              value={formData.outrasJovensTardeQtd}
               onChange={handleChange}
               style={{
                 padding: "12px",
