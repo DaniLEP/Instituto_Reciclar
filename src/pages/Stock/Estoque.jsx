@@ -411,7 +411,7 @@ export default function Estoque() {
                 <th className="table-cell">Status</th>
                 <th className="table-cell">SKU</th>
                 <th className="p-20 text-[15px]">Nome</th>
-                <th className="table-cell">Marca</th>
+                <th className="p-10 text-[15px]">Marca</th>
                 <th className="table-cell">Peso</th>
                 <th className="table-cell">Quantidade</th>
                 <th className="table-cell">Unidade de Medida</th>
@@ -419,10 +419,10 @@ export default function Estoque() {
                 <th className="p-10 text-[15px]">Valor Total </th>
                 <th className="table-cell">Data de Vencimento</th>
                 <th className="table-cell">Dias para Consumo</th>
-                <th className="table-cell">Data de Cadastro</th>
+                <th className="p-10 text-[15px]">Data de Cadastro</th>
                 <th className="table-cell">Fornecedor</th>
-                <th className="table-cell">Categoria</th>
-                <th className="table-cell">Tipo</th>
+                <th className="p-10 text-[15px]">Categoria</th>
+                <th className="p-20 text-[15px]">Tipo</th>
               </tr>
             </thead>
             <tbody>
