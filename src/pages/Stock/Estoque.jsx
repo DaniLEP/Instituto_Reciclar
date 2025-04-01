@@ -410,7 +410,7 @@ export default function Estoque() {
               <tr className="table-header">
                 <th className="table-cell">Status</th>
                 <th className="table-cell">SKU</th>
-                <th className="table-cell">Nome</th>
+                <th className="p-20 text-[15px]">Nome</th>
                 <th className="table-cell">Marca</th>
                 <th className="table-cell">Peso</th>
                 <th className="table-cell">Quantidade</th>
