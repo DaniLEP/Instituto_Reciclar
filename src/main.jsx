@@ -16,11 +16,7 @@ import CadProdutos from './components/Product_Registration/CadProdutos.jsx'
 import EntradaProdutos from './components/Prohibited/Entrada.jsx'
 import CadastroRefeicoes from './components/Revenue_Registration/CadastroReceita.jsx'
 import RelatorioRef from './components/Dashboards/Dashboard_Ref/RelatorioRef.jsx'
-import RetiradaProdutos from './components/With_Drawal/Retirada.jsx'
-import RelatorioRetirada from './components/Dashboards/Dashboard_Withdrawal/RelatorioRetirada.jsx'
-import RelatorioAnual from './components/Dashboards/DashBoard_Periodic/RelatorioAnual.jsx'
-import Retirada from './pages/Withdrawal/Retirada.jsx'
-import HistoricoRetiradas from './components/Withdrawal_History/Historico_Retirada.jsx'
+import HistoricoRetiradas from './pages/withdraw/withdral-history/Historico_Retirada.jsx'
 import Profile from './components/Auth/Profile/perfil.jsx'
 import NovoPedido from './components/New_Order/NovoPedido.jsx'
 import Cadastro from './pages/Register_Product/Cadastro.jsx'
@@ -30,6 +26,8 @@ import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
 import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
 import StatusPedidos from './components/New_Order/Status_Order/StatusPedido.jsx'
 import ExibirRefeicoes from './components/Revenue_Registration/Status_Revenue/Status_Revenue.jsx'
+import RetiradaProdutos from './pages/withdraw/withdraw-home/RetiradaProdutos'
+import Retirada from './pages/withdraw/Retirada'
 
 
 const router = createBrowserRouter ([
@@ -60,6 +58,11 @@ const router = createBrowserRouter ([
         path: "/Dashboard",
         element: <Relatorio />,
       },
+      {
+        path: "/home-retirada",
+        element: <RetiradaProdutos />,
+      },
+
       {
         path: "/Retirada",
         element: <Retirada />,
@@ -114,19 +117,6 @@ const router = createBrowserRouter ([
       {
         path: "/Dashboard_Refeicoes",
         element: <RelatorioRef />,
-      },
-      {
-        path: "/Dashboard_Retiradas",
-        element: <RelatorioRetirada />,
-      },
-      {
-        path: "/Dashboard_Periodico",
-        element: <RelatorioAnual />,
-      },
-      // PAGINAS DO CARDS DE DASHBOARD
-      {
-        path: "/Retirada_Produtos",
-        element: <RetiradaProdutos />,
       },
       {
         path: "/Historico_Retirada",
