@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
   if (!getApps().length) {initializeApp(firebaseConfig);}
 
     const db = getDatabase();
-    export default functionCadastroFornecedores (){
+    export default function CadastroFornecedores () {
     const navigate = useNavigate(); // Instância do navigate
 
     const [formData, setFormData] = useState({cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo", // Status inicial como "Ativo"
