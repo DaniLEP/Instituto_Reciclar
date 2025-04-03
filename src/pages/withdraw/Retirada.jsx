@@ -20,7 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-export default function RetiradaProdutos() {
+export default function Retirada() {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -149,7 +149,7 @@ export default function RetiradaProdutos() {
           Registrar Retirada
         </button>
 
-        <Link to="/Retirada">
+        <Link to="/home-retirada">
           <button className="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600 mt-[10px]"> Voltar </button>
         </Link>
       </div>

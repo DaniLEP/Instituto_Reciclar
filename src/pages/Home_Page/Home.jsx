@@ -148,7 +148,7 @@ export default function Home() {
               title="Relatórios"
             />
             <Card
-              to="/Retirada"
+              to="/home-retirada"
               imgSrc="/retirada.svg"
               imgAlt="Retirada"
               title="Retirada"
