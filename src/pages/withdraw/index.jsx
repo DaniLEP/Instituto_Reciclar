@@ -4,6 +4,10 @@ import { getDatabase, ref, get, push } from "firebase/database";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Select, SelectArrow } from "@radix-ui/react-select";
+import { Input } from "@/components/ui/input";
+import { Button } from "react-scroll";
+import { Table } from "@/components/ui/table";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -121,17 +125,17 @@ export default function Retirada() {
       <ToastContainer className={"mt-[20px]"}/>
       <h1 className="text-2xl font-bold mb-4 text-center text-gray-700">Retirada de Produtos</h1>
       <div className="space-y-4">
-        <input className="w-full p-2 border rounded cursor-pointer" 
+        <Input className="w-full p-2 border rounded cursor-pointer" 
         type="text" placeholder="SKU" value={sku} readOnly onClick={() => setIsModalOpen(true)} />
-        <input className="w-full p-2 border rounded bg-gray-100"
+        <Input className="w-full p-2 border rounded bg-gray-100"
           type="text" placeholder="Nome do Produto" value={name} readOnly />
-        <input className="w-full p-2 border rounded bg-gray-100"
+        <Input className="w-full p-2 border rounded bg-gray-100"
           type="text" placeholder="Categoria" value={category} readOnly/>
-        <input className="w-full p-2 border rounded bg-gray-100"
+        <Input className="w-full p-2 border rounded bg-gray-100"
           type="text" placeholder="Tipo" value={tipo} readOnly />
-        <input className="w-full p-2 border rounded" type="number"
+        <Input className="w-full p-2 border rounded" type="number"
           placeholder="Quantidade" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
-        <input className="w-full p-2 border rounded bg-gray-100"
+        <Input className="w-full p-2 border rounded bg-gray-100"
           type="number" placeholder="Peso (kg)" value={peso} readOnly />
 
         <select className="w-full p-2 border rounded" value={retirante} onChange={(e) => setRetirante(e.target.value)}>
@@ -142,62 +146,63 @@ export default function Retirada() {
           <option value="Rose">Rose</option>
         </select>
 
-        <input className="w-full p-2 border rounded bg-gray-100" 
+        <Input className="w-full p-2 border rounded bg-gray-100" 
           type="text" placeholder="Data" value={data} readOnly />
-        <button onClick={handleRetirada} 
+        <Button onClick={handleRetirada} 
         className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
           Registrar Retirada
-        </button>
+        </Button>
 
         <Link to="/home-retirada">
-          <button className="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600 mt-[10px]"> Voltar </button>
+          <Button className="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600 mt-[10px]"> Voltar </Button>
         </Link>
       </div>
       
-    {isModalOpen && ( //Modal para selecionar o produto para retirar
-          <div className="fixed top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.5)] flex justify-center items-center">
-            <div className="bg-white p-[20px] rounded-[10px] w-full max-w-[990px] shadow-[0_2px_10px_rgba(0,0,0,0.3)] max-h-[80vh] overflow-y-auto">
-              <h2 className="text-[1.5rem] mb-[20px] text-left font-[chakra pecth] ">Produtos Disponíveis</h2>
-              <input type="text" placeholder="Buscar por nome ou SKU" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-[10px] mb-[10px] rouded-[5px] text-[1rem] text-[#333] border-[1px] border-black" />
-              <table className="w-full bc-collapse mb-[20px]">
+      {isModalOpen && (
+        <div className="fixed top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.5)] flex justify-center items-center p-4">
+          <div className="bg-white p-5 rounded-lg w-full max-w-[990px] shadow-lg max-h-[80vh] overflow-auto sm:p-6 md:p-8">
+            <h2 className="text-xl sm:text-2xl mb-4 text-left font-[chakra petch]"> Produtos Disponíveis </h2>
+            <Input type="text" placeholder="Buscar por nome ou SKU" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-2 mb-4 rounded-md text-base text-[#333] border border-black"/>
+            <div className="overflow-x-auto">
+              <Table className="w-full border-collapse mb-4">
                 <thead>
-                  <tr className="text-center">
-                    <th>Nome</th>
-                    <th>SKU</th>
-                    <th>Categoria</th>
-                    <th>Tipo</th>
-                    <th>Quantidade</th>
-                    <th>Peso(KG)</th>
-                    <th>Selecionar</th>
+                  <tr className="text-center bg-gray-200 text-sm sm:text-base">
+                    <th className="p-2">Nome</th>
+                    <th className="p-2">SKU</th>
+                    <th className="p-2">Categoria</th>
+                    <th className="p-2">Tipo</th>
+                    <th className="p-2">Quantidade</th>
+                    <th className="p-2">Peso(KG)</th>
+                    <th className="p-2">Selecionar</th>
                   </tr>
                 </thead>
-                <tbody className="text-center">
+                <tbody className="text-center text-sm sm:text-base">
                   {filteredProdutos.map((produto) => (
-                    <tr key={produto.id}>
-                      <td>{produto.name}</td>
-                      <td>{produto.sku}</td>
-                      <td>{produto.category}</td>
-                      <td>{produto.tipo}</td>
-                      <td>{produto.quantity}</td>
-                      <td>{produto.peso}</td>
-                      <td>
-                        <button onClick={() => handleProdutoSelecionado(produto)}
-                        className="bg-[#007BFF] text-white p-[5px_10px] rounded-[5px] cursor-pointer border-none">
+                    <tr key={produto.id} className="border-b">
+                      <td className="p-2">{produto.name}</td>
+                      <td className="p-2">{produto.sku}</td>
+                      <td className="p-2">{produto.category}</td>
+                      <td className="p-2">{produto.tipo}</td>
+                      <td className="p-2">{produto.quantity}</td>
+                      <td className="p-2">{produto.peso}</td>
+                      <td className="p-2"> <Button onClick={() => handleProdutoSelecionado(produto)}
+                          className="bg-[#007BFF] text-white px-4 py-2 rounded-md cursor-pointer border-none text-sm sm:text-base">
                           Selecionar
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
-              <button onClick={() => setIsModalOpen(false)}
-                className="bg-[#00009c] text-[#fff] p-[10px_20px] border-none rounded-[5px] w-full cursor-pointer">
-                  Fechar
-              </button>
+              </Table>
             </div>
+            <Button onClick={() => setIsModalOpen(false)}
+              className="bg-[#00009c] text-white px-4 py-3 border-none rounded-md w-full cursor-pointer text-sm sm:text-base">
+              Fechar
+            </Button>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
