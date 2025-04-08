@@ -9,25 +9,26 @@ import LoginForm from './pages/Login/Login.jsx'
 import Home from './pages/Home_Page/Home.jsx'
 import ListaPedidos from './pages/List_Order_Page/ListaPedidos.jsx'
 import EditarProduto from './components/Edit/Edit_Product/EditarProduto.jsx'
-import CadastroFornecedor from './components/Supplier_Registration/CadastroFornecedor.jsx'
 import Relatorio from './pages/Dashboard/Relatorio.jsx'
 import Estoque from './pages/Stock/Estoque.jsx'
-import CadProdutos from './components/Product_Registration/CadProdutos.jsx'
+import CadProdutos from './pages/register/produtt/CadProdutos'
 import EntradaProdutos from './components/Prohibited/Entrada.jsx'
 import CadastroRefeicoes from './components/Revenue_Registration/CadastroReceita.jsx'
 import RelatorioRef from './components/Dashboards/Dashboard_Ref/RelatorioRef.jsx'
 import HistoricoRetiradas from './pages/withdraw/withdral-history/index.jsx'
 import Profile from './pages/Profile/index.jsx'
 import NovoPedido from './components/New_Order/NovoPedido.jsx'
-import Cadastro from './pages/Register_Product/Cadastro.jsx'
 import Gerenciador from './components/Product Manager/GerenciadorProdutos.jsx'
 import Registro from './pages/User_Registration/Registro_Usuario.jsx'
 import AdminUsuarios from './components/Profile_Verification/Verificação.jsx'
-import VisualizarFornecedores from './components/Supplier_Registration/View_Supplier/VisualizarSupplier.jsx'
+import VisualizarFornecedores from './pages/register/Supplier/View_Supplier/VisualizarSupplier'
 import StatusPedidos from './components/New_Order/Status_Order/StatusPedido.jsx'
 import ExibirRefeicoes from './components/Revenue_Registration/Status_Revenue/Status_Revenue.jsx'
 import RetiradaProdutos from './pages/withdraw/withdraw-home'
 import Retirada from './pages/withdraw'
+import Cadastro from './pages/register/Product-home/Cadastro'
+import CadastroFornecedores from './pages/register/Supplier/CadastroFornecedor'
+import EditarFornecedor from './pages/register/Supplier/Edit_supplier/edit'
 
 
 const router = createBrowserRouter ([
@@ -83,11 +84,15 @@ const router = createBrowserRouter ([
       // PAGINAS DO CARDS CADASTROS
       {
         path: "/Cadastro_Fornecedor",
-        element: <CadastroFornecedor />,
+        element: <CadastroFornecedores />,
       },
       {
         path: "/Visualizar_Fornecedores",
         element: <VisualizarFornecedores />,
+      },
+      {
+        path: "/editar-fornecedor/:id",
+        element: <EditarFornecedor />,
       },
       {
         path: "/Cadastro_Geral",

@@ -26,25 +26,7 @@ export default function CadastroRefeicoes() {
   // Definindo estado para o campo de data de refeição
   const [formData, setFormData] = useState({
     dataRefeicao: "", // Define a data atual
-    cafeDescricao: "",
-    cafeTotalQtd: "",
-    cafeFuncionariosQtd: "",
-    cafeJovensQtd: "",
-    almocoDescricao: "",
-    almocoTotalQtd: "",
-    almocoFuncionariosQtd: "",
-    almocoJovensQtd: "",
-    lancheDescricao: "",
-    lancheTotalQtd: "",
-    lancheFuncionariosQtd: "",
-    lancheJovensQtd: "",
-    outrasDescricao: "",
-    outrasTotalQtd: "",
-    outrasFuncionariosQtd: "",
-    outrasJovensQtd: "",
-    sobrasDescricao: "",
-    observacaoDescricao: "",
-    desperdicioQtd: "",
+    cafeDescricao: "", cafeTotalQtd: "",cafeFuncionariosQtd: "",cafeJovensQtd: "",almocoDescricao: "",almocoTotalQtd: "", almocoFuncionariosQtd: "",almocoJovensQtd: "", lancheDescricao: "",lancheTotalQtd: "", lancheFuncionariosQtd: "", lancheJovensQtd: "", outrasDescricao: "",outrasTotalQtd: "", outrasFuncionariosQtd: "", outrasJovensQtd: "", sobrasDescricao: "", observacaoDescricao: "", desperdicioQtd: "",
   });
 
   const [refeicoes, setRefeicoes] = useState([]);
