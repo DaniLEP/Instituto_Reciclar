@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { getDatabase, ref, push } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { Label } from "@radix-ui/react-label";
+import { Input } from "@/components/ui/input";
+import { Button } from "react-scroll";
 
 // Configuração do Firebase
   const firebaseConfig = {
@@ -19,6 +22,7 @@ import { useNavigate } from "react-router-dom";
   if (!getApps().length) {initializeApp(firebaseConfig);}
 
     const db = getDatabase();
+    
     export default function CadastroFornecedores () {
     const navigate = useNavigate(); // Instância do navigate
 
@@ -95,11 +99,11 @@ import { useNavigate } from "react-router-dom";
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="cnpj" className="text-sm font-semibold text-gray-700">CNPJ:</Label>
-                <Input type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="razaoSocial" className="text-sm font-semibold text-gray-700">Razão Social:</Label>
-                <Input type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 
@@ -107,15 +111,15 @@ import { useNavigate } from "react-router-dom";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="cep" className="text-sm font-semibold text-gray-700">CEP:</Label>
-                <Input type="number" id="cep" name="cep" value={formData.cep} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="number" id="cep" name="cep" value={formData.cep} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="endereco" className="text-sm font-semibold text-gray-700">Endereço:</Label>
-                <Input type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled className="p-3 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="numero" className="text-sm font-semibold text-gray-700">Número:</Label>
-                <Input type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 
@@ -123,15 +127,15 @@ import { useNavigate } from "react-router-dom";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="bairro" className="text-sm font-semibold text-gray-700">Bairro:</Label>
-                <Input type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled className="p-3 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="municipio" className="text-sm font-semibold text-gray-700">Município:</Label>
-                <Input type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled className="p-3 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="uf" className="text-sm font-semibold text-gray-700">UF:</Label>
-                <Input type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled className="p-3 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
             </div>
 
@@ -139,15 +143,15 @@ import { useNavigate } from "react-router-dom";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="contato" className="text-sm font-semibold text-gray-700">Contato:</Label>
-                <Input type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="telefone" className="text-sm font-semibold text-gray-700">Telefone:</Label>
-                <Input type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="email" className="text-sm font-semibold text-gray-700">E-mail:</Label>
-                <Input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 
@@ -155,7 +159,7 @@ import { useNavigate } from "react-router-dom";
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="grupo" className="text-sm font-semibold text-gray-700">Grupo:</Label>
-                <Input type="text" id="grupo" name="grupo" value={formData.grupo} onChange={handleInputChange} className="p-3 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input type="text" id="grupo" name="grupo" value={formData.grupo} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="status" className="text-sm font-semibold text-gray-700">Status:</Label>
