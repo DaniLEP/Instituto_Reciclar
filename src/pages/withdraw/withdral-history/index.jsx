@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { getDatabase, ref, child, get } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { Link, useNavigate } from "react-router-dom";
-import { Table } from "../../../components/ui/table";
-import { Button } from "../../../components/ui/button";
+import { Table } from "../../../components/ui/table/table";
+import { Button } from "../../../components/ui/Button/button";
 
 // Configuração do Firebase
 const firebaseConfig = {

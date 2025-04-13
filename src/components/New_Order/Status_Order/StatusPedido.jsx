@@ -5,8 +5,8 @@ import { ref, get, update, push } from "firebase/database";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Table } from "@/components/ui/table";
+import { Button } from "@/components/ui/Button/button";
+import { Table } from "@/components/ui/table/table";
 import { collection, getDocs } from "firebase/firestore";
 import { dbRealtime, dbFirestore } from "../../../../firebase"; // ✅ use isso sempre!
 
