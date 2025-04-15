@@ -18,7 +18,7 @@ import RelatorioRef from './components/Dashboards/Dashboard_Ref/RelatorioRef.jsx
 import HistoricoRetiradas from './pages/withdraw/withdral-history/index.jsx'
 import Profile from './pages/profille/index.jsx'
 import NovoPedido from './components/New_Order/NovoPedido.jsx'
-import Gerenciador from './components/product_manager/index.jsx'
+import Gerenciador from './pages/register/product_manager/index.jsx'
 import Registro from './pages/register_auth/index.jsx'
 import AdminUsuarios from './pages/Login/profile_verification/Verificação.jsx'
 import VisualizarFornecedores from './pages/register/Supplier/view_supplier'
