@@ -85,11 +85,8 @@ export default function Estoque() {
       setFilteredProducts(filtered);
   };
 
-  const clearDateFilter = () => {
-    setFiltroInicio("");
-    setFiltroFim("");
-    setFilteredProducts(productsData);
-  };
+
+  const clearDateFilter = () => {setFiltroInicio(""); setFiltroFim(""); setFilteredProducts(productsData);};
 
   const voltar = () => navigate("/Home");
 
