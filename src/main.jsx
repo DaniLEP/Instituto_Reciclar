@@ -23,7 +23,7 @@ import RetiradaProdutos from '@/pages/withdraw/withdraw-home'
 import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
 
 // ROTAS COM LAZY LOADING
-const Estoque = React.lazy(() => import('@/pages/stock'))
+const Estoque = React.lazy(() => import('@/pages/Stock'))
 const Relatorio = React.lazy(() => import('@/pages/home/dashboard'))
 const CadProdutos = React.lazy(() => import('@/pages/register/product'))
 const EntradaProdutos = React.lazy(() => import('@/pages/register/prohibited'))
