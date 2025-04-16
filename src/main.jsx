@@ -1,152 +1,155 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from "./App.jsx"
-// CONFIGURANDO ROUTER
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import ErrorPage from './components/error/index.jsx'
-import LoginForm from './pages/Login/index.jsx'
-import Home from './pages/home/index.jsx'
-import ListaPedidos from './pages/home/home_list-order/index.jsx'
-import EditarProduto from './components/Edit/product/index.jsx'
-import Relatorio from './pages/home/dashboard/index.jsx'
-import Estoque from './pages/stock/index.jsx'
-import CadProdutos from './pages/register/product'
-import EntradaProdutos from './pages/register/prohibited/index.jsx'
-import CadastroRefeicoes from './components/Revenue_Registration/CadastroReceita.jsx'
-import RelatorioRef from './components/Dashboards/Dashboard_Ref/RelatorioRef.jsx'
-import HistoricoRetiradas from './pages/withdraw/withdral-history/index.jsx'
-import Profile from './pages/profille/index.jsx'
-import NovoPedido from './components/New_Order/NovoPedido.jsx'
-import Gerenciador from './pages/register/product_manager/index.jsx'
-import Registro from './pages/register_auth/index.jsx'
-import AdminUsuarios from './pages/Login/profile_verification/Verificação.jsx'
-import VisualizarFornecedores from './pages/register/Supplier/view_supplier'
-import StatusPedidos from './components/New_Order/Status_Order/StatusPedido.jsx'
-import ExibirRefeicoes from './components/Revenue_Registration/Status_Revenue/Status_Revenue.jsx'
-import RetiradaProdutos from './pages/withdraw/withdraw-home'
-import Retirada from './pages/withdraw'
-import Cadastro from './pages/home/home_product'
-import CadastroFornecedores from './pages/register/Supplier'
-import EditarFornecedor from './pages/register/Supplier/edit_supplier'
+import React from 'react'
 
+import './index.css'
+import App from './App.jsx'
+import ErrorPage from '@/components/error'
+import LoginForm from '@/pages/Login'
 
-const router = createBrowserRouter ([
+// ROTAS CARREGADAS NORMALMENTE
+import Home from '@/pages/home'
+import ListaPedidos from '@/pages/home/home_list-order'
+import EditarProduto from '@/components/Edit/product'
+import Cadastro from '@/pages/home/home_product'
+import Retirada from '@/pages/withdraw'
+import Profile from '@/pages/profille'
+import Registro from '@/pages/register_auth'
+import AdminUsuarios from '@/pages/Login/profile_verification/Verificação'
+import VisualizarFornecedores from '@/pages/register/Supplier/view_supplier'
+import StatusPedidos from '@/components/New_Order/Status_Order/StatusPedido'
+import RetiradaProdutos from '@/pages/withdraw/withdraw-home'
+import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
+
+// ROTAS COM LAZY LOADING
+const Estoque = React.lazy(() => import('@/pages/stock'))
+const Relatorio = React.lazy(() => import('@/pages/home/dashboard'))
+const CadProdutos = React.lazy(() => import('@/pages/register/product'))
+const EntradaProdutos = React.lazy(() => import('@/pages/register/prohibited'))
+const CadastroRefeicoes = React.lazy(() => import('@/components/Revenue_Registration/CadastroReceita'))
+const RelatorioRef = React.lazy(() => import('@/components/Dashboards/Dashboard_Ref/RelatorioRef'))
+const HistoricoRetiradas = React.lazy(() => import('@/pages/withdraw/withdral-history'))
+const NovoPedido = React.lazy(() => import('@/components/New_Order/NovoPedido'))
+const Gerenciador = React.lazy(() => import('@/pages/register/product_manager'))
+const CadastroFornecedores = React.lazy(() => import('@/pages/register/Supplier'))
+const ExibirRefeicoes = React.lazy(() => import('@/components/Revenue_Registration/Status_Revenue/Status_Revenue'))
+
+const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
-    // PAGINA DE ERRO
     errorElement: <ErrorPage />,
     children: [
-      {
-        path: "/",
-        element: <LoginForm />,
-      },   
-      {
-        path: "/Home",
-        element: <Home />,
-      },
-      // CARDS DA HOME
-      {
-        path: "/Pedidos",
-        element: <ListaPedidos />,
-      },  
-      {
-        path: "/Cadastro",
-        element: <Cadastro />,
-      },
-      {
-        path: "/Dashboard",
-        element: <Relatorio />,
-      },
-      {
-        path: "/home-retirada",
-        element: <RetiradaProdutos />,
-      },
+      { path: '/', element: <LoginForm /> },
+      { path: '/Home', element: <Home /> },
+      { path: '/Pedidos', element: <ListaPedidos /> },
+      { path: '/Cadastro', element: <Cadastro /> },
+      { path: '/home-retirada', element: <RetiradaProdutos /> },
+      { path: '/Retirada', element: <Retirada /> },
+      { path: '/Editar_Produto/:id', element: <EditarProduto /> },
+      { path: '/Meu_Perfil', element: <Profile /> },
+      { path: '/Registro_Usuario', element: <Registro /> },
+      { path: '/Verificacao_Usuario', element: <AdminUsuarios /> },
+      { path: '/Visualizar_Fornecedores', element: <VisualizarFornecedores /> },
+      { path: '/Gestão_Pedido', element: <StatusPedidos /> },
+      { path: '/editar-fornecedor/:id', element: <EditarFornecedor /> },
 
+      // ROTAS LAZY COM <Suspense>
       {
-        path: "/Retirada",
-        element: <Retirada />,
-      },
-      // PAGINAS DA LISTA DE PEDIDO
-      {
-        path: "/Cadastro_Produtos",
-        element: <NovoPedido />,
-      },
-      {
-        path: "/Gestão_Pedido",
-        element: <StatusPedidos/>,
+        path: '/Estoque',
+        element: (
+          <Suspense fallback={<div>Carregando Estoque...</div>}>
+            <Estoque />
+          </Suspense>
+        ),
       },
       {
-        path: "/Editar_Produto/:id",
-        element: <EditarProduto />,
-      },
-      // PAGINAS DO CARDS CADASTROS
-      {
-        path: "/Cadastro_Fornecedor",
-        element: <CadastroFornecedores />,
-      },
-      {
-        path: "/Visualizar_Fornecedores",
-        element: <VisualizarFornecedores />,
+        path: '/Dashboard',
+        element: (
+          <Suspense fallback={<div>Carregando Dashboard...</div>}>
+            <Relatorio />
+          </Suspense>
+        ),
       },
       {
-        path: "/editar-fornecedor/:id",
-        element: <EditarFornecedor />,
+        path: '/Cadastro_Geral',
+        element: (
+          <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}>
+            <CadProdutos />
+          </Suspense>
+        ),
       },
       {
-        path: "/Cadastro_Geral",
-        element: <CadProdutos />,
+        path: '/Entrada_Produtos',
+        element: (
+          <Suspense fallback={<div>Carregando Entrada de Produtos...</div>}>
+            <EntradaProdutos />
+          </Suspense>
+        ),
       },
       {
-        path: "/Gerenciador_Produtos",
-        element: <Gerenciador />,
+        path: '/Cadastro_Refeicoes',
+        element: (
+          <Suspense fallback={<div>Carregando Cadastro de Refeições...</div>}>
+            <CadastroRefeicoes />
+          </Suspense>
+        ),
       },
       {
-        path: "/Entrada_Produtos",
-        element: <EntradaProdutos />,
+        path: '/Dashboard_Refeicoes',
+        element: (
+          <Suspense fallback={<div>Carregando Dashboard de Refeições...</div>}>
+            <RelatorioRef />
+          </Suspense>
+        ),
       },
       {
-        path: "/Cadastro_Refeicoes",
-        element: <CadastroRefeicoes />,
+        path: '/Historico_Retirada',
+        element: (
+          <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}>
+            <HistoricoRetiradas />
+          </Suspense>
+        ),
       },
       {
-        path: "/Refeicoes_Servidas",
-        element: <ExibirRefeicoes />,
-      },
-      // PAGINAS DO CARDS DE DASHBOARD
-      {
-        path: "/Estoque",
-        element: <Estoque />,
-      },
-      {
-        path: "/Dashboard_Refeicoes",
-        element: <RelatorioRef />,
+        path: '/Cadastro_Produtos',
+        element: (
+          <Suspense fallback={<div>Carregando Novo Pedido...</div>}>
+            <NovoPedido />
+          </Suspense>
+        ),
       },
       {
-        path: "/Historico_Retirada",
-        element: <HistoricoRetiradas />,
-      },
-      // PAGINA DE PERFIL
-      {
-        path: "/Meu_Perfil",
-        element: <Profile />,
-      },
-      {
-        path: "/Registro_Usuario",
-        element: <Registro />,
+        path: '/Gerenciador_Produtos',
+        element: (
+          <Suspense fallback={<div>Carregando Gerenciador...</div>}>
+            <Gerenciador />
+          </Suspense>
+        ),
       },
       {
-        path: "/Verificacao_Usuario",
-        element: <AdminUsuarios />,
+        path: '/Cadastro_Fornecedor',
+        element: (
+          <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}>
+            <CadastroFornecedores />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/Refeicoes_Servidas',
+        element: (
+          <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>
+            <ExibirRefeicoes />
+          </Suspense>
+        ),
       },
     ],
-  }
+  },
 ])
-
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router}/>
-  </StrictMode>,
+    <RouterProvider router={router} />
+  </StrictMode>
 )
