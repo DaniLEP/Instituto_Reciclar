@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { getDatabase, ref, onValue, update } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx"; // Importando a biblioteca para exportação Excel
-import "./css/Estoque.css"; // Importando o arquivo CSS
+import * as XLSX from "xlsx";
+import { Button } from "@/components/ui/Button/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Title from "@/components/ui/title";
+import { Table } from "@/components/ui/table/table";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -28,7 +32,6 @@ export default function Estoque() {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalPeso, setTotalPeso] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [isSearched, setIsSearched] = useState(false);
   const [filtroInicio, setFiltroInicio] = useState("");
   const [filtroFim, setFiltroFim] = useState("");
   const [valorEditado, setValorEditado] = useState("");
@@ -36,481 +39,207 @@ export default function Estoque() {
   const navigate = useNavigate();
 
   // Carregar produtos do Firebase
-  // Carregar produtos do Firebase
   useEffect(() => {
     const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const products = Object.keys(data).map((key) => ({
-          sku: key,
-          ...data[key],
-        }));
-        setProductsData(products);
-        setFilteredProducts(products); // Inicializa a lista de produtos filtrados com todos os dados
-      }
-    });
-    return () => unsubscribe();
+        const products = Object.keys(data).map((key) => ({sku: key, ...data[key],}));
+         setProductsData(products); setFilteredProducts(products); calculateTotals(products);}
+    }); return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    calculateTotals(filteredProducts);
-  }, [filteredProducts]);
+  // Recalcula totais quando o filtro muda
+  useEffect(() => {calculateTotals(filteredProducts);}, [filteredProducts]);
 
-  // Função para calcular totais
+  // Calcular totais
   const calculateTotals = (products) => {
-    const totalQuantity = products.reduce(
-      (acc, item) => acc + parseInt(item.quantity, 10),
-      0
-    );
-    const totalPeso = products.reduce(
-      (acc, item) => acc + parseFloat(item.peso || 0),
-      0
-    );
-    const totalPrice = products.reduce((acc, item) => {
-      const itemPrice = parseFloat(item.totalPrice) || 0;
-      return acc + itemPrice;
-    }, 0);
-
-    setTotalQuantity(totalQuantity);
-    setTotalPeso(totalPeso);
-    setTotalPrice(totalPrice);
+    const qty = products.reduce((acc, i) => acc + parseInt(i.quantity, 10), 0);
+    const peso = products.reduce((acc, i) => acc + parseFloat(i.peso || 0), 0);
+    const price = products.reduce((acc, i) => acc + (parseFloat(i.totalPrice) || 0), 0);
+    setTotalQuantity(qty);
+    setTotalPeso(peso);
+    setTotalPrice(price);
   };
 
-  // Função de filtro para buscar produtos
+  // Busca por termo
   const handleSearch = () => {
+    const term = searchTerm.trim().toLowerCase();
     const filtered = productsData.filter((item) => {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      if (!isNaN(searchTerm) && searchTerm.trim() !== "") {
-        return String(item.sku) === searchTerm.trim();
-      }
-      return (
-        item.name.toLowerCase().includes(lowerSearchTerm) ||
-        item.supplier.toLowerCase().includes(lowerSearchTerm) ||
-        item.marca.toLowerCase().includes(lowerSearchTerm) ||
-        item.category?.toLowerCase().includes(lowerSearchTerm) ||
-        item.tipo?.toLowerCase().includes(lowerSearchTerm)
-      );
-    });
-
-    setFilteredProducts(filtered.length > 0 ? filtered : []);
+      if (!term) return true;
+      if (!isNaN(searchTerm)) return String(item.sku) === searchTerm.trim();
+      return [item.name, item.supplier, item.marca, item.category, item.tipo].some((field) => field?.toLowerCase().includes(term));
+      });setFilteredProducts(filtered);
   };
 
-  const handleBack = () => {
-    setSearchTerm("");
-    setFilteredProducts(productsData); // Restaurando todos os produtos
-    setIsSearched(false);
-    setFiltroInicio(""); // Limpando o filtro de data
-    setFiltroFim(""); // Limpando o filtro de data
-    calculateTotals(productsData);
+  // Filtro por data
+  const handleDateFilter = () => {
+    if (!filtroInicio && !filtroFim) {
+      setFilteredProducts(productsData);
+      return;
+    }
+    const inicio = filtroInicio ? new Date(filtroInicio) : null;
+    const fim = filtroFim ? new Date(filtroFim) : null;
+    const filtered = productsData.filter((item) => {
+    const cad = item.dateAdded ? new Date(item.dateAdded.slice(0, 10)) : null; 
+      if (!cad) return false; return (!inicio || cad >= inicio) && (!fim || cad <= fim);});
+      setFilteredProducts(filtered);
   };
 
-  const voltar = () => {
-    navigate("/Home");
-  };
+  const clearDateFilter = () => {setFiltroInicio(""); setFiltroFim(""); setFilteredProducts(productsData);};
 
-  // Função para calcular os dias para o consumo
+  const voltar = () => navigate("/Home");
+
+  // Dias para consumo
   const calculateConsumptionDays = (dateAdded, expiryDate) => {
     const today = new Date();
-    const addedDate = new Date(dateAdded);
-    const expirationDate = new Date(expiryDate);
-
-    const timeToExpiry = expirationDate - today;
-    const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
-
-    return daysToExpiry;
+    const exp = new Date(expiryDate);
+    const diff = exp - today;
+    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   };
 
-  // Função para formatar datas
+  // Formatar data sem shift de fuso
   const formatDate = (date) => {
-    if (!date) return "N/A";
-    const d = new Date(date);
-    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}/${d.getFullYear()}`;
+    if (!date) return "--";
+    const [y, m, d] = date.slice(0, 10).split("-");
+    const dt = new Date(Date.UTC(+y, +m - 1, +d));
+    const dd = String(dt.getUTCDate()).padStart(2, "0");
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+    const yyyy = dt.getUTCFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   };
 
-  // Função para verificar se o produto está vencido
   const isExpired = (expiryDate) => {
     if (!expiryDate) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const expirationDate = new Date(expiryDate);
-    expirationDate.setHours(0, 0, 0, 0);
-    return expirationDate < today;
+    const exp = new Date(expiryDate);
+    exp.setHours(0, 0, 0, 0);
+    return exp < today;
   };
 
-  const handleDateFilter = () => {
-    const inicio = filtroInicio ? new Date(filtroInicio) : null;
-    const fim = filtroFim ? new Date(filtroFim) : null;
-
-    // Verifique se as datas são válidas
-    if (inicio && isNaN(inicio.getTime())) {
-      console.error("Data de início inválida");
-      return;
-    }
-    if (fim && isNaN(fim.getTime())) {
-      console.error("Data de fim inválida");
-      return;
-    }
-
-    // Filtrando os produtos com base nas datas
-    const filteredByDate = productsData.filter((item) => {
-      const dataCadastro = new Date(item.dateAdded); // Convertendo para Date
-
-      // Verifique se a data de cadastro do item é válida
-      if (isNaN(dataCadastro.getTime())) {
-        console.error(`Data inválida para o produto ${item.sku}`);
-        return false;
-      }
-
-      // Comparando as datas corretamente
-      const isAfterStartDate = !inicio || dataCadastro >= inicio;
-      const isBeforeEndDate = !fim || dataCadastro <= fim;
-
-      return isAfterStartDate && isBeforeEndDate;
-    });
-
-    setFilteredProducts(filteredByDate);
-    calculateTotals(filteredByDate);
-  };
-
-  const clearDateFilter = () => {
-    setFiltroInicio("");
-    setFiltroFim("");
-    setFilteredProducts(productsData); // Restaurando todos os produtos
-    calculateTotals(productsData); // Recalcula os totais
-  };
-
-  const handleDoubleClick = (sku, value) => {
-    setEditando(sku); // Identifica qual produto está sendo editado
-    setValorEditado(value ? value.slice(0, 10) : ""); // Garantir que o valor tenha o formato 'YYYY-MM-DD'
-  };
-
-  // Função para tratar a mudança no campo de data
-  const handleChange = (e) => {
-    setValorEditado(e.target.value); // Atualiza o valor editado com o que foi digitado
-  };
-
+  // Edição inline
+  const handleDoubleClick = (sku, value) => {setEditando(sku); setValorEditado(value?.slice(0, 10) || "");};
+  const handleChange = (e) => setValorEditado(e.target.value);
   const handleSave = (sku) => {
-    if (!valorEditado) return; // Não salva se o valor estiver vazio
-
-    const formattedDate = new Date(valorEditado).toISOString().split("T")[0]; // Formata a data para 'YYYY-MM-DD'
-
-    const produtoRef = ref(db, `Estoque/${sku}`); // Referência do produto no banco de dados
-    console.log(`Salvando data ${formattedDate} para o produto ${sku}`);
-
-    update(produtoRef, { expiryDate: formattedDate }) // Atualiza a data no Firebase
+    if (!valorEditado) return;
+    const formatted = new Date(valorEditado).toISOString().split("T")[0];
+    const produtoRef = ref(db, `Estoque/${sku}`);
+    update(produtoRef, { expiryDate: formatted })
       .then(() => {
-        setProductsData((prevData) =>
-          prevData.map((item) =>
-            item.sku === sku ? { ...item, expiryDate: formattedDate } : item
-          )
-        );
-        setFilteredProducts((prevData) =>
-          prevData.map((item) =>
-            item.sku === sku ? { ...item, expiryDate: formattedDate } : item
-          )
-        );
-        setEditando(null); // Limpa o campo de edição
-        console.log("Data salva com sucesso!");
-      })
-      .catch((error) => console.error("Erro ao atualizar no Firebase:", error));
+        setProductsData((prev) => prev.map((i) => i.sku === sku ? { ...i, expiryDate: formatted } : i));
+        setFilteredProducts((prev) => prev.map((i) => i.sku === sku ? { ...i, expiryDate: formatted } : i));
+          setEditando(null);
+      }).catch(console.error);
   };
-
+  // Exportar Excel
   const exportToExcel = (products) => {
-    // Caso o filtro de data não tenha sido aplicado, use todos os produtos
-    const productsToExport =
-      filtroInicio || filtroFim ? filteredProducts : products;
-
-    const orderedProducts = productsToExport.map((item) => ({
-      Status:
-        item.quantity < 5
-          ? "Estoque baixo"
-          : item.expiryDate &&
-            new Date(formatDate(item.expiryDate)) < new Date()
-          ? "Produto vencido"
-          : "Estoque Abastecido",
-      SKU: item.sku,
-      Nome: item.name,
-      Marca: item.marca,
-      Peso: item.peso,
-      Quantidade: item.quantity,
-      "Unidade de Medida": item.unitmeasure,
-      "Valor Unitário": item.unitPrice,
-      "Valor Total": item.totalPrice,
-      "Data de Vencimento": item.expiryDate || "--",
-      "Dias para Consumo": calculateConsumptionDays(
-        item.dateAdded,
-        item.expiryDate
-      ),
-      "Data de Cadastro": formatDate(item.dateAdded),
-      Fornecedor: item.supplier,
-      Categoria: item.category || "N/A",
-      Tipo: item.tipo || "N/A",
-    }));
-
-    // Gerando a planilha e o arquivo Excel com a nova ordem dos campos
-    const ws = XLSX.utils.json_to_sheet(orderedProducts);
+    const ws = XLSX.utils.json_to_sheet(
+      products.map((item) => ({
+      Status: parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
+      SKU: item.sku, Nome: item.name, Marca: item.marca, Peso: item.peso, Quantidade: item.quantity, "Unidade de Medida": item.unitmeasure,
+      "Valor Unitário": item.unitPrice, "Valor Total": item.totalPrice, "Data de Vencimento": item.expiryDate || "--", "Dias para Consumo": calculateConsumptionDays( item.dateAdded,item.expiryDate), "Data de Cadastro": formatDate(item.dateAdded), Fornecedor: item.supplier, Categoria: item.category || "N/A", Tipo: item.tipo || "N/A",})));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
-
-    // Gerar o download do arquivo Excel
-    XLSX.writeFile(wb, "Estoque.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+      XLSX.writeFile(wb, "Estoque.xlsx");
   };
+
   return (
-    <div style={{ background: "linear-gradient(135deg, #6a11cb, #2575fc)" }}>
-      <div className="container">
-        <div className="header">
-          <h1>Estoque de Alimentos </h1>
+    <div className="bg-gradient-to-br from-[#0a192f] to-[#1e3a8a] min-h-screen py-9">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <Title className="text-2xl sm:text-3xl text-black font-semibold text-gray-800 mb-4 sm:mb-0">Controle de Estoque</Title>
+          <Button onClick={voltar} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Voltar</Button>
         </div>
-
-        <div className="search-container">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo"
-            className="search-input"
-          />
-          <div className="button-container">
-            <button onClick={handleSearch} className="search-button">
-              Consultar Item
-            </button>
-            {isSearched && (
-              <button onClick={handleBack} className="clear-button">
-                Limpar Consulta
-              </button>
-            )}
+        {/* Busca */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Input type="text" placeholder="Buscar SKU, nome, fornecedor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="col-span-2 w-full"/>
+          <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white w-full">Pesquisar</Button>
+        </div>
+        {/* Filtro de Datas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          <div>
+            <Label className="block text-gray-700 mb-1">Início</Label>
+            <Input type="date" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} className="w-full"/>
+          </div>
+          <div>
+            <Label className="block text-gray-700 mb-1">Fim</Label>
+            <Input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} className="w-full"/>
+          </div>
+          <Button onClick={handleDateFilter} className="bg-green-600 hover:bg-green-700 text-white w-full">Filtrar</Button>
+          <Button onClick={clearDateFilter} className="bg-red-600 hover:bg-red-700 text-white w-full">Limpar</Button>
+        </div>
+        {/* Totais */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+          <div className="bg-blue-50 p-4 rounded">
+            <p className="text-gray-500">Valor Total</p>
+            <p className="text-xl font-semibold">R$ {totalPrice.toFixed(2).replace(".", ",")}</p>
+          </div>
+          <div className="bg-blue-50 p-4 rounded">
+            <p className="text-gray-500">Peso Total</p>
+            <p className="text-xl font-semibold">{totalPeso.toFixed(2)} KG</p>
+          </div>
+          <div className="bg-blue-50 p-4 rounded">
+            <p className="text-gray-500">Qtd. Total</p>
+            <p className="text-xl font-semibold">{totalQuantity}</p>
           </div>
         </div>
-
-        <div className="date-container">
-          <p style={{ fontSize: "20px" }}>Período de:</p>
-          <input
-            type="date"
-            value={filtroInicio}
-            onChange={(e) => setFiltroInicio(e.target.value)}
-            className="date-input"
-            style={{ fontSize: "15px" }}
-          />
-
-          <p style={{ fontSize: "20px" }}>Até:</p>
-          <input
-            type="date"
-            value={filtroFim}
-            onChange={(e) => setFiltroFim(e.target.value)}
-            className="date-input"
-            style={{ fontSize: "15px" }}
-          />
-
-          <button
-            onClick={handleDateFilter}
-            value={filtroInicio}
-            onChange={(e) => setFiltroInicio(e.target.value)}
-            className="date-input"
-            style={{
-              background:
-                "linear-gradient(135deg,rgb(93, 192, 118),rgb(54, 204, 62))",
-              color: "white",
-            }}
-          >
-            Consultar Data
-          </button>
-          <button
-            onClick={clearDateFilter}
-            value={filtroFim}
-            onChange={(e) => setFiltroFim(e.target.value)}
-            className="date-input"
-            style={{
-              background:
-                "linear-gradient(135deg,rgb(199, 81, 81),hsla(0, 100.00%, 58.40%, 0.91))",
-              color: "white",
-            }}
-          >
-            Limpar Consulta
-          </button>
-          <button
-            onClick={() => exportToExcel(filteredProducts)}
-            className="export-button"
-            style={{
-              background: "linear-gradient(135deg, #ff7e5f, #feb47b)",
-              color: "white",
-              padding: "10px",
-              marginTop: "10px",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            Exportar para Excel
-          </button>
-        </div>
-
-        {filteredProducts.length > 0 && (
-          <div
-            className="totals-container"
-            style={{ marginTop: "5", marginBottom: "7px" }}
-          >
-            <table className="table">
-              <thead>
-                <tr
-                  style={{
-                    background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                    color: "white",
-                  }}
-                >
-                  <th className="table-cell">Valor Total</th>
-                  <th className="table-cell">Peso Total</th>
-                  <th className="table-cell">Quantidade Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="table-cell">
-                    R$ {totalPrice.toFixed(2).replace(".", ",")}
-                  </td>
-                  <td className="table-cell">
-                    {totalPeso.toFixed(2).replace(".", ".")} KG
-                  </td>
-                  <td className="table-cell">{totalQuantity}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="tópicos">
-              <ul>
-                <li>
-                  <span
-                    className="low-stock-badge"
-                    style={{ backgroundColor: "#FFC000" }}
-                  ></span>{" "}
-                  Estoque baixo (menos de 5 unidades)
-                </li>
-                <li>
-                  <span
-                    className="low-stock-badge"
-                    style={{ backgroundColor: "green" }}
-                  ></span>{" "}
-                  Estoque Abastecido
-                </li>
-                <li>
-                  <span
-                    className="expired-badge"
-                    style={{ backgroundColor: "red" }}
-                  ></span>{" "}
-                  Produto vencido
-                </li>
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr className="table-header">
-                <th className="table-cell">Status</th>
-                <th className="table-cell">SKU</th>
-                <th className="p-20 text-[15px]">Nome</th>
-                <th className="p-10 text-[15px]">Marca</th>
-                <th className="table-cell">Peso</th>
-                <th className="table-cell">Quantidade</th>
-                <th className="table-cell">Unidade de Medida</th>
-                <th className="p-10 text-[15px]">Valor Unitário</th>
-                <th className="p-10 text-[15px]">Valor Total </th>
-                <th className="table-cell">Data de Vencimento</th>
-                <th className="table-cell">Dias para Consumo</th>
-                <th className="p-10 text-[15px]">Data de Cadastro</th>
-                <th className="table-cell">Fornecedor</th>
-                <th className="p-10 text-[15px]">Categoria</th>
-                <th className="p-20 text-[15px]">Tipo</th>
+        {/* Tabela */}
+        <div className="w-full max-h-[70vh] overflow-x-auto overflow-y-auto border rounded-lg shadow-sm bg-white">
+          <Table className="min-w-[1200px] table-auto border-collapse">
+            <thead className="bg-gray-200 sticky top-0 z-10">
+              <tr>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Status</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">SKU</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Nome</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Marca</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Peso</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Qtd.</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Unid. Medida</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Unit.</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Total</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Vencimento</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Dias Rest.</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Cadastro</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Fornecedor</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Categoria</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Tipo</th>
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((item, index) => {
-                const daysForConsumption = calculateConsumptionDays(
-                  item.dateAdded,
-                  item.expiryDate
-                );
-
-                // Verifica se o produto tem menos de 5 unidades no estoque
-                const isLowStock = parseInt(item.quantity, 10) < 5;
-                const isStocked = parseInt(item.quantity, 10) >= 5;
-                const isExpiredProduct = isExpired(item.expiryDate);
-
+              {filteredProducts.map((item, idx) => {
+                const days = calculateConsumptionDays(item.dateAdded, item.expiryDate);
+                const low = parseInt(item.quantity, 10) < 5;
+                const expired = isExpired(item.expiryDate);
                 return (
-                  <tr
-                    key={`${item.sku}-${index}`}
-                    className={`${isLowStock ? "low-stock" : ""} ${
-                      isExpiredProduct ? "expired" : ""
-                    }`}
-                  >
-                    <td className="table-cell">
-                      {isLowStock && (
-                        <span
-                          className="low-stock-badge"
-                          style={{ backgroundColor: "#FFC000" }}
-                        ></span>
-                      )}
-                      {isStocked && !isExpiredProduct && (
-                        <span
-                          className="stocked-badge"
-                          style={{ backgroundColor: "green" }}
-                        ></span>
-                      )}
-                      {isExpiredProduct && (
-                        <span
-                          className="expired-badge"
-                          style={{ backgroundColor: "red" }}
-                        ></span>
-                      )}
-                    </td>
-
-                    <td className="table-cell">{item.sku}</td>
-                    <td className="table-cell">{item.name}</td>
-                    <td className="table-cell">{item.marca}</td>
-                    <td className="table-cell">{item.peso}</td>
-                    <td className="table-cell">{item.quantity}</td>
-                    <td className="table-cell">{item.unitmeasure}</td>
-                    <td className="table-cell">{item.unitPrice}</td>
-                    <td className="table-cell">{item.totalPrice}</td>
-                    <td
-                      className="table-cell"
-                      onDoubleClick={() =>
-                        handleDoubleClick(item.sku, item.expiryDate)
-                      }
-                    >
-                      {editando === item.sku ? (
-                        <input
-                          type="date"
-                          value={valorEditado}
-                          onChange={handleChange}
-                          onBlur={() => handleSave(item.sku)} // Salva ao sair do campo de edição
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && handleSave(item.sku)
-                          } // Salva ao pressionar Enter
-                          autoFocus
-                        />
-                      ) : (
-                        formatDate(item.expiryDate || "--") // Formata a data
-                      )}
-                    </td>
-                    <td className="table-cell">
-                      {daysForConsumption >= 0 ? daysForConsumption : 0}
-                    </td>
-                    <td className="table-cell">{formatDate(item.dateAdded)}</td>
-                    <td className="table-cell">{item.supplier}</td>
-                    <td className="table-cell">{item.category || "N/A"}</td>
-                    <td className="table-cell">{item.tipo || "N/A"}</td>
+                  <tr key={idx} className="hover:bg-gray-50 even:bg-white odd:bg-gray-100">
+                    <td className="p-2 text-center">{low ? "⚠️" : expired ? "❌" : "✅"}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.sku}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.name}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.marca}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.peso}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.unitmeasure}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.unitPrice}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.totalPrice}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center cursor-pointer" onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)}>
+                      {editando === item.sku ? (<Input type="date" value={valorEditado} onChange={handleChange} onBlur={() => handleSave(item.sku)} className="border rounded w-full text-sm" autoFocus/>) : (formatDate(item.expiryDate))}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{days}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{formatDate(item.dateAdded)}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.supplier}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.category || "N/A"}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.tipo || "N/A"}</td>
                   </tr>
                 );
               })}
+              {filteredProducts.length === 0 && (<tr><td colSpan="15" className="p-4 text-center text-gray-500 italic">Nenhum registro encontrado.</td></tr>)}
             </tbody>
-          </table>
+          </Table>
         </div>
-
-        <button onClick={voltar} className="back-button">
-          Voltar
-        </button>
+        {/* Exportar */}
+        <div className="text-right">
+          <Button onClick={() => exportToExcel(filteredProducts)} className="bg-indigo-600 mt-4 hover:bg-indigo-700 text-white px-4 py-2 rounded">Exportar Excel</Button>
+        </div>
       </div>
     </div>
   );
