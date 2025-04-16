@@ -26,8 +26,8 @@ import { Button } from "react-scroll";
     export default function CadastroFornecedores () {
     const navigate = useNavigate(); // Instância do navigate
 
-    const [formData, setFormData] = useState({cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo", // Status inicial como "Ativo"
-    });
+    const [formData, setFormData] = useState({cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",  });// Status inicial como "Ativo"
+  
 
     const handleInputChange = (e) => {
     const { name, value } = e.target;
