@@ -85,6 +85,7 @@ export default function Estoque() {
       setFilteredProducts(filtered);
   };
 
+
   const clearDateFilter = () => {setFiltroInicio(""); setFiltroFim(""); setFilteredProducts(productsData);};
 
   const voltar = () => navigate("/Home");
@@ -131,6 +132,7 @@ export default function Estoque() {
           setEditando(null);
       }).catch(console.error);
   };
+
   // Exportar Excel
   const exportToExcel = (products) => {
     const ws = XLSX.utils.json_to_sheet(
