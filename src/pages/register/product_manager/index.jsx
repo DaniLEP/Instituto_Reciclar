@@ -4,14 +4,14 @@ import { getDatabase, ref, update, onValue } from "firebase/database";
 import { toast, ToastContainer } from "react-toastify";
 import debounce from "lodash.debounce";
 import "react-toastify/dist/ReactToastify.css";
-import BackButton from "../ui/Button/return/return";
-import { Table } from "../ui/table/table";
-import SearchInput from "../ui/input/searchInput";
-import SearchWrapper from "../ui/input/searchW";
-import { Button } from "../ui/Button/button";
-import Overlay from "../ui/overlay";
-import Title from "../ui/title";
-import { Input } from "../ui/input";
+import BackButton from "../../../components/ui/Button/return/return";
+import { Table } from "../../../components/ui/table/table";
+import SearchInput from "../../../components/ui/input/searchInput";
+import SearchWrapper from "../../../components/ui/input/searchW";
+import { Button } from "../../../components/ui/Button/button";
+import Overlay from "../../../components/ui/overlay";
+import Title from "../../../components/ui/title";
+import { Input } from "../../../components/ui/input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 
@@ -113,9 +113,7 @@ function Gerenciador() {
             </tbody>
           </Table>
         </div>
-      )}
-
-      {isModalOpen && (
+      )}{isModalOpen && (
         <>
           <Overlay onClick={closeModal} />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
