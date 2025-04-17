@@ -12,15 +12,7 @@ import { dbRealtime, dbFirestore } from "../../../../firebase"; // ✅ use isso 
 
 export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
-  const [pedidoSelecionado, setPedidoSelecionado] = useState({
-    numeroPedido: "",
-    status: "",
-    fornecedor: {},
-    periodoInicio: null,
-    periodoFim: null,
-    motivoCancelamento: "",
-    produtos: [],
-  });
+  const [pedidoSelecionado, setPedidoSelecionado] = useState({numeroPedido: "", status: "", fornecedor: {}, periodoInicio: null, periodoFim: null, motivoCancelamento: "", produtos: [],});
   const [modalAberto, setModalAberto] = useState(false);
   const [modalAbertoCancelamento, setModalAbertoCancelamento] = useState(false);
   const [motivoCancelamento, setMotivoCancelamento] = useState("");
@@ -39,19 +31,10 @@ export default function StatusPedidos() {
         const pedidosRef = ref(dbRealtime, "novosPedidos");
         const pedidosSnapshot = await get(pedidosRef);
         if (pedidosSnapshot.exists()) {
-          const pedidos = Object.entries(pedidosSnapshot.val()).map(([id, pedido]) => ({ id, ...pedido }));
-          setPedidos(pedidos);
-          setPedidosFiltrados(pedidos);
-        } else {
-          toast.error("Nenhum pedido encontrado!");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar pedidos:", error);
-        toast.error("Erro ao carregar pedidos");
-      }
-    };
-    carregarPedidos();
-  }, []);
+          const pedidos = Object.entries(pedidosSnapshot.val()).map(([id, pedido]) => ({ id, ...pedido })); setPedidos(pedidos);setPedidosFiltrados(pedidos);} 
+          else {toast.error("Nenhum pedido encontrado!");}
+      } catch (error) {console.error("Erro ao carregar pedidos:", error); toast.error("Erro ao carregar pedidos");}
+    }; carregarPedidos();}, []);
   
   useEffect(() => {
     const carregarProdutos = async () => {
@@ -60,49 +43,35 @@ export default function StatusPedidos() {
         const snapshot = await getDocs(produtosRef);
         const listaProdutos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setProdutosDisponiveis(listaProdutos);
-      } catch (error) {
-        toast.error("Erro ao carregar produtos");
-      }
-    };
-  
-    if (modalSelecionarProduto) {
-      carregarProdutos();
-    }
+      } catch (error) {toast.error("Erro ao carregar produtos");}
+    };   // Carregar produtos apenas quando o modal estiver aberto
+    if (modalSelecionarProduto) {carregarProdutos();} 
+    else {setProdutosDisponiveis([]);  }// Limpar a lista de produtos quando o modal for fechado
   }, [modalSelecionarProduto]);
-  
   
   const handleAtualizarStatus = (pedidoId, novoStatus, motivo) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
     const updates = { status: novoStatus };
-    if (motivo) updates.motivoCancelamento = motivo;
-
-    update(pedidoRef, updates)
-      .then(() => {
-        toast.success(`Status atualizado para ${novoStatus}`);
-        setPedidos((prev) =>
-          prev.map((p) => p.id === pedidoId ? { ...p, status: novoStatus, motivoCancelamento: motivo } : p)
-        ); if (novoStatus === "Aprovado") {
-          enviarParaEstoque(pedidoId);}
-      }).catch(() => toast.error("Erro ao atualizar status"));
+    if (motivo) {updates.motivoCancelamento = motivo;}
+    update(pedidoRef, updates).then(() => {toast.success(`Status atualizado para ${novoStatus}`); updates.dataCadastro = new Date().toISOString(); setPedidos((prev) =>  prev.map((p) => p.id === pedidoId ? { ...p, status: novoStatus, motivoCancelamento: motivo } : p)); if (novoStatus === "Aprovado") {enviarParaEstoque(pedidoId);}}).catch(() => toast.error("Erro ao atualizar status"));
   };
 
   const enviarParaEstoque = async (pedidoId) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
     const pedidoSnapshot = await get(pedidoRef);
-
     if (pedidoSnapshot.exists()) {
       const pedido = pedidoSnapshot.val();
       const estoqueRef = ref(dbRealtime, "Estoque");
+      const dataCadastro = new Date().toISOString().split("T")[0]; // formato YYYY-MM-DD
+      const fornecedor = pedido.fornecedor; // Certifique-se que o pedido tem esse campo
       const produtoPromises = pedido.produtos.map(async (produto) => {
-        await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, 
-          category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido", peso: produto.peso || "Indefinido", unit: produto.unitmeasure || "Indefinido",supplier: pedido.fornecedor?.razaoSocial || "Indefinido", "Data de Cadastro": new Date().toISOString(), "Valor Unitário": produto.unitPrice || 0, "Valor Total": produto.totalPrice || 0
-        });
-      });
-      await Promise.all(produtoPromises);
-      toast.success("Produtos adicionados ao estoque!");
-    } else {toast.error("Erro: Pedido não encontrado.");
-    }
+        const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido", peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido", supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || "",}); // se existir
+        console.log("Produto salvo com ID:", result.key);
+      }); await Promise.all(produtoPromises);
+      console.log("Todos os produtos foram enviados para o estoque.");
+    } else {console.warn("Pedido não encontrado!");}
   };
+  
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
@@ -116,9 +85,7 @@ export default function StatusPedidos() {
   };
 
   const exportToExcel = () => {
-    if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {toast.error("Nenhum produto para exportar!");
-      return;
-    }
+    if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {toast.error("Nenhum produto para exportar!"); return;}
     const ws = XLSX.utils.json_to_sheet(
     pedidoSelecionado.produtos.map((produto) => ({SKU: produto.sku, Produto: produto.name, Marca: produto.marca, Peso: produto.peso, UnidadeMedida: produto.unit, Quantidade: `${produto.quantidade} unidades`, Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.obersavacao,})));
     const wb = XLSX.utils.book_new();
@@ -128,20 +95,18 @@ export default function StatusPedidos() {
 
   const handleEditar = (index, campo, valor) => {
     const novosProdutos = [...pedidoSelecionado.produtos];
-    novosProdutos[index] = { ...novosProdutos[index], [campo]: valor };
-    setPedidoSelecionado({ ...pedidoSelecionado, produtos: novosProdutos });
+    novosProdutos[index][campo] = valor; // Atualiza o totalPrice automaticamente
+    const quantidade = parseFloat(novosProdutos[index].quantidade) || 0;
+    const unitPrice = parseFloat(novosProdutos[index].unitPrice) || 0;
+    novosProdutos[index].totalPrice = (quantidade * unitPrice).toFixed(2);
+    setPedidoSelecionado((prev) => ({...prev, produtos: novosProdutos,}));
   };
-
+  
   const handleSalvarEdicao = () => {
-    if (!pedidoSelecionado) {toast.error("Nenhum pedido selecionado para salvar!");
-      return;
-    }
-
+    if (!pedidoSelecionado) {toast.error("Nenhum pedido selecionado para salvar!"); return;}
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`);
-    update(pedidoRef, { produtos: pedidoSelecionado.produtos })
-      .then(() => {toast.success("Pedido atualizado com sucesso!"); 
-        setModalAbertoEdit(false);
-      }).catch(() => {toast.error("Erro ao salvar edição!");});
+    update(pedidoRef, { produtos: pedidoSelecionado.produtos }).then(() => {toast.success("Pedido atualizado com sucesso!"); 
+    setModalAbertoEdit(false);}).catch(() => {toast.error("Erro ao salvar edição!");});
   };
 
   const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos);};
@@ -154,9 +119,9 @@ export default function StatusPedidos() {
 
   const handleDelete = (index) => {
     setPedidoSelecionado((prev) => {
-      const novosProdutos = [...prev.produtos];
-      novosProdutos.splice(index, 1);
-      return { ...prev, produtos: novosProdutos };
+    const novosProdutos = [...prev.produtos];
+    novosProdutos.splice(index, 1);
+    return { ...prev, produtos: novosProdutos };
     });
   };
 
@@ -168,34 +133,17 @@ export default function StatusPedidos() {
         pedido.numeroPedido?.toLowerCase().includes(termo) ||
         pedido.fornecedor?.razaoSocial?.toLowerCase().includes(termo)
       );
-    } if (dataInicio) {
-      filteredPedidos = filteredPedidos.filter(
-        (pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio)
-      );
-    } if (dataFim) {
-      filteredPedidos = filteredPedidos.filter(
-        (pedido) => new Date(pedido.dataPedido) <= new Date(dataFim)
-      );
-    } if (statusFiltro) {
-      filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);
-    }
+    } if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));
+    } if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));
+    } if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
     setPedidosFiltrados(filteredPedidos);
   };
 
   const navigate = useNavigate();
   const handleVoltar = () => navigate(-1);
   const exportarConsultaParaExcel = () => {
-    if (pedidosFiltrados.length === 0) {
-      toast.error("Nenhum pedido filtrado para exportar!");
-      return;}
-    const dataParaExportar = pedidosFiltrados.map((pedido) => ({
-      Número: pedido.numeroPedido,
-      Data: formatDate(pedido.dataPedido),
-      Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado",
-      Categoria: pedido.category || "Não informado",
-      Status: pedido.status,
-      MotivoCancelamento: pedido.motivoCancelamento || ""
-    }));
+    if (pedidosFiltrados.length === 0) {toast.error("Nenhum pedido filtrado para exportar!"); return;}
+    const dataParaExportar = pedidosFiltrados.map((pedido) => ({Número: pedido.numeroPedido, Data: formatDate(pedido.dataPedido), Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado", Categoria: pedido.category || "Não informado", Status: pedido.status, MotivoCancelamento: pedido.motivoCancelamento || ""}));
     const ws = XLSX.utils.json_to_sheet(dataParaExportar);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Status dos Pedidos");
@@ -213,8 +161,7 @@ export default function StatusPedidos() {
           <Input type="text" placeholder="Número do Pedido ou Fornecedor" value={numeroPedidoFornecedor} onChange={(e) => setNumeroPedidoFornecedor(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
-          <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}
-            className="p-2 border border-gray-300 rounded w-full sm:w-auto">
+          <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}className="p-2 border border-gray-300 rounded w-full sm:w-auto">
               <option value="">Selecione o Status</option>
               <option value="Pendente">Pendente</option>
               <option value="Aprovado">Aprovado</option>
@@ -257,7 +204,7 @@ export default function StatusPedidos() {
                     )}
                   </td>
                 </tr>
-              ))    ) : (<tr><td colSpan="6" className="p-4 text-center">Nenhum pedido encontrado.</td></tr> )}
+              ))) : (<tr><td colSpan="6" className="p-4 text-center">Nenhum pedido encontrado.</td></tr> )}
           </tbody>
         </Table>
       </div>
@@ -333,79 +280,82 @@ export default function StatusPedidos() {
         </div>
         )}
       {modalAbertoEdit && pedidoSelecionado && (/* MODAL DE EDIÇÃO */
-      <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
-          <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalAbertoEdit(false)}>×</Button>
-          <h3 className="text-3xl font-bold text-center mb-2">Editar Pedido #{pedidoSelecionado.numeroPedido}</h3>
-          <p className="text-center mb-6 text-gray-700 font-medium">Status: <span className="font-normal">{pedidoSelecionado.status}</span></p>
-          <div className="overflow-x-auto">
-            <Table className="min-w-full text-sm border rounded-xl shadow">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="p-2">SKU</th>
-                  <th className="p-2">Produto</th>
-                  <th className="p-2">Marca</th>
-                  <th className="p-2">Tipo</th>
-                  <th className="p-2">Grupo</th>
-                  <th className="p-2">Peso Unit.</th>
-                  <th className="p-2">Unidade</th>
-                  <th className="p-2">Qtd</th>
-                  <th className="p-2">Valor Unit.</th>
-                  <th className="p-2">Total</th>
-                  <th className="p-2">Obs.</th>
-                  <th className="p-2">Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-              {pedidoSelecionado?.produtos?.map((produto, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-1 text-center"><Input type="number" value={produto.sku} onChange={(e) => handleEditar(index, "sku", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.name} onChange={(e) => handleEditar(index, "name", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.marca} onChange={(e) => handleEditar(index, "marca", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.tipo} onChange={(e) => handleEditar(index, "tipo", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.category} onChange={(e) => handleEditar(index, "category", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="number" value={produto.peso} onChange={(e) => handleEditar(index, "peso", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.unit} onChange={(e) => handleEditar(index, "unit", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="number" value={produto.quantidade} onChange={(e) => handleEditar(index, "quantidade", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Input type="number" value={produto.unitPrice} onChange={(e) => handleEditar(index, "unitPrice", e.target.value)} /></td>
-                    <td className="p-[1px] text-center">{(produto.quantidade * produto.unitPrice).toFixed(2)}</td>
-                    <td className="p-1 text-center"><Input type="text" value={produto.observacao} onChange={(e) => handleEditar(index, "observacoes", e.target.value)} /></td>
-                    <td className="p-1 text-center"><Button variant="destructive" onClick={() => handleDelete(index)}>Excluir</Button></td>
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+            <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalAbertoEdit(false)}>×</Button>
+            <h3 className="text-3xl font-bold text-center mb-2">Editar Pedido #{pedidoSelecionado.numeroPedido}</h3>
+            <p className="text-center mb-6 text-gray-700 font-medium">Status: <span className="font-normal">{pedidoSelecionado.status}</span></p>
+            <div className="overflow-x-auto">
+              <Table className="min-w-full text-sm border rounded-xl shadow">
+                <thead className="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th className="p-2">SKU</th>
+                    <th className="p-2">Produto</th>
+                    <th className="p-2">Marca</th>
+                    <th className="p-2">Tipo</th>
+                    <th className="p-2">Grupo</th>
+                    <th className="p-2">Peso Unit.</th>
+                    <th className="p-2">Unidade</th>
+                    <th className="p-2">Qtd</th>
+                    <th className="p-2">Valor Unit.</th>
+                    <th className="p-2">Total</th>
+                    <th className="p-2">Obs.</th>
+                    <th className="p-2">Ação</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <div className="mt-6 flex justify-between">
-            <Button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"  onClick={() => setModalSelecionarProduto(true)}> + Adicionar Produto</Button>
-            <Button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" onClick={handleSalvarEdicao}>Salvar Edição</Button>
-          </div>
-              {modalSelecionarProduto && (
-              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-                  <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalSelecionarProduto(false)}>×</Button>
-                  <h3 className="text-2xl font-bold text-center mb-4">Selecionar Produto</h3>
-                  <Table className="min-w-full text-sm border rounded-xl shadow">
-                    <thead className="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th className="p-2">SKU</th>
-                        <th className="p-2">Nome</th>
-                        <th className="p-2">Marca</th>
-                        <th className="p-2">Ação</th>
+                </thead>
+                <tbody>
+                {pedidoSelecionado?.produtos?.map((produto, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="p-1 text-center"><Input type="number" value={produto.sku} onChange={(e) => handleEditar(index, "sku", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.name} onChange={(e) => handleEditar(index, "name", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.marca} onChange={(e) => handleEditar(index, "marca", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.tipo} onChange={(e) => handleEditar(index, "tipo", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.category} onChange={(e) => handleEditar(index, "category", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="number" value={produto.peso} onChange={(e) => handleEditar(index, "peso", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.unit} onChange={(e) => handleEditar(index, "unit", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="number" value={produto.quantidade} onChange={(e) => handleEditar(index, "quantidade", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="number" value={produto.unitPrice} onChange={(e) => handleEditar(index, "unitPrice", e.target.value)} /></td>
+                      <td className="p-[1px] text-center">{(produto.quantidade * produto.unitPrice).toFixed(2)}</td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.observacao} onChange={(e) => handleEditar(index, "observacoes", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Button variant="destructive" onClick={() => handleDelete(index)}>Excluir</Button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+            <div className="mt-6 flex justify-between">
+              <Button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"  onClick={() => setModalSelecionarProduto(true)}> + Adicionar Produto</Button>
+              <Button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" onClick={handleSalvarEdicao}>Salvar Edição</Button>
+            </div>
+            {modalSelecionarProduto && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+                <Button className="absolute top-4 right-4 bg-red-500 text-white w-10 h-10 rounded-full hover:bg-red-600" onClick={() => setModalSelecionarProduto(false)} aria-label="Fechar modal">×</Button>
+                <h3 className="text-2xl font-bold text-center mb-4">Selecionar Produto</h3>
+                <Table className="min-w-full text-sm border rounded-xl shadow">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="p-2">SKU</th>
+                      <th className="p-2">Nome</th>
+                      <th className="p-2">Marca</th>
+                      <th className="p-2">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {produtosDisponiveis.map((produto) => (
+                      <tr key={produto.sku} className="border-t hover:bg-gray-50">
+                        <td className="p-2 text-center">{produto.sku}</td>
+                        <td className="p-2 text-center">{produto.name}</td>
+                        <td className="p-2 text-center">{produto.marca}</td>
+                        <td className="p-2 text-center">
+                          <Button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"  onClick={() => {handleSelecionarProduto(produto); setModalSelecionarProduto(false);}}>Selecionar</Button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {produtosDisponiveis.map((produto, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="p-2 text-center">{produto.sku}</td>
-                          <td className="p-2 text-center">{produto.name}</td>
-                          <td className="p-2 text-center">{produto.marca}</td>
-                          <td className="p-2 text-center"><Button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"onClick={() => {handleSelecionarProduto(produto); setModalSelecionarProduto(false);}}>Selecionar</Button></td>
-                        </tr>))}
-                    </tbody>
-                  </Table>
-                </div>
-              </div>)}
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </div>)}
         </div>
       </div>)}
     </div>

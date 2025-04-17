@@ -84,10 +84,7 @@ export default function Estoque() {
       if (!cad) return false; return (!inicio || cad >= inicio) && (!fim || cad <= fim);});
       setFilteredProducts(filtered);
   };
-
-
   const clearDateFilter = () => {setFiltroInicio(""); setFiltroFim(""); setFilteredProducts(productsData);};
-
   const voltar = () => navigate("/Home");
 
   // Dias para consumo
