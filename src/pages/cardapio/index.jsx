@@ -1,97 +1,68 @@
-// src/components/CadastroCardapioSemana2.jsx
-import { useState } from 'react';
-import { ref, set } from 'firebase/database';
-import { db } from "../../../firebase";
-import Title from '@/components/ui/title';
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 
-const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-const secoes = [
-  'Opção Vegetariana',
-  'Prato Principal',
-  'Guarnição',
-  'Salada',
-  'Fruta'
-];
-
-// Cria estrutura inicial com campos vazios
-const criarEstruturaInicial = () => {
-  const estrutura = [['Composição', ...diasSemana]];
-  secoes.forEach(secao => {
-    estrutura.push([secao, '', '', '', '', '']);
-  });
-  return estrutura;
-};
-
-const CadastroCardapioSemana2 = () => {
-  const [cardapio, setCardapio] = useState(criarEstruturaInicial());
-  const [status, setStatus] = useState(null);
-
-  const handleChange = (rowIdx, colIdx, value) => {
-    const novoCardapio = [...cardapio];
-    novoCardapio[rowIdx][colIdx] = value;
-    setCardapio(novoCardapio);
-  };
-
-  const salvarCardapio = async () => {
-    try {
-      await set(ref(db, 'cardapio/semana2/composicoes'), cardapio);
-      setStatus('Cardápio salvo com sucesso!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Erro ao salvar o cardápio.');
-    }
-  };
-
+export default function  Cardapio() {
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <Title className="text-2xl font-bold mb-4 text-center">Cadastro de Cardápio - Semana 2</Title>
-
-      <div className="overflow-x-auto">
-        <table className="table-auto border-collapse w-full text-sm text-center">
-          <thead>
-            <tr>
-              {cardapio[0].map((dia, i) => (
-                <th key={i} className="border bg-pink-100 px-2 py-1">{dia}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {cardapio.slice(1).map((linha, rowIndex) => (
-              <tr key={rowIndex}>
-                {linha.map((celula, colIndex) => (
-                  <td key={colIndex} className="border px-2 py-1">
-                    {colIndex === 0 ? (
-                      <span className="font-semibold">{celula}</span>
-                    ) : (
-                      <input
-                        type="text"
-                        className="w-full px-1 py-0.5 border rounded"
-                        value={celula}
-                        onChange={(e) =>
-                          handleChange(rowIndex + 1, colIndex, e.target.value)
-                        }
-                      />
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div style={{
+      minHeight: "100vh",
+      padding: "20px 0",
+      display: 'flex', // Adicionado display flex
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+    }}
+  >
+      <div>
+        <h1 className="text-[5rem] font-bold text-white space-x-6 text-center mb-4">
+          Cardápios
+        </h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Cards */}
+          <Card
+            link="/cadastro-de-almoço"
+            imgSrc="/almoço.png"
+            title="Cardápio de Almoço"
+          />
+          <Card
+            link="/cadastro-cardápio-lanche"
+            imgSrc="/cafe-da-manha.png"
+            title="Cardápio de Lanche da Tarde"
+          />  
+                <Card
+            link="/Cadastro_Refeicoes" ///Cadastro_Refeicoes link exato
+            imgSrc="/refeição.jpeg"
+            title="Cadastro de Refeições"
+          />
+          <Card className="align-center"
+            link="/Refeicoes_Servidas" 
+            imgSrc="/prancheta.png"
+            title="Lista de Refeições"
+          />
+          <Card
+            link="/Home"
+            title="Voltar"
+            isBackCard
+          />
+        </div>
       </div>
-
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={salvarCardapio}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Salvar Cardápio
-        </button>
-      </div>
-
-      {status && <p className="text-center mt-4 font-medium">{status}</p>}
+    </div>
+  );
+}''
+const Card = ({ link, imgSrc, title, isBackCard }) => {
+  return (
+    <div className="bg-gray-100 rounded-lg shadow-md transition-transform transform hover:scale-105">
+      <Link to={link} className="flex flex-col items-center p-6 text-center">
+        {isBackCard ? (
+          <FontAwesomeIcon icon={faArrowLeft} className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" />
+        ) : (
+          <img src={imgSrc} className="h-[110px] mx-auto mb-1 mt-1" alt={title} />
+        )}
+        <h2 className={`text-[1.5rem] font-bold text-black`}>
+          {title}
+        </h2>
+      </Link>
     </div>
   );
 };
 
-export default CadastroCardapioSemana2;

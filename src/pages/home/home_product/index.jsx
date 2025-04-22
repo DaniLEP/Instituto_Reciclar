@@ -44,16 +44,6 @@ export default function Cadastro() {
             imgSrc="/lista-de-contatos.png"            
             title="Lista de Fornecedores"
           />
-          <Card
-            link="/Cadastro_Refeicoes" ///Cadastro_Refeicoes link exato
-            imgSrc="/ref.servidas.svg"
-            title="Cadastro de Refeições"
-          />
-          <Card className="align-center"
-            link="/Refeicoes_Servidas" 
-            imgSrc="/prancheta.png"
-            title="Lista de Refeições"
-          />
 
           <Card
             link="/Home"

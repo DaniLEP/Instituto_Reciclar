@@ -21,7 +21,8 @@ import VisualizarFornecedores from '@/pages/register/Supplier/view_supplier'
 import StatusPedidos from '@/components/New_Order/Status_Order/StatusPedido'
 import RetiradaProdutos from '@/pages/withdraw/withdraw-home'
 import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
-import CardapioSemana2 from '@/pages/cardapio/index.jsx'
+import CardapioSemana2 from '@/pages/cardapio/almoco/index.jsx'
+import Cardapio from './pages/cardapio'
 
 // ROTAS COM LAZY LOADING
 const Estoque = React.lazy(() => import('@/pages/Stock'))
@@ -55,7 +56,9 @@ const router = createBrowserRouter([
       { path: '/Visualizar_Fornecedores', element: <VisualizarFornecedores /> },
       { path: '/Gestão_Pedido', element: <StatusPedidos /> },
       { path: '/editar-fornecedor/:id', element: <EditarFornecedor /> },
-      { path: '/cardapio', element: <CardapioSemana2 /> },
+      { path: '/cadastro-de-almoço', element: <CardapioSemana2 /> },
+      { path: '/cardapio', element: <Cardapio /> },
+
 
 
       // ROTAS LAZY COM <Suspense>
