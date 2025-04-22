@@ -19,5 +19,6 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const dbRealtime = getDatabase(app);
 const dbFirestore = getFirestore(app);
+const db = getDatabase(app);
 
-export { dbRealtime, dbFirestore };
+export { dbRealtime, dbFirestore, db };

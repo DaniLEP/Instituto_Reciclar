@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 
 export default function Cadastro() {
   return (
@@ -19,27 +21,27 @@ export default function Cadastro() {
           {/* Cards */}
           <Card
             link="/Cadastro_Geral"
-            imgSrc="/cadastro.svg"
+            imgSrc="/cadastro.png"
             title="Cadastro de Produtos"
           />
           <Card
             link="/Gerenciador_Produtos"
-            imgSrc="/Gerenciador.png"
+            imgSrc="/caracteristicas.png"
             title="Produtos Cadastrados"
           />  
           <Card
             link="/Entrada_Produtos"
-            imgSrc="/entrada.svg"
+            imgSrc="/caixa-de-entrada.png"
             title="Entrada de Produtos"
           />
           <Card
             link="/Cadastro_Fornecedor"
-            imgSrc="/entregador.png"
+            imgSrc="/forncedor.png"
             title="Fornecedor"
           />
             <Card
             link="/Visualizar_Fornecedores"
-            imgSrc="/users-control.png"            
+            imgSrc="/lista-de-contatos.png"            
             title="Lista de Fornecedores"
           />
           <Card
@@ -47,32 +49,36 @@ export default function Cadastro() {
             imgSrc="/ref.servidas.svg"
             title="Cadastro de Refeições"
           />
-            <Card
+          <Card className="align-center"
             link="/Refeicoes_Servidas" 
-            imgSrc="/refeicoes-servidas.png"
+            imgSrc="/prancheta.png"
             title="Lista de Refeições"
           />
 
-          <Card link="/Home" imgSrc="/return.svg" title="Voltar" isBackCard />
+          <Card
+            link="/Home"
+            title="Voltar"
+            isBackCard
+          />
         </div>
       </div>
     </div>
   );
-}
-
+}''
 const Card = ({ link, imgSrc, title, isBackCard }) => {
   return (
     <div className="bg-gray-100 rounded-lg shadow-md transition-transform transform hover:scale-105">
       <Link to={link} className="flex flex-col items-center p-6 text-center">
-        <img src={imgSrc} className="h-[120px] mx-auto mb-4" alt={title} />
-        <h2
-          className={`text-[1.5rem] font-bold ${
-            isBackCard ? "text-black" : "text-black"
-          }`}
-        >
+        {isBackCard ? (
+          <FontAwesomeIcon icon={faArrowLeft} className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" />
+        ) : (
+          <img src={imgSrc} className="h-[110px] mx-auto mb-1 mt-1" alt={title} />
+        )}
+        <h2 className={`text-[1.5rem] font-bold text-black`}>
           {title}
         </h2>
       </Link>
     </div>
   );
 };
+

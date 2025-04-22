@@ -68,12 +68,14 @@ export default function Home() {
         {/* Conteúdo da Home */}
         <div className="bg-gradient-to-br from-[#6a11cb] to-[#2575fc] min-h-screen py-5 mb-[50px]">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-[10px]">
-            <Card to="/Pedidos" imgSrc="/listaPedidos.svg" imgAlt="Pedidos" title="Pedidos" />
-            <Card to="/Cadastro" imgSrc="/cadastro.svg" imgAlt="Cadastro" title="Cadastros" />
+            <Card to="/Pedidos" imgSrc="/pedidos.png" imgAlt="Pedidos" title="Pedidos" />
+            <Card to="/Cadastro" imgSrc="/item.png" imgAlt="Cadastro" title="Cadastros" />
             <Card to="/Estoque" imgSrc="/estoque.png" imgAlt="Estoque" title="Estoque" />
-            <Card to="/Dashboard" imgSrc="/relatorio.svg" imgAlt="Relatórios" title="Relatórios" />
-            <Card to="/home-retirada" imgSrc="/retirada.svg" imgAlt="Retirada" title="Retirada" />
-            <Card to="/Verificacao_Usuario" imgSrc="/users-control.png" imgAlt="Controle de Usuários" title="Controle de Usuários" />
+            <Card to="/Dashboard" imgSrc="/dashborad.png" imgAlt="Relatórios" title="Relatórios" />
+            <Card to="/home-retirada" imgSrc="/retirada.png" imgAlt="Retirada" title="Retirada" />
+            <Card to="/Verificacao_Usuario" imgSrc="/controle.png" imgAlt="Controle de Usuários" title="Controle de Usuários" />
+            <Card to="/cardapio" imgSrc="/cardapio.png" imgAlt="Cardápio" title="Cardápio" />
+
           </div>
         </div>
         {/* Footer */}
