@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import Header from "../../components/header/index.jsx";
+import Header from "../../../components/ui/header/index";
 import { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";

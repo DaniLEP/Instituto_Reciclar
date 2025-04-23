@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Button } from "../ui/Button/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from "../../../components/ui/Button/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 
 // Configuração do Firebase
 const firebaseConfig = {

@@ -147,7 +147,7 @@ export default function Estoque() {
       <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <Title className="text-2xl sm:text-3xl text-black font-semibold text-gray-800 mb-4 sm:mb-0">Controle de Estoque</Title>
+          <Title className="text-2xl sm:text-3xl text-black font-semibold text-blackc mb-4 sm:mb-0">Controle de Estoque</Title>
           <Button onClick={voltar} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Voltar</Button>
         </div>
         {/* Busca */}

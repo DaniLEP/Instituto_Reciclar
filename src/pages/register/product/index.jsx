@@ -92,9 +92,7 @@ export default function CadProdutos() {
           <Button onClick={handleSave} disabled={saveLoading} className="bg-blue-600  w-[200px] text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700">
             {saveLoading ? "Salvando..." : "Salvar"}
           </Button>
-          <Button onClick={() => navigate(-1)} className="bg-gray-500 w-[200px] text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-600">
-            Voltar
-          </Button>
+          <Button onClick={() => navigate(-1)} className="bg-gray-500 w-[200px] text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-600">Voltar</Button>
         </div>
       </div>
       {modalOpen && (
@@ -102,27 +100,27 @@ export default function CadProdutos() {
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="text-lg font-bold">Selecione um Fornecedor</h2>
             <Table>
-          <thead>
-            <tr>
-            <th className="p-3 text-center">CNPJ</th>
-              <th className="p-3 text-center">Razão Social</th>
-              <th className="p-3 text-center">Telefone</th>
-              <th className="p-3 text-center">E-mail</th>
-              <th className="p-3 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suppliers.map((sup, index) => (
-              <tr key={sup.razaoSocial}>
-                 <td className="p-3">{sup.cnpj}</td>
-                  <td className="p-3">{sup.razaoSocial}</td>
-                  <td className="p-3">{sup.telefone}</td>
-                  <td className="p-3">{sup.email}</td>
-                  <td className={`p-3 font-semibold ${sup.status === "Ativo" ? "text-green-600" : "text-red-600"}`}>{sup.status} </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+              <thead>
+                <tr>
+                <th className="p-3 text-center">CNPJ</th>
+                  <th className="p-3 text-center">Razão Social</th>
+                  <th className="p-3 text-center">Telefone</th>
+                  <th className="p-3 text-center">E-mail</th>
+                  <th className="p-3 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {suppliers.map((sup, index) => (
+                  <tr key={sup.razaoSocial}>
+                    <td className="p-3">{sup.cnpj}</td>
+                      <td className="p-3">{sup.razaoSocial}</td>
+                      <td className="p-3">{sup.telefone}</td>
+                      <td className="p-3">{sup.email}</td>
+                      <td className={`p-3 font-semibold ${sup.status === "Ativo" ? "text-green-600" : "text-red-600"}`}>{sup.status} </td>
+                  </tr>
+                ))}
+              </tbody>
+           </Table>
             <Button onClick={() => setModalOpen(false)} className="mt-4 bg-red-500 text-white py-1 px-4 rounded w-full">Fechar</Button>
           </div>
         </div>

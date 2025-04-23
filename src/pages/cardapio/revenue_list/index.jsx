@@ -5,6 +5,8 @@ import * as XLSX from "xlsx";
 import { Input } from "@/components/ui/input";
 import { Table } from "@/components/ui/table/table";
 import { getApps, initializeApp } from "firebase/app";
+import { Button } from "@/components/ui/Button/button";
+import { Label } from "@radix-ui/react-label";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -147,85 +149,38 @@ export default function ExibirRefeicoes() {
 
         <div className="flex flex-wrap gap-4 justify-center mb-6">
           <div className="flex flex-col md:flex-row items-center gap-2">
-            <label className="text-sm font-medium">Data Início:</label>
-            <input
-              type="date"
-              className="rounded-md border px-3 py-2 text-black"
-              value={filtroInicio}
-              onChange={(e) => setFiltroInicio(e.target.value)}
-            />
+            <Label className="text-sm font-medium">Data Início:</Label>
+            <Input type="date" className="rounded-md border px-3 py-2 text-black" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} />
           </div>
           <div className="flex flex-col md:flex-row items-center gap-2">
-            <label className="text-sm font-medium">Data Fim:</label>
-            <input
-              type="date"
-              className="rounded-md border px-3 py-2 text-black"
-              value={filtroFim}
-              onChange={(e) => setFiltroFim(e.target.value)}
-            />
+            <Label className="text-sm font-medium">Data Fim:</Label>
+            <Input type="date" className="rounded-md border px-3 py-2 text-black" value={filtroFim}
+              onChange={(e) => setFiltroFim(e.target.value)} />
           </div>
-          <button
-            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold"
-            onClick={filtrarRefeicoes}
-          >
-            Filtrar
-          </button>
-          <button
-            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white font-semibold"
-            onClick={limparFiltros}
-          >
-            Limpar
-          </button>
+          <Button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold" onClick={filtrarRefeicoes}>Filtrar</Button>
+          <Button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white font-semibold" onClick={limparFiltros}>Limpar</Button>
         </div>
 
         <div className="flex justify-center gap-4 mb-4">
-          <button
-            className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded text-white font-semibold"
-            onClick={exportToExcel}
-          >
-            📁 Exportar Excel
-          </button>
-          <button
-            className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded text-white font-semibold"
-            onClick={() => navigate(-1)}
-          >
-            🔙 Voltar
-          </button>
+          <Button className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded text-white font-semibold" onClick={exportToExcel}>📁 Exportar Excel</Button>
+          <Button className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded text-white font-semibold" onClick={() => navigate(-1)}>🔙 Voltar</Button>
         </div>
 
         <div className="overflow-auto rounded-lg border border-gray-200">
           <Table className="min-w-full text-sm text-center">
             <thead className="bg-indigo-700 text-white">
               <tr>
-                {headers.map((header, i) => (
-                  <th key={i} className="px-4 py-3 border">{header}</th>
-                ))}
+                {headers.map((header, i) => (<th key={i} className="px-4 py-3 border">{header}</th>))}
               </tr>
             </thead>
             <tbody>
               {refeicoes.map((refeicao) => (
                 <tr key={refeicao.key} className="odd:bg-gray-100 even:bg-gray-50">
                   {fields.map((field) => (
-                    <td
-                      key={field}
-                      className="border px-3 py-2"
-                      onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}
-                    >
+                    <td key={field} className="border px-3 py-2" onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}>
                       {editando?.id === refeicao.key && editando.field === field ? (
-                        <Input
-                          type="text"
-                          value={valorEditado}
-                          onChange={handleChange}
-                          onKeyDown={handleKeyDown}
-                          onBlur={handleBlur}
-                          autoFocus
-                          className="w-full border px-2 py-1 rounded"
-                        />
-                      ) : field === "dataRefeicao" ? (
-                        formatDate(refeicao[field])
-                      ) : (
-                        refeicao[field]
-                      )}
+                        <Input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown}
+                          onBlur={handleBlur} autoFocus className="w-full border px-2 py-1 rounded" />) : field === "dataRefeicao" ? (formatDate(refeicao[field])) : (refeicao[field])}
                     </td>
                   ))}
                 </tr>

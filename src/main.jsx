@@ -5,25 +5,25 @@ import React from 'react'
 
 import './index.css'
 import App from './App.jsx'
-import ErrorPage from '@/components/error'
-import LoginForm from '@/pages/Login'
+import ErrorPage from '@/components/ui/error'
+import LoginForm from '@/pages/Login/auth_page'
 
 
 // ROTAS CARREGADAS NORMALMENTE
-import Home from '@/pages/home'
+import Home from '@/pages/home/home_primary/index'
 import ListaPedidos from '@/pages/home/home_list-order'
 import EditarProduto from '@/components/Edit/product'
 import Cadastro from '@/pages/home/home_product'
-import Retirada from '@/pages/withdraw'
+import Retirada from '@/pages/withdraw/withdraw_primary'
 import Profile from '@/pages/profille'
 import Registro from '@/pages/register_auth'
 import AdminUsuarios from '@/pages/Login/profile_verification/Verificação'
 import VisualizarFornecedores from '@/pages/register/Supplier/view_supplier'
-import StatusPedidos from '@/components/New_Order/Status_Order/StatusPedido'
+import StatusPedidos from '@/pages/order/order_status'
 import RetiradaProdutos from '@/pages/withdraw/withdraw-home'
 import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
 import CardapioSemana2 from '@/pages/cardapio/almoco/index.jsx'
-import Cardapio from './pages/cardapio'
+import Cardapio from './pages/cardapio/cadapio_primary'
 import CardapioLanche from './pages/cardapio/lanche/index'
 
 // ROTAS COM LAZY LOADING
@@ -31,13 +31,13 @@ const Estoque = React.lazy(() => import('@/pages/Stock'))
 const Relatorio = React.lazy(() => import('@/pages/home/dashboard'))
 const CadProdutos = React.lazy(() => import('@/pages/register/product'))
 const EntradaProdutos = React.lazy(() => import('@/pages/register/prohibited'))
-const CadastroRefeicoes = React.lazy(() => import('@/components/Revenue_Registration/CadastroReceita'))
-const RelatorioRef = React.lazy(() => import('@/components/Dashboards/Dashboard_Ref/RelatorioRef'))
+const CadastroRefeicoes = React.lazy(() => import('@/pages/cardapio/revenue_register'))
+const RelatorioRef = React.lazy(() => import('@/pages/dashboard/revenue'))
 const HistoricoRetiradas = React.lazy(() => import('@/pages/withdraw/withdral-history'))
-const NovoPedido = React.lazy(() => import('@/components/New_Order/NovoPedido'))
+const NovoPedido = React.lazy(() => import('@/pages/order/register_order'))
 const Gerenciador = React.lazy(() => import('@/pages/register/product_manager'))
 const CadastroFornecedores = React.lazy(() => import('@/pages/register/Supplier'))
-const ExibirRefeicoes = React.lazy(() => import('@/components/Revenue_Registration/Status_Revenue/Status_Revenue'))
+const ExibirRefeicoes = React.lazy(() => import('@/pages/cardapio/revenue_list'))
 
 const router = createBrowserRouter([
   {
