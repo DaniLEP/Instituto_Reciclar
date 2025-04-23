@@ -8,6 +8,7 @@ import App from './App.jsx'
 import ErrorPage from '@/components/error'
 import LoginForm from '@/pages/Login'
 
+
 // ROTAS CARREGADAS NORMALMENTE
 import Home from '@/pages/home'
 import ListaPedidos from '@/pages/home/home_list-order'
@@ -23,6 +24,7 @@ import RetiradaProdutos from '@/pages/withdraw/withdraw-home'
 import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
 import CardapioSemana2 from '@/pages/cardapio/almoco/index.jsx'
 import Cardapio from './pages/cardapio'
+import CardapioLanche from './pages/cardapio/lanche/index'
 
 // ROTAS COM LAZY LOADING
 const Estoque = React.lazy(() => import('@/pages/Stock'))
@@ -58,6 +60,7 @@ const router = createBrowserRouter([
       { path: '/editar-fornecedor/:id', element: <EditarFornecedor /> },
       { path: '/cadastro-de-almoço', element: <CardapioSemana2 /> },
       { path: '/cardapio', element: <Cardapio /> },
+      { path: '/cadastro-cardápio-lanche', element: <CardapioLanche />},
 
 
 

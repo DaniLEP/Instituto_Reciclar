@@ -4,7 +4,6 @@ import { db } from "../../../../firebase.js";
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import Title from '@/components/ui/title';
 import { Button } from '@/components/ui/Button/button.jsx';
 import { Input } from '@/components/ui/input/index.jsx';
@@ -126,48 +125,61 @@ const CadastroCardapio = () => {
       return;
     }
 
-    const dados = {
-      composicoes: {
-        semana1: {
-          nutricionista: { nome: dadosNutriSemana1.nomeNutri, crn3: dadosNutriSemana1.crn3 },
-          periodo: { inicio: dadosNutriSemana1.dataInicio, fim: dadosNutriSemana1.dataFim },
-          cardapio: cardapioSemana1
+      const dados = {
+        composicoes: {
+          semana1: {
+            nutricionista: { nome: dadosNutriSemana1.nomeNutri, crn3: dadosNutriSemana1.crn3 },
+            periodo: { inicio: dadosNutriSemana1.dataInicio, fim: dadosNutriSemana1.dataFim },
+            cardapio: cardapioSemana1
+          },
+          semana2: {
+            nutricionista: { nome: dadosNutriSemana2.nomeNutri, crn3: dadosNutriSemana2.crn3 },
+            periodo: { inicio: dadosNutriSemana2.dataInicio, fim: dadosNutriSemana2.dataFim },
+            cardapio: cardapioSemana2
+          },
+          semana3: {
+            nutricionista: { nome: dadosNutriSemana3.nomeNutri, crn3: dadosNutriSemana3.crn3 },
+            periodo: { inicio: dadosNutriSemana3.dataInicio, fim: dadosNutriSemana3.dataFim },
+            cardapio: cardapioSemana3
+          },
+          semana4: {
+            nutricionista: { nome: dadosNutriSemana4.nomeNutri, crn3: dadosNutriSemana4.crn3 },
+            periodo: { inicio: dadosNutriSemana4.dataInicio, fim: dadosNutriSemana4.dataFim },
+            cardapio: cardapioSemana4
+          },
+          semana5: {
+            nutricionista: { nome: dadosNutriSemana5.nomeNutri, crn3: dadosNutriSemana5.crn3 },
+            periodo: { inicio: dadosNutriSemana5.dataInicio, fim: dadosNutriSemana5.dataFim },
+            cardapio: cardapioSemana5
+          },
         },
-        semana2: {
-          nutricionista: { nome: dadosNutriSemana2.nomeNutri, crn3: dadosNutriSemana2.crn3 },
-          periodo: { inicio: dadosNutriSemana2.dataInicio, fim: dadosNutriSemana2.dataFim },
-          cardapio: cardapioSemana2
-        },
-        semana3: {
-          nutricionista: { nome: dadosNutriSemana3.nomeNutri, crn3: dadosNutriSemana3.crn3 },
-          periodo: { inicio: dadosNutriSemana3.dataInicio, fim: dadosNutriSemana3.dataFim },
-          cardapio: cardapioSemana3
-        },
-        semana4: {
-          nutricionista: { nome: dadosNutriSemana4.nomeNutri, crn3: dadosNutriSemana4.crn3 },
-          periodo: { inicio: dadosNutriSemana4.dataInicio, fim: dadosNutriSemana4.dataFim },
-          cardapio: cardapioSemana4
-        },
-        semana5: {
-          nutricionista: { nome: dadosNutriSemana5.nomeNutri, crn3: dadosNutriSemana5.crn3 },
-          periodo: { inicio: dadosNutriSemana5.dataInicio, fim: dadosNutriSemana5.dataFim },
-          cardapio: cardapioSemana5
-        },
-      },
-      dataCadastro: new Date().toISOString()
+        dataCadastro: new Date().toISOString()
+      };
+    
+      try {
+        await set(ref(db, 'cardapioAlmoco'), dados);
+        toast.success("Cardápio salvo com sucesso!");
+    
+        // Limpa todos os campos após o salvamento
+        setDadosNutriSemana1({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' });
+        setDadosNutriSemana2({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' });
+        setDadosNutriSemana3({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' });
+        setDadosNutriSemana4({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' });
+        setDadosNutriSemana5({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' });
+    
+        setCardapioSemana1(criarEstruturaInicial());
+        setCardapioSemana2(criarEstruturaInicial());
+        setCardapioSemana3(criarEstruturaInicial());
+        setCardapioSemana4(criarEstruturaInicial());
+        setCardapioSemana5(criarEstruturaInicial());
+      } catch (error) {
+        console.error(error);
+        toast.error("Erro ao salvar o cardápio.");
+      }
     };
 
-    try {
-      await set(ref(db, 'cardapio'), dados);
-      toast.success("Cardápio salvo com sucesso!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao salvar o cardápio.");
-    }
-  };
-
   return (
-    <div className="p-6 max-w-8xl mx-auto bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+    <div className="p-6 max-w-8xl mx-auto bg-gradient-to-r from-blue-900 to-gray-800">
       <div className="flex justify-between items-center mb-6">
         <Button onClick={() => navigate(-1)} className="bg-white hover:bg-gray-500 text-gray-800 px-4 py-2 rounded-md shadow">
           <FontAwesomeIcon icon={faArrowLeft} className="h-5" />
@@ -175,19 +187,16 @@ const CadastroCardapio = () => {
         <Title style={{ color: 'white' }} className="text-3xl text-center font-bold">Cadastro de Cardápio Almoço</Title>
         <div />
       </div>
-
       <CadastroCardapioSemana semana="Semana 1" dadosNutri={dadosNutriSemana1} setDadosNutri={setDadosNutriSemana1} cardapio={cardapioSemana1} handleChange={(row, col, val) => handleChange(1, row, col, val)} />
       <CadastroCardapioSemana semana="Semana 2" dadosNutri={dadosNutriSemana2} setDadosNutri={setDadosNutriSemana2} cardapio={cardapioSemana2} handleChange={(row, col, val) => handleChange(2, row, col, val)} />
       <CadastroCardapioSemana semana="Semana 3" dadosNutri={dadosNutriSemana3} setDadosNutri={setDadosNutriSemana3} cardapio={cardapioSemana3} handleChange={(row, col, val) => handleChange(3, row, col, val)} />
       <CadastroCardapioSemana semana="Semana 4" dadosNutri={dadosNutriSemana4} setDadosNutri={setDadosNutriSemana4} cardapio={cardapioSemana4} handleChange={(row, col, val) => handleChange(4, row, col, val)} />
       <CadastroCardapioSemana semana="Semana 5" dadosNutri={dadosNutriSemana5} setDadosNutri={setDadosNutriSemana5} cardapio={cardapioSemana5} handleChange={(row, col, val) => handleChange(5, row, col, val)} />
-
       <div className="flex justify-center mt-6">
-        <Button onClick={salvarCardapio} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all">Salvar Cardápio</Button>
+        <Button onClick={salvarCardapio} className="bg-green-600 hover:bg-green-700 text-white w-[1150px] font-bold  px-6 rounded-lg shadow-md transition-all">Salvar Cardápio</Button>
       </div>
       <ToastContainer />
     </div>
   );
 };
-
 export default CadastroCardapio;
