@@ -25,6 +25,7 @@ import EditarFornecedor from '@/pages/register/Supplier/edit_supplier'
 import CardapioSemana2 from '@/pages/cardapio/almoco/index.jsx'
 import Cardapio from './pages/cardapio/cadapio_primary'
 import CardapioLanche from './pages/cardapio/lanche/index'
+import CarregarCardapios from './pages/cardapio/list_almoco'
 
 // ROTAS COM LAZY LOADING
 const Estoque = React.lazy(() => import('@/pages/Stock'))
@@ -61,6 +62,8 @@ const router = createBrowserRouter([
       { path: '/cadastro-de-almoço', element: <CardapioSemana2 /> },
       { path: '/cardapio', element: <Cardapio /> },
       { path: '/cadastro-cardápio-lanche', element: <CardapioLanche />},
+      { path: '/cardápio-almoco', element: <CarregarCardapios />},
+
 
 
 

@@ -9,10 +9,13 @@ export default function  Cardapio() {
         <h1 className="text-[5rem] font-bold text-white space-x-6 text-center mb-4">Cardápios</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Cards */}
-          <Card link="/cadastro-de-almoço" imgSrc="/almoço.png" title="Cardápio de Almoço" />
-          <Card link="/cadastro-cardápio-lanche" imgSrc="/cafe-da-manha.png" title="Cardápio de Lanche da Tarde" />  
+          <Card link="/cadastro-de-almoço" imgSrc="/almoço.png" title="Cadastro de Cardápio de Almoço" />
+          <Card link="/cadastro-cardápio-lanche" imgSrc="/cafe-da-manha.png" title="Cadastro de Cardápio de Lanche da Tarde" />  
           <Card link="/Cadastro_Refeicoes" imgSrc="/refeição.jpeg" title="Cadastro de Refeições" />
           <Card className="align-center" link="/Refeicoes_Servidas" imgSrc="/prancheta.png" title="Lista de Refeições" />
+          <Card className="align-center" link="/Refeicoes_Servidas" imgSrc="/lanchetarde.png" title="Lista de Cardápios de Lanche da Tarde " />
+          <Card className="align-center" link="/cardápio-almoco" imgSrc="/list-almoço.png" title="Lista de Cardápios de Almoço" />
+
           <Card link="/Home" title="Voltar" isBackCard />
         </div>
       </div>
