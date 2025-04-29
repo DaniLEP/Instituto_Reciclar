@@ -1,25 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
-import { initializeApp } from "firebase/app";
+import { signOut, ref, get, auth, db } from "../../../firebase"; // Agora, signOut estará disponível
 import { Button } from "@/components/ui/Button/button";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
 
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
 
 export default function Perfil() {
   const [usuario, setUsuario] = useState(null);
@@ -29,7 +13,7 @@ export default function Perfil() {
       const fetchUserData = async () => {
         const user = auth.currentUser;
         if (user) {
-          const dbRef = ref(database, "novousuario/" + user.uid);
+          const dbRef = ref(db, "usuarios/" + user.uid);
           const snapshot = await get(dbRef);
           if (snapshot.exists())
             {setUsuario(snapshot.val());}

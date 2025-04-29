@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get, push } from "firebase/database";
+import { ref, get, push, db } from '../../../../firebase.js'; // Não importa getDatabase aqui
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,20 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "react-scroll";
 import { Table } from "@/components/ui/table/table";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
 
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 export default function Retirada() {
   const [sku, setSku] = useState("");
@@ -52,7 +38,7 @@ export default function Retirada() {
 
   useEffect(() => {
     const fetchProdutos = async () => {
-      const produtosRef = ref(database, "Estoque");
+      const produtosRef = ref(db, "Estoque");
       const snapshot = await get(produtosRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -78,7 +64,7 @@ export default function Retirada() {
       return;
     }
     try {
-      const retiradaRef = ref(database, "Retiradas");
+      const retiradaRef = ref(db, "Retiradas");
       await push(retiradaRef, {sku, name, category, tipo, quantity, peso, retirante, data,});
       toast.success("Retirada registrada com sucesso!");
       // Limpa os campos

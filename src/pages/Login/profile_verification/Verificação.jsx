@@ -11,18 +11,10 @@ const Card = ({ to, imgSrc, imgAlt, title, children }) => (
   <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
     <Link to={to} aria-label={title} className="flex flex-col items-center">
       {imgSrc && (
-        <img
-          src={imgSrc}
-          className="h-16 md:h-20 lg:h-24"
-          alt={imgAlt || title}
-        />
+        <img src={imgSrc} className="h-16 md:h-20 lg:h-24" alt={imgAlt || title} />
       )}
-      {children ? (
-        children
-      ) : (
-        <h2 className="text-black text-lg md:text-xl lg:text-2xl mt-4">
-          {title}
-        </h2>
+      {children ? children : (
+        <h2 className="text-black text-lg md:text-xl lg:text-2xl mt-4">{title}</h2>
       )}
     </Link>
   </div>
@@ -36,12 +28,13 @@ export default function AdminUsuarios() {
   const database = getDatabase();
 
   useEffect(() => {
-    const usuariosRef = ref(database, "novousuario");
+    const usuariosRef = ref(database, "usuarios");
     onValue(usuariosRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const usuariosList = Object.keys(data).map((uid) => ({
           uid,
+          status: "ativo", 
           ...data[uid],
         }));
         setUsuarios(usuariosList);
@@ -51,7 +44,7 @@ export default function AdminUsuarios() {
 
   const salvarAlteracoes = () => {
     if (editingUser) {
-      update(ref(database, `novousuario/${editingUser.uid}`), { nome, funcao })
+      update(ref(database, `usuarios/${editingUser.uid}`), { nome, funcao })
         .then(() => {
           alert("Usuário atualizado com sucesso!");
           setEditingUser(null);
@@ -64,18 +57,47 @@ export default function AdminUsuarios() {
 
   const excluirUsuario = (uid) => {
     if (window.confirm("Tem certeza que deseja excluir este usuário?")) {
-      remove(ref(database, `novousuario/${uid}`))
+      remove(ref(database, `usuarios/${uid}`))
         .then(() => alert("Usuário excluído com sucesso!"))
         .catch((error) => alert("Erro ao excluir usuário: " + error.message));
     }
   };
+
+  const alternarStatus = (uid, statusAtual) => {
+    const novoStatus = statusAtual === "ativo" ? "inativo" : "ativo";
+    update(ref(database, `usuarios/${uid}`), { status: novoStatus })
+      .then(() => alert(`Status alterado para ${novoStatus}`))
+      .catch((error) => alert("Erro ao atualizar status: " + error.message));
+  };
+
+  const Card = ({ to, imgSrc, imgAlt, title, children }) => (
+    <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+      <Link to={to} aria-label={title} className="flex flex-col items-center">
+        {imgSrc && (
+          <img
+            src={imgSrc}
+            className="h-16 md:h-20 lg:h-24"
+            alt={imgAlt || title}
+          />
+        )}
+        {children ? (
+          children
+        ) : (
+          <h2 className="text-black text-lg md:text-xl lg:text-2xl mt-4">
+            {title}
+          </h2>
+        )}
+      </Link>
+    </div>
+  );
+  
 
   return (
     <div className="min-h-screen p-5 flex flex-col items-center bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
       <h1 className="text-white font-bold text-4xl md:text-6xl lg:text-8xl mb-8">
         Administração de Usuários
       </h1>
-      {/* Tabela visível em telas maiores */}
+
       <Table className="w-full border-collapse mt-6 hidden md:table text-center">
         <thead>
           <tr className="bg-[#F20DE7] text-white text-[20px]">
@@ -83,83 +105,57 @@ export default function AdminUsuarios() {
             <th className="p-2">Nome</th>
             <th className="p-2">E-mail</th>
             <th className="p-2">Função</th>
+            <th className="p-2">Status</th>
             <th className="p-2">Ações</th>
           </tr>
         </thead>
         <tbody>
-  {usuarios.map((usuario) => (
-    <tr key={usuario.uid} className="bg-white">
-      <td className="p-2 border-b">{usuario.uid}</td>
-      <td className="p-2 border-b">{usuario.nome}</td>
-      <td className="p-2 border-b">{usuario.email}</td>
-      <td className="p-2 border-b">{usuario.funcao}</td>
-      {/* AQUI: flex container para os botões */}
-      <td className="p-2 border-b flex items-center justify-center space-x-2">
-        <Button
-          onClick={() => {
-            setEditingUser(usuario);
-            setNome(usuario.nome);
-            setFuncao(usuario.funcao);
-          }}
-          className="p-2 bg-blue-500 text-white rounded-lg flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faPen} />
-        </Button>
-
-        <Button
-          onClick={() => excluirUsuario(usuario.uid)}
-          className="p-2 bg-red-500 text-white rounded-lg flex items-center justify-center"
-        >
-          {/* se preferir usar imagem: remova classes de espaçamento e tamanho do <img> */}
-          <img
-            src="/excluir.png"
-            alt="Excluir"
-            className="h-6 w-6"
-          />
-        </Button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+          {usuarios.map((usuario) => (
+            <tr key={usuario.uid} className="bg-white">
+              <td className="p-2 border-b">{usuario.uid}</td>
+              <td className="p-2 border-b">{usuario.nome}</td>
+              <td className="p-2 border-b">{usuario.email}</td>
+              <td className="p-2 border-b">{usuario.funcao}</td>
+              <td className="p-2 border-b">
+                <span
+                  className={`px-3 py-1 rounded-full ${
+                    usuario.status === "ativo" ? "bg-green-500 text-white" : "bg-gray-400 text-white"
+                  }`}
+                >
+                  {usuario.status || "ativo"}
+                </span>
+              </td>
+              <td className="p-2 border-b flex items-center justify-center space-x-2">
+                <Button
+                  onClick={() => {
+                    setEditingUser(usuario);
+                    setNome(usuario.nome);
+                    setFuncao(usuario.funcao);
+                  }}
+                  className="p-2 bg-blue-500 text-white rounded-lg"
+                >
+                  <FontAwesomeIcon icon={faPen} />
+                </Button>
+                <Button
+                  onClick={() => excluirUsuario(usuario.uid)}
+                  className="p-2 bg-red-500 text-white rounded-lg"
+                >
+                  <img src="/excluir.png" alt="Excluir" className="h-6 w-6" />
+                </Button>
+                <Button
+                  onClick={() => alternarStatus(usuario.uid, usuario.status || "ativo")}
+                  className="p-2 bg-yellow-500 text-white rounded-lg"
+                >
+                  {usuario.status === "ativo" ? "Inativar" : "Ativar"}
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </Table>
 
-      {/* Layout Responsivo - Cards */}
-      <div className="block md:hidden mt-6">
-        {usuarios.map((usuario) => (
-          <div
-            key={usuario.uid}
-            className="border rounded-lg p-4 mb-4 bg-white shadow-md"
-          >
-            <p className="text-gray-800 font-semibold">ID: {usuario.uid}</p>
-            <p className="text-gray-800">Nome: {usuario.nome}</p>
-            <p className="text-gray-800">E-mail: {usuario.email}</p>
-            <p className="text-gray-800">Função: {usuario.funcao}</p>
-            <div className="mt-2 flex justify-between">
-              <Button
-                onClick={() => {
-                  setEditingUser(usuario);
-                  setNome(usuario.nome);
-                  setFuncao(usuario.funcao);
-                }}
-                className="px-3 py-1 bg-blue-500 text-white rounded-lg"
-              >
-                {" "}
-                <FontAwesomeIcon icon={faPen} />
-              </Button>
-              <Button
-                onClick={() => excluirUsuario(usuario.uid)}
-                className="px-3 py-1 bg-red-500 text-white rounded-lg"
-              >
-                Excluir
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Cards para navegação */}
-      <div className="flex flex-wrap justify-center gap-5 mt-9">
+       {/* Cards para navegação */}
+       <div className="flex flex-wrap justify-center gap-5 mt-9">
         <Card
           to="/Registro_Usuario"
           imgSrc="/novouser.png"

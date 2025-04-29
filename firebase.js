@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase } from "firebase/database";
+import { getDatabase, ref, get, set, update, push } from "firebase/database";
+import { getAuth, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // <-- ADICIONE ESTA LINHA
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -17,7 +17,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const dbRealtime = getDatabase(app);
 const dbFirestore = getFirestore(app);
-const auth = getAuth(app);
+const auth = getAuth(app);  
 
-export { dbRealtime, dbFirestore, auth };
+export { dbRealtime, dbFirestore, auth, ref, set, get, update, push, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword };
 export const db = dbRealtime;

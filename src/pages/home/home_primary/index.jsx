@@ -1,25 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../../../components/ui/header/index";
 import { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
+import { auth, dbRealtime } from "../../../../firebase";  // Corrigido
+import { ref, get } from "firebase/database"; // Realtime Database
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
-
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
 
 const Card = ({ to, imgSrc, imgAlt, title }) => (
   <div className="bg-[#F6F6F6] rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
@@ -44,7 +28,7 @@ export default function Home() {
     const fetchUserData = async () => {
       const user = auth.currentUser;
       if (user) {
-        const dbRef = ref(database, "novousuario/" + user.uid);
+        const dbRef = ref(dbRealtime, "usuarios/" + user.uid); // Usando a instância correta dbRealtime
         const snapshot = await get(dbRef);
         if (snapshot.exists()) {setUsuario(snapshot.val());} 
         else {console.log("Usuário não encontrado no banco de dados.")}}

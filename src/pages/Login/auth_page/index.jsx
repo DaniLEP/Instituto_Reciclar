@@ -2,50 +2,34 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from "firebase/auth";
-import { initializeApp } from "firebase/app";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { getDatabase, ref, get } from "firebase/database";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button/button";
+import { Label } from "@/components/ui/label";
+import { auth, db } from "../../../../firebase"; // Importando as instâncias
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+const UserType = {
+  ADMIN: "admin",
+  COZINHA: "cozinha",
+  TI: "ti",
 };
-
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
   const navigate = useNavigate();
 
-  // Função para validar email
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Função de autenticação no Firebase
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateEmail(email)) {
@@ -54,326 +38,152 @@ export default function Login() {
     }
 
     setIsLoading(true);
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log("Usuário autenticado:", user);
+    setErrorMessage("");
 
-        const userRef = ref(database, "novousuario/" + user.uid);
-        get(userRef)
-          .then((snapshot) => {
-            console.log("Dados do usuário:", snapshot.val());
-            if (snapshot.exists()) {
-              toast.success("Login bem-sucedido, bem-vindo!");
-              setErrorMessage("");
-              navigate("/Home");
-            } else {
-              setErrorMessage("Usuário não encontrado no sistema, contate o suporte!");
-              toast.error("Usuário não encontrado no sistema, contate o suporte!");
-            }
-          })
-          .catch((error) => {
-            console.error("Erro ao verificar seus dados de acesso:", error);
-            toast.error("Erro ao verificar seus dados de acesso. Tente novamente!");
-          });
-      })
-      .catch((error) => {
-        console.error("Erro ao realizar login:", error);
-        toast.error("E-mail ou senha incorretos. Tente novamente!");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userRef = ref(db, "usuarios/" + user.uid); // Use db aqui, não database
+      const snapshot = await get(userRef);
+
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        const funcao = userData.funcao;
+
+        if (!funcao || !Object.values(UserType).includes(funcao)) {
+          toast.error("Função de usuário inválida.");
+          return;
+        }
+
+        // Redirecionamento conforme função
+        if (funcao === UserType.ADMIN) {
+          navigate("/Home");
+        } else if (funcao === UserType.COZINHA) {
+          navigate("/Home");
+        } else if (funcao === UserType.TI) {
+          navigate("/Home");
+        } else {
+          navigate("/Home");
+        }
+        
+        toast.success("Login bem-sucedido, bem-vindo!");
+      } else {
+        setErrorMessage("Usuário não encontrado no sistema.");
+        toast.error("Usuário não encontrado no sistema.");
+      }
+    } catch (error) {
+      console.error("Erro ao logar:", error.code, error.message);
+      if (error.code === "auth/user-not-found") {
+        toast.error("Usuário não encontrado.");
+      } else if (error.code === "auth/wrong-password") {
+        toast.error("Senha incorreta.");
+      } else if (error.code === "auth/invalid-credential") {
+        toast.error("Credenciais inválidas. Verifique e-mail e senha.");
+      } else {
+        toast.error("Erro ao fazer login.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Função para alternar visibilidade da senha
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
-  };
+  const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
 
-  // Função de recuperação de senha
-  const handlePasswordReset = () => {
+  const handlePasswordReset = async () => {
     if (!validateEmail(resetEmail)) {
       toast.error("Digite um e-mail válido!");
       return;
     }
 
-    sendPasswordResetEmail(auth, resetEmail)
-      .then(() => {
-        toast.success("Instruções de redefinição de senha enviadas para seu e-mail.");
-        setShowResetModal(false);
-      })
-      .catch((error) => {
-        console.error("Erro ao enviar e-mail de redefinição:", error);
-        toast.error("Erro ao enviar e-mail de redefinição. Tente novamente!");
-      });
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast.success("Instruções enviadas para seu e-mail.");
+      setShowResetModal(false);
+    } catch (error) {
+      toast.error("Erro ao enviar e-mail de redefinição.");
+    }
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "'Roboto', sans-serif",
-        background: "linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        margin: 0,
-        padding: "20px",
-        boxSizing: "border-box",
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 to-blue-900 p-5">
       <ToastContainer />
-      <div
-        style={{
-          backgroundColor: "#ffffff",
-          padding: "40px",
-          borderRadius: "10px",
-          boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-          width: "90%",
-          maxWidth: "400px",
-          boxSizing: "border-box",
-        }}
-      >
-         <img
-          src="/Reciclar_LOGO.png"
-          alt="Logo da Reciclar"
-          style={{
-            width: "100px",
-            margin: "0 auto 20px",
-          }}
-        />
-        <h2
-          style={{
-            color: "#333333",
-            marginBottom: "20px",
-            fontSize: "22px",
-            fontWeight: "bold",
-          }}
-        >
-          Instituto Reciclar
-        </h2>
-        <form id="loginForm" onSubmit={handleSubmit}>
-          <label
-            htmlFor="email"
-            style={{
-              display: "block",
-              marginBottom: "10px",
-              color: "#555555",
-              textAlign: "left",
-              fontSize: "14px",
-              fontWeight: "bold",
-            }}
-          >
-            E-mail:
-          </label>
-          <input
-            type="email"
+      <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-sm text-center">
+        <img src="/Reciclar_LOGO.png" alt="Logo" className="w-24 mx-auto mb-6" />
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar</h2>
+        <form onSubmit={handleSubmit} className="text-left">
+          <Label htmlFor="email">E-mail:</Label>
+          <Input
             id="email"
-            name="email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "12px",
-              paddingRight: "40px",
-              border: "1px solid #cccccc",
-              borderRadius: "5px",
-              fontSize: "14px",
-              backgroundColor: "#f9f9f9",
-              color: "#333333",
-              boxSizing: "border-box",
-            }}
+            className="w-full p-3 rounded border border-gray-300 mb-4 bg-gray-50"
           />
-          <label
-            htmlFor="password"
-            style={{
-              display: "block",
-              marginTop: "20px",
-              color: "#555555",
-              textAlign: "left",
-              fontSize: "14px",
-              fontWeight: "bold",
-            }}
-          >
-            Senha:
-          </label>
-          <div style={{ position: "relative", marginBottom: "20px" }}>
-            <input
-              type={isPasswordVisible ? "text" : "password"}
+
+          <Label htmlFor="password">Senha:</Label>
+          <div className="relative mb-6">
+            <Input
               id="password"
-              name="password"
+              type={isPasswordVisible ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "12px",
-                paddingRight: "40px",
-                border: "1px solid #cccccc",
-                borderRadius: "5px",
-                fontSize: "14px",
-                backgroundColor: "#f9f9f9",
-                color: "#333333",
-                boxSizing: "border-box",
-              }}
+              className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50"
             />
             <FontAwesomeIcon
               icon={isPasswordVisible ? faEyeSlash : faEye}
               onClick={togglePasswordVisibility}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "#007BFF",
-                fontSize: "16px",
-              }}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 cursor-pointer"
             />
           </div>
-          <button
+
+          <Button
             type="submit"
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              background:"linear-gradient(135deg,rgb(117, 39, 144) 0%,rgb(24, 36, 104) 100%)",
-              color: "#fff",
-              fontSize: "16px",
-              fontWeight: "bold",
-              border: "none",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              marginBottom: "10px",
-            }}
-            onMouseOver={(e) =>
-              (e.target.style.background =
-                "linear-gradient(135deg,rgb(219, 59, 203) 0%,rgb(129, 23, 139) 100%)")
-            }
-            onMouseOut={(e) =>
-              (e.target.style.background =
-                "linear-gradient(135deg,rgb(155, 49, 191) 0%,rgb(230, 34, 227) 100%)")
-            }
             disabled={isLoading}
+            className="w-full py-3 rounded-lg bg-gradient-to-br from-purple-700 to-blue-800 text-white font-semibold hover:from-pink-500 hover:to-purple-700 transition duration-300 mb-3"
           >
             {isLoading ? (
-              <span
-                style={{
-                  border: "3px solid #f3f3f3",
-                  borderTop: "3px solid #f20de7",
-                  borderRadius: "50%",
-                  width: "16px",
-                  height: "16px",
-                  animation: "spin 0.6s linear infinite",
-                  display: "inline-block",
-                  marginRight: "5px",
-                }}
-              ></span>
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-purple-500 rounded-full animate-spin mr-2"></span>
             ) : (
               "Entrar"
             )}
-          </button>
+          </Button>
         </form>
-        {errorMessage && (
-          <p
-            id="errorMessage"
-            style={{ color: "red", marginTop: "15px", fontSize: "14px" }}
-          >
-            {errorMessage}
-          </p>
-        )}
+
+        {errorMessage && <p className="text-red-500 text-sm mt-2">{errorMessage}</p>}
+
         <button
           onClick={() => setShowResetModal(true)}
-          style={{
-            width: "100%",
-            padding: "12px",
-            border: "none",
-            borderRadius: "5px",
-            color: "gray",
-            textDecoration: "underline",
-            fontSize: "16px",
-            cursor: "pointer",
-            transition: "background-color 0.3s ease",
-          }}
+          className="w-full mt-4 text-gray-500 underline text-sm"
         >
           Esqueceu a senha?
         </button>
 
-        {/* Modal para recuperação de senha */}
         {showResetModal && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "20px",
-                borderRadius: "10px",
-                textAlign: "center",
-                maxWidth: "400px",
-                width: "90%",
-              }}
-            >
-              <h3>Recuperação de Senha</h3>
-              <input
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-sm text-center">
+              <h3 className="text-lg font-bold mb-4">Recuperação de Senha</h3>
+              <Input
                 type="email"
+                placeholder="Digite seu e-mail"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                placeholder="Digite seu e-mail"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginBottom: "10px",
-                  border: "1px solid #cccccc",
-                  borderRadius: "5px",
-                }}
+                className="w-full p-3 mb-3 rounded border border-gray-300"
               />
-              <button
+              <Button
                 onClick={handlePasswordReset}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#F20DE7",
-                  border: "none",
-                  borderRadius: "5px",
-                  color: "white",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
+                className="w-full py-3 bg-pink-600 text-white font-bold rounded mb-3"
               >
                 Enviar
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setShowResetModal(false)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#ccc",
-                  border: "none",
-                  borderRadius: "5px",
-                  color: "black",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  marginTop: "10px",
-                }}
+                className="w-full py-3 bg-gray-300 text-black font-bold rounded"
               >
                 Fechar
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -381,5 +191,3 @@ export default function Login() {
     </div>
   );
 }
-
-
