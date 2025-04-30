@@ -1,6 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase, ref, get, push, update } from "firebase/database";
+import { ref, get, push, update, db } from "../../../../firebase";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -9,21 +7,6 @@ import { Button } from "../../../components/ui/Button/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
-
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
 
 export default function CadastroRefeicoes() {
   // Definindo estado para o campo de data de refeição
@@ -35,7 +18,7 @@ export default function CadastroRefeicoes() {
   const [refeicoes, setRefeicoes] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {const refeicoesRef = ref(database, "refeicoesServidas");
+  useEffect(() => {const refeicoesRef = ref(db, "refeicoesServidas");
     get(refeicoesRef)
       .then((snapshot) => {
         if (snapshot.exists()) {const refeicoesData = [];
@@ -81,10 +64,10 @@ export default function CadastroRefeicoes() {
   const salvarNoBanco = () => {
     const refeicaoData = {dataRefeicao: formData.dataRefeicao, cafeDescricao: formData.cafeDescricao, cafeTotalQtd: formData.cafeTotalQtd, cafeFuncionariosQtd: formData.cafeFuncionariosQtd, cafeJovensQtd: formData.cafeJovensQtd, almocoDescricao: formData.almocoDescricao, almocoTotalQtd: formData.almocoTotalQtd, almocoFuncionariosQtd: formData.almocoFuncionariosQtd, almocoJovensQtd: formData.almocoJovensQtd, almocoJovensTardeQtd: formData.almocoJovensTardeQtd, lancheDescricao: formData.lancheDescricao, lancheTotalQtd: formData.lancheTotalQtd, lancheFuncionariosQtd: formData.lancheFuncionariosQtd,  lancheJovensQtd: formData.lancheJovensQtd,outrasDescricao: formData.outrasDescricao, outrasTotalQtd: formData.outrasTotalQtd, outrasFuncionariosQtd: formData.outrasFuncionariosQtd, outrasJovensQtd: formData.outrasJovensQtd, outrasJovensTardeQtd: formData.outrasJovensTardeQtd,  sobrasDescricao: formData.sobrasDescricao,observacaoDescricao: formData.observacaoDescricao, desperdicioQtd: formData.desperdicioQtd};
 
-    const newRefeicaoKey = push(ref(database, "refeicoesServidas")).key;
+    const newRefeicaoKey = push(ref(db, "refeicoesServidas")).key;
     const updates = {}; updates[`/refeicoesServidas/${newRefeicaoKey}`] = refeicaoData;
 
-    update(ref(database), updates)
+    update(ref(db), updates)
       .then(() => {
         toast.success("Refeições salvas com sucesso!", {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored"});
         setFormData({ dataRefeicao: "", cafeDescricao: "",cafeTotalQtd: "", cafeFuncionariosQtd: "", cafeJovensQtd: "", almocoDescricao: "", almocoTotalQtd: "", almocoFuncionariosQtd: "",  almocoJovensQtd: "",  almocoJovensTardeQtd: "", lancheDescricao: "", lancheTotalQtd: "", lancheFuncionariosQtd: "", lancheJovensQtd: "", outrasDescricao: "", outrasTotalQtd: "", outrasFuncionariosQtd: "",  outrasJovensQtd: "", outrasJovensTardeQtd: "", sobrasDescricao: "", observacaoDescricao: "", desperdicioQtd: ""});

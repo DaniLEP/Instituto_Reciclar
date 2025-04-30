@@ -1,24 +1,11 @@
 import { useState, useEffect } from "react";
-import { getDatabase, ref, child, get } from "firebase/database";
-import { initializeApp } from "firebase/app";
+import { ref, child, get, db } from "../../../../firebase";
+
 import { Link, useNavigate } from "react-router-dom";
 import { Table } from "../../../components/ui/table/table";
 import { Button } from "../../../components/ui/Button/button";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
 
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 export default function HistoricoRetiradas () {
   const navigate = useNavigate();
@@ -30,7 +17,7 @@ export default function HistoricoRetiradas () {
 
   // Função para buscar os dados no Firebase
   const fetchRetiradas = async () => {
-    const dbRef = ref(database);
+    const dbRef = ref(db);
     try {
       const snapshot = await get(child(dbRef, "Retiradas"));
       if (snapshot.exists()) {

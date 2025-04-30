@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { getDatabase, ref, onValue, update } from "firebase/database";
-import { initializeApp } from "firebase/app";
+import {  ref, onValue, update, db } from "../../../firebase";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/Button/button";
@@ -10,19 +9,7 @@ import Title from "@/components/ui/title";
 import { Table } from "@/components/ui/table/table";
 
 // Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-  authDomain: "bancoestoquecozinha.firebaseapp.com",
-  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-  projectId: "bancoestoquecozinha",
-  storageBucket: "bancoestoquecozinha.firebasestorage.app",
-  messagingSenderId: "71775149511",
-  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-};
 
-// Inicializando o Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 const dbProdutos = ref(db, "Estoque");
 
 export default function Estoque() {
