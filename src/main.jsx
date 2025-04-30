@@ -366,26 +366,26 @@ const router = createBrowserRouter([
       { path: '/', element: <LoginForm /> },
 
       { path: '/Home', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Home /></ProtectedRoute> },
-      { path: '/Pedidos', element: <ProtectedRoute allowedTypes={ADMIN_ONLY}><ListaPedidos /></ProtectedRoute> },
-      { path: '/Cadastro', element: <ProtectedRoute allowedTypes={ADMIN_ONLY}><Cadastro /></ProtectedRoute> },
-      { path: '/home-retirada', element: <ProtectedRoute allowedTypes={ADMIN_ONLY}><RetiradaProdutos /></ProtectedRoute> },
-      { path: '/Retirada', element: <ProtectedRoute allowedTypes={ADMIN_ONLY}><Retirada /></ProtectedRoute> },
-      { path: '/Editar_Produto/:id', element: <ProtectedRoute allowedTypes={ADMIN_ONLY}><EditarProduto /></ProtectedRoute> },
+      { path: '/Pedidos', element: <ProtectedRoute allowedTypes={ALL_TYPES}><ListaPedidos /></ProtectedRoute> },
+      { path: '/Cadastro', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Cadastro /></ProtectedRoute> },
+      { path: '/home-retirada', element: <ProtectedRoute allowedTypes={ALL_TYPES}><RetiradaProdutos /></ProtectedRoute> },
+      { path: '/Retirada', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Retirada /></ProtectedRoute> },
+      { path: '/Editar_Produto/:id', element: <ProtectedRoute allowedTypes={ALL_TYPES}><EditarProduto /></ProtectedRoute> },
       { path: '/Meu_Perfil', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Profile /></ProtectedRoute> },
-      { path: '/Registro_Usuario', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><Registro /></ProtectedRoute> },
-      { path: '/Verificacao_Usuario', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><AdminUsuarios /></ProtectedRoute> },
-      { path: '/Visualizar_Fornecedores', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><VisualizarFornecedores /></ProtectedRoute> },
-      { path: '/Gestão_Pedido', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><StatusPedidos /></ProtectedRoute> },
-      { path: '/editar-fornecedor/:id', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><EditarFornecedor /></ProtectedRoute> },
-      { path: '/cadastro-de-almoço', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><CardapioSemana2 /></ProtectedRoute> },
-      { path: '/cardapio', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><Cardapio /></ProtectedRoute> },
-      { path: '/cadastro-cardápio-lanche', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><CardapioLanche /></ProtectedRoute> },
-      { path: '/cardápio-almoco', element: <ProtectedRoute allowedTypes={COZINHA_ONLY}><CarregarCardapios /></ProtectedRoute> },
+      { path: '/Registro_Usuario', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Registro /></ProtectedRoute> },
+      { path: '/Verificacao_Usuario', element: <ProtectedRoute allowedTypes={ALL_TYPES}><AdminUsuarios /></ProtectedRoute> },
+      { path: '/Visualizar_Fornecedores', element: <ProtectedRoute allowedTypes={ALL_TYPES}><VisualizarFornecedores /></ProtectedRoute> },
+      { path: '/Gestão_Pedido', element: <ProtectedRoute allowedTypes={ALL_TYPES}><StatusPedidos /></ProtectedRoute> },
+      { path: '/editar-fornecedor/:id', element: <ProtectedRoute allowedTypes={ALL_TYPES}><EditarFornecedor /></ProtectedRoute> },
+      { path: '/cadastro-de-almoço', element: <ProtectedRoute allowedTypes={ALL_TYPES}><CardapioSemana2 /></ProtectedRoute> },
+      { path: '/cardapio', element: <ProtectedRoute allowedTypes={ALL_TYPES}><Cardapio /></ProtectedRoute> },
+      { path: '/cadastro-cardápio-lanche', element: <ProtectedRoute allowedTypes={ALL_TYPES}><CardapioLanche /></ProtectedRoute> },
+      { path: '/cardápio-almoco', element: <ProtectedRoute allowedTypes={ALL_TYPES}><CarregarCardapios /></ProtectedRoute> },
 
       {
         path: '/Estoque',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Estoque...</div>}>
               <Estoque />
             </Suspense>
@@ -395,7 +395,7 @@ const router = createBrowserRouter([
       {
         path: '/Dashboard',
         element: (
-          <ProtectedRoute allowedTypes={ADMIN_TI}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Dashboard...</div>}>
               <Relatorio />
             </Suspense>
@@ -405,7 +405,7 @@ const router = createBrowserRouter([
       {
         path: '/Cadastro_Geral',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}>
               <CadProdutos />
             </Suspense>
@@ -415,7 +415,7 @@ const router = createBrowserRouter([
       {
         path: '/Entrada_Produtos',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Entrada de Produtos...</div>}>
               <EntradaProdutos />
             </Suspense>
@@ -425,7 +425,7 @@ const router = createBrowserRouter([
       {
         path: '/Cadastro_Refeicoes',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Cadastro de Refeições...</div>}>
               <CadastroRefeicoes />
             </Suspense>
@@ -435,7 +435,7 @@ const router = createBrowserRouter([
       {
         path: '/Dashboard_Refeicoes',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Dashboard de Refeições...</div>}>
               <RelatorioRef />
             </Suspense>
@@ -445,7 +445,7 @@ const router = createBrowserRouter([
       {
         path: '/Historico_Retirada',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}>
               <HistoricoRetiradas />
             </Suspense>
@@ -455,7 +455,7 @@ const router = createBrowserRouter([
       {
         path: '/Cadastro_Produtos',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Novo Pedido...</div>}>
               <NovoPedido />
             </Suspense>
@@ -465,7 +465,7 @@ const router = createBrowserRouter([
       {
         path: '/Gerenciador_Produtos',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Gerenciador...</div>}>
               <Gerenciador />
             </Suspense>
@@ -475,7 +475,7 @@ const router = createBrowserRouter([
       {
         path: '/Cadastro_Fornecedor',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}>
               <CadastroFornecedores />
             </Suspense>
@@ -485,7 +485,7 @@ const router = createBrowserRouter([
       {
         path: '/Refeicoes_Servidas',
         element: (
-          <ProtectedRoute allowedTypes={COZINHA_ONLY}>
+          <ProtectedRoute allowedTypes={ALL_TYPES}>
             <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>
               <ExibirRefeicoes />
             </Suspense>
