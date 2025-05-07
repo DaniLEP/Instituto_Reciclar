@@ -3,7 +3,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ref, get, update, push } from "firebase/database";
 import * as XLSX from "xlsx";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button/button";
 import { Table } from "@/components/ui/table/table";
@@ -24,7 +24,11 @@ export default function StatusPedidos() {
   const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
   const [modalSelecionarProduto, setModalSelecionarProduto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
-
+  const [modalAbertoAprovacao, setModalAbertoAprovacao] = useState(false);
+  const [motivoAprovacao, setAprovacao] = useState("");
+  const [numeroNotaFiscal, setNumeroNotaFiscal] = useState("");
+  const [chaveAcesso, setChaveAcesso] = useState("");
+  
   useEffect(() => {
     const carregarPedidos = async () => {
       try {
@@ -49,12 +53,31 @@ export default function StatusPedidos() {
     else {setProdutosDisponiveis([]);  }// Limpar a lista de produtos quando o modal for fechado
   }, [modalSelecionarProduto]);
   
-  const handleAtualizarStatus = (pedidoId, novoStatus, motivo) => {
+  const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscal, chaveAcesso) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
     const updates = { status: novoStatus };
-    if (motivo) {updates.motivoCancelamento = motivo;}
-    update(pedidoRef, updates).then(() => {toast.success(`Status atualizado para ${novoStatus}`); updates.dataCadastro = new Date().toISOString(); setPedidos((prev) =>  prev.map((p) => p.id === pedidoId ? { ...p, status: novoStatus, motivoCancelamento: motivo } : p)); if (novoStatus === "Aprovado") {enviarParaEstoque(pedidoId);}}).catch(() => toast.error("Erro ao atualizar status"));
+    if (motivo) updates.motivoCancelamento = motivo;
+    if (numeroNotaFiscal) updates.numeroNotaFiscal = numeroNotaFiscal;
+    if (chaveAcesso) updates.chaveAcesso = chaveAcesso;
+  
+    update(pedidoRef, updates)
+      .then(() => {
+        toast.success(`Status atualizado para ${novoStatus}`);
+        updates.dataCadastro = new Date().toISOString();
+        setPedidos((prev) =>
+          prev.map((p) =>
+            p.id === pedidoId
+              ? { ...p, status: novoStatus, motivoCancelamento: motivo, numeroNotaFiscal, chaveAcesso }
+              : p
+          )
+        );
+        if (novoStatus === "Aprovado") {
+          enviarParaEstoque(pedidoId);
+        }
+      })
+      .catch(() => toast.error("Erro ao atualizar status"));
   };
+  
 
   const enviarParaEstoque = async (pedidoId) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
@@ -109,7 +132,7 @@ export default function StatusPedidos() {
     setModalAbertoEdit(false);}).catch(() => {toast.error("Erro ao salvar edição!");});
   };
 
-  const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos);};
+  const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
   const handleSelecionarProduto = (produtoSelecionado) => {
     const novoProduto = { sku: produtoSelecionado.sku || "", name: produtoSelecionado.name || "", marca: produtoSelecionado.marca || "", tipo: produtoSelecionado.tipo || "", category: produtoSelecionado.category || "", peso: produtoSelecionado.peso || 0, unit: produtoSelecionado.unit || "", quantidade: 1, unitPrice: 0, observacao: "",};
     const copiaPedido = { ...pedidoSelecionado };
@@ -136,6 +159,7 @@ export default function StatusPedidos() {
     } if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));
     } if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));
     } if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
+    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal);}
     setPedidosFiltrados(filteredPedidos);
   };
 
@@ -159,6 +183,8 @@ export default function StatusPedidos() {
       <div className="mb-3">
         <div className="flex flex-wrap gap-4"> 
           <Input type="text" placeholder="Número do Pedido ou Fornecedor" value={numeroPedidoFornecedor} onChange={(e) => setNumeroPedidoFornecedor(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
+          <Input type="text" placeholder="NotaFiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
+
           <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}className="p-2 border border-gray-300 rounded w-full sm:w-auto">
@@ -178,6 +204,7 @@ export default function StatusPedidos() {
           <thead className="bg-gray-200">
             <tr>
               <th className="p-2">Número</th>
+              <th className="p-2">Nota Fiscal</th>
               <th className="p-2">Data</th>
               <th className="p-2">Fornecedor</th>
               <th className="p-2">Categoria</th>
@@ -189,6 +216,7 @@ export default function StatusPedidos() {
           {pedidosFiltrados.length > 0 ? ( pedidosFiltrados.map((pedido) => (
                 <tr key={pedido.id} className="border-b hover:bg-gray-100 text-center">
                   <td className="p-2">{pedido.numeroPedido}</td>
+                  <td className="p-2">Nº: {pedido.numeroNotaFiscal}</td>
                   <td className="p-2">{formatDate(pedido.dataPedido)}</td>
                   <td className="p-2">{pedido?.fornecedor?.razaoSocial || "Não informado"}</td>
                   <td className="p-2">{pedido.category || "Não informado"}</td>
@@ -198,7 +226,7 @@ export default function StatusPedidos() {
                     {pedido.status === "Pendente" && (
                       <>
                         <Button className="bg-[#F20DE7] text-white px-4 py-1 mr-2 rounded" onClick={() => {setPedidoSelecionado(pedido); setModalAbertoEdit(true);}}>Editar</Button>
-                        <Button className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600" onClick={() => handleAtualizarStatus(pedido.id, "Aprovado")}>Aprovar</Button>
+                        <Button className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600"onClick={() => { setPedidoSelecionado(pedido); setModalAbertoAprovacao(true); }}>Aprovar</Button>  
                         <Button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onClick={() => {setPedidoSelecionado(pedido); setModalAbertoCancelamento(true);}}>Cancelar</Button>
                       </>
                     )}
@@ -208,6 +236,25 @@ export default function StatusPedidos() {
           </tbody>
         </Table>
       </div>
+      {/* Bloco de Aprovação de pedido */}
+      {modalAbertoAprovacao && pedidoSelecionado && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
+          <div className="bg-white p-6 rounded-lg shadow-lg relative animate-slide-up overflow-hidden max-w-3xl w-full">
+            <Button className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600" onClick={() => setModalAbertoCancelamento(false)}>X</Button>
+            <h3 className="text-2xl font-bold mb-4 text-center">Pedido #{pedidoSelecionado.numeroPedido}</h3>
+            <h3 className="mb-4 font-semibold">Status:{" "}<span className="font-normal">{pedidoSelecionado.status}</span></h3>
+              <div className="mb-4">{/* Campo para numero de acesso e nf */}
+              <Input type="text" placeholder="Número da Nota Fiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} /> <br />
+              <Input type="text" placeholder="Digite a Chave de Acesso" value={chaveAcesso} onChange={(e) => setChaveAcesso(e.target.value)} />
+
+              </div>
+            <div className="flex justify-end">{/*Limpar o motivo após o cancelamento*/}
+            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" onClick={() => {if (!numeroNotaFiscal || !chaveAcesso) {toast.error("Preencha a Nota Fiscal e a Chave de Acesso antes de aprovar.");return;} 
+              handleAtualizarStatus(pedidoSelecionado.id, "Aprovado", "", numeroNotaFiscal, chaveAcesso); setModalAbertoAprovacao(false); setNumeroNotaFiscal(""); setChaveAcesso("");}}> Confirmar Aprovação</Button>
+                </div>
+          </div>
+        </div>
+      )}
       {/* Bloco de Cancelamento de pedido */}
       {modalAbertoCancelamento && pedidoSelecionado && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
@@ -237,8 +284,15 @@ export default function StatusPedidos() {
             <p className="mb-2 font-semibold">E-mail:{" "}<span className="font-normal">{pedidoSelecionado.fornecedor?.email || "Não informado"}</span></p>
             <p className="mb-2 font-semibold">Período que irá suprir:</p>
             <p className="mb-2 font-semibold">De:{" "}<span className="font-normal">{formatDate(pedidoSelecionado.periodoInicio || "Não informado")}</span>{" "}Até:{" "}<span className="font-normal">{formatDate(pedidoSelecionado.periodoFim || "Não informado")}</span></p>
-            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p>
-            <Button className="bg-green-600 text-white" onClick={(exportToExcel)}>Exportar Produtos</Button>
+            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p>            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p>
+            <p className="mb-4 font-semibold">Nota Fiscal:{" "}<span className="font-normal">{pedidoSelecionado.numeroNotaFiscal || "Não informado"}</span></p>
+            <p className="mb-4 font-semibold">Chave de Acesso:{" "}<span className="font-normal">{pedidoSelecionado.chaveAcesso || "Não informado"}</span></p>
+
+
+            <Button className="bg-green-600 text-white mr-4 mb-8" onClick={(exportToExcel)}>Exportar Produtos para Excel</Button>
+            <Link to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx" target="_blank"><Button className="bg-blue-600 text-white mr-4">Consultar NF</Button></Link>
+            <Link to="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank"> <Button className="bg-yellow-600 text-white">Consultar Cupom Fiscal</Button></Link>
+
             {/* Tabela de produtos - Responsiva */}
             <div className="overflow-x-auto mb-4">
               <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
