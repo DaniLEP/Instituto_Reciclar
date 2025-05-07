@@ -337,6 +337,7 @@ import CardapioLanche from './pages/cardapio/lanche/index';
 import CarregarCardapios from './pages/cardapio/list_almoco';
 import { UserType } from './components/enum/usertype/usertype.js';
 import { ProtectedRoute } from './components/enum/protectedRouted/protectedRouted';
+import ConsultaCardapioLanche from './pages/cardapio/list_lanche';
 
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
@@ -381,6 +382,7 @@ const router = createBrowserRouter([
       { path: '/cardapio', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Cardapio /></ProtectedRoute> },
       { path: '/cadastro-cardápio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><CardapioLanche /></ProtectedRoute> },
       { path: '/cardápio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><CarregarCardapios /></ProtectedRoute> },
+      { path: '/cardápio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><ConsultaCardapioLanche /></ProtectedRoute> },
 
       {
         path: '/Estoque',
