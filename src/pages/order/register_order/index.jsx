@@ -95,7 +95,9 @@ export default function NovoPedido() {
   };
   const navigate = useNavigate(); // Criando uma função de navegação
   const handleVoltar = () => {navigate(-1); }; // Volta para a página anterior  
+  
   const handleSearchChange = (e) => {setSearchTerm(e.target.value);};
+
   const handleDelete = (index) => {
   const updatedItens = [...itensPedido]; updatedItens.splice(index, 1); setItensPedido(updatedItens); };
   const filteredProducts = products.filter((product) => {

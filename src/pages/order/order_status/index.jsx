@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ref, get, update, push } from "firebase/database";
+import { ref, get, update, push, set } from "firebase/database";
 import * as XLSX from "xlsx";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button/button";
 import { Table } from "@/components/ui/table/table";
-import { collection, getDocs } from "firebase/firestore";
-import { dbRealtime, dbFirestore } from "../../../../firebase"; // ✅ use isso sempre!
+import { dbRealtime, onValue } from "../../../../firebase"; 
+import jsPDF from "jspdf";
 
 export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
@@ -25,10 +25,10 @@ export default function StatusPedidos() {
   const [modalSelecionarProduto, setModalSelecionarProduto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
   const [modalAbertoAprovacao, setModalAbertoAprovacao] = useState(false);
-  const [motivoAprovacao, setAprovacao] = useState("");
   const [numeroNotaFiscal, setNumeroNotaFiscal] = useState("");
   const [chaveAcesso, setChaveAcesso] = useState("");
-  
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     const carregarPedidos = async () => {
       try {
@@ -43,59 +43,55 @@ export default function StatusPedidos() {
   useEffect(() => {
     const carregarProdutos = async () => {
       try {
-        const produtosRef = collection(dbFirestore, "EntradaProdutos");
-        const snapshot = await getDocs(produtosRef);
-        const listaProdutos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setProdutosDisponiveis(listaProdutos);
+        const produtosRef = ref(dbRealtime, "EntradaProdutos");
+        onValue(produtosRef, (snapshot) => {
+          const produtos = snapshot.val();
+          const produtosList = produtos ? Object.keys(produtos).map(key => ({id: key,  ...produtos[key]})) : [];
+          setProdutosDisponiveis(produtosList);});
       } catch (error) {toast.error("Erro ao carregar produtos");}
-    };   // Carregar produtos apenas quando o modal estiver aberto
-    if (modalSelecionarProduto) {carregarProdutos();} 
-    else {setProdutosDisponiveis([]);  }// Limpar a lista de produtos quando o modal for fechado
+    }; if (modalSelecionarProduto) {
+      carregarProdutos();
+    } else {setProdutosDisponiveis([]); }  return () => {};
   }, [modalSelecionarProduto]);
-  
+
   const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscal, chaveAcesso) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
-    const updates = { status: novoStatus };
-    if (motivo) updates.motivoCancelamento = motivo;
-    if (numeroNotaFiscal) updates.numeroNotaFiscal = numeroNotaFiscal;
-    if (chaveAcesso) updates.chaveAcesso = chaveAcesso;
-  
+    const dataCadastro = new Date().toISOString();
+    const updates = {status: novoStatus, ...(motivo && { motivoCancelamento: motivo }), ...(numeroNotaFiscal && { numeroNotaFiscal }), ...(chaveAcesso && { chaveAcesso }), dataCadastro};
     update(pedidoRef, updates)
       .then(() => {
         toast.success(`Status atualizado para ${novoStatus}`);
-        updates.dataCadastro = new Date().toISOString();
+        // Atualiza o estado local imediatamente
         setPedidos((prev) =>
-          prev.map((p) =>
-            p.id === pedidoId
-              ? { ...p, status: novoStatus, motivoCancelamento: motivo, numeroNotaFiscal, chaveAcesso }
-              : p
-          )
-        );
-        if (novoStatus === "Aprovado") {
-          enviarParaEstoque(pedidoId);
-        }
-      })
-      .catch(() => toast.error("Erro ao atualizar status"));
+          prev.map((p) => p.id === pedidoId ? { ...p, ...updates } : p));
+        if (novoStatus === "Aprovado") {enviarParaEstoque(pedidoId);}})
+      .catch(() => {toast.error("Erro ao atualizar status");});
   };
   
-
   const enviarParaEstoque = async (pedidoId) => {
-    const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
-    const pedidoSnapshot = await get(pedidoRef);
-    if (pedidoSnapshot.exists()) {
-      const pedido = pedidoSnapshot.val();
-      const estoqueRef = ref(dbRealtime, "Estoque");
-      const dataCadastro = new Date().toISOString().split("T")[0]; // formato YYYY-MM-DD
-      const fornecedor = pedido.fornecedor; // Certifique-se que o pedido tem esse campo
-      const produtoPromises = pedido.produtos.map(async (produto) => {
-        const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido", peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido", supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || "",}); // se existir
-        console.log("Produto salvo com ID:", result.key);
-      }); await Promise.all(produtoPromises);
-      console.log("Todos os produtos foram enviados para o estoque.");
-    } else {console.warn("Pedido não encontrado!");}
+    try {
+      const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
+      const pedidoSnapshot = await get(pedidoRef);
+  
+      if (pedidoSnapshot.exists()) {
+        const pedido = pedidoSnapshot.val();
+        const estoqueRef = ref(dbRealtime, "Estoque");
+        const dataCadastro = new Date().toISOString().split("T")[0];
+        const fornecedor = pedido.fornecedor;
+  
+        const produtoPromises = pedido.produtos.map(async (produto) => {
+          const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido",
+            peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido", supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || ""});console.log("Produto salvo com ID:", result.key);});
+            
+        await Promise.all(produtoPromises);
+        console.log("Todos os produtos foram enviados para o estoque.");} 
+      else {console.warn("Pedido não encontrado!");}} 
+      catch (error) {console.error("Erro ao enviar produtos para o estoque:", error);
+        toast.error("Erro ao enviar produtos para o estoque");
+      }
   };
   
-
+  
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
     let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
@@ -125,41 +121,51 @@ export default function StatusPedidos() {
     setPedidoSelecionado((prev) => ({...prev, produtos: novosProdutos,}));
   };
   
-  const handleSalvarEdicao = () => {
-    if (!pedidoSelecionado) {toast.error("Nenhum pedido selecionado para salvar!"); return;}
+  const handleSalvarEdicao = () => {if (!pedidoSelecionado) {toast.error("Nenhum pedido selecionado para salvar!"); return;}  
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`);
-    update(pedidoRef, { produtos: pedidoSelecionado.produtos }).then(() => {toast.success("Pedido atualizado com sucesso!"); 
-    setModalAbertoEdit(false);}).catch(() => {toast.error("Erro ao salvar edição!");});
+    update(pedidoRef, { produtos: pedidoSelecionado.produtos })
+      .then(() => {
+        toast.success("Pedido atualizado com sucesso!");
+        setModalAbertoEdit(false);
+        setPedidos((prev) => prev.map((pedido) => pedido.id === pedidoSelecionado.id ? { ...pedido, produtos: pedidoSelecionado.produtos } : pedido));
+        setPedidoSelecionado((prev) => ({...prev, produtos: pedidoSelecionado.produtos})); })
+      .catch(() => {toast.error("Erro ao salvar edição!");});
+  };
+  
+  const handleDelete = async (index) => {if (!pedidoSelecionado || !pedidoSelecionado.produtos) return;
+    const produtosAtualizados = pedidoSelecionado.produtos.filter((_, i) => i !== index);
+    setPedidoSelecionado((prev) => ({...prev, produtos: produtosAtualizados}));
+    try {
+      const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}/produtos`);
+      await set(pedidoRef, produtosAtualizados);
+      toast.success("Produto removido com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao remover produto.");
+      console.error("Erro ao deletar produto do Firebase:", error);
+    }
   };
 
-  const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
   const handleSelecionarProduto = (produtoSelecionado) => {
-    const novoProduto = { sku: produtoSelecionado.sku || "", name: produtoSelecionado.name || "", marca: produtoSelecionado.marca || "", tipo: produtoSelecionado.tipo || "", category: produtoSelecionado.category || "", peso: produtoSelecionado.peso || 0, unit: produtoSelecionado.unit || "", quantidade: 1, unitPrice: 0, observacao: "",};
-    const copiaPedido = { ...pedidoSelecionado };
-    copiaPedido.produtos.push(novoProduto);
-    setPedidoSelecionado(copiaPedido);
+    const novoProduto = {...produtoSelecionado, quantidade: 1, unitPrice: parseFloat(produtoSelecionado.unitPrice || 0), totalPrice: parseFloat(produtoSelecionado.unitPrice || 0).toFixed(2), observacoes: "",};
+    setPedidoSelecionado((prev) => ({ ...prev, produtos: [...(prev.produtos || []), novoProduto]}));
   };
-
-  const handleDelete = (index) => {
-    setPedidoSelecionado((prev) => {
-    const novosProdutos = [...prev.produtos];
-    novosProdutos.splice(index, 1);
-    return { ...prev, produtos: novosProdutos };
-    });
-  };
-
+  
+  const produtosFiltrados = produtosDisponiveis.filter((produto) =>
+    produto.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    produto.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  );  
+  const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
   const handleFiltro = () => {
     let filteredPedidos = pedidos;
     if (numeroPedidoFornecedor) {
       const termo = numeroPedidoFornecedor.toLowerCase();
-      filteredPedidos = filteredPedidos.filter((pedido) =>
-        pedido.numeroPedido?.toLowerCase().includes(termo) ||
-        pedido.fornecedor?.razaoSocial?.toLowerCase().includes(termo)
-      );
-    } if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));
-    } if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));
-    } if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
+      filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroPedido?.toLowerCase().includes(termo) || pedido.fornecedor?.razaoSocial?.toLowerCase().includes(termo));} 
+    if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));} 
+    if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));}
+    if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
     if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal);}
+    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal);}
+
     setPedidosFiltrados(filteredPedidos);
   };
 
@@ -174,7 +180,61 @@ export default function StatusPedidos() {
     XLSX.writeFile(wb, "Pedidos_Filtrados.xlsx");
   };
 
-  return (
+  
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(12);
+    doc.setFont("Helvetica");
+    doc.setFontSize(10);
+  
+    doc.text('Fornecedor: ' + pedidoSelecionado.fornecedor?.razaoSocial, 20, 20);
+    doc.text('Data do Pedido: ' + pedidoSelecionado.dataPedido, 20, 30);
+    
+    // Exibindo o período que irá suprir
+    const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
+    doc.text(periodo, 20, 40);
+    
+    let y = 50;
+    const col1X = 10;
+    const col2X = 40;
+    const col3X = 70;
+    const col4X = 90;
+    const col5X = 140;
+  
+    doc.text('Produto', col1X, y);
+    doc.text('Marca', col2X, y);
+    doc.text('Unidade', col3X, y);
+    doc.text('Quantidade', col4X, y);
+    doc.text('Observação', col5X, y);
+    
+    y += 5;
+    doc.line(col1X, y, col5X + 40, y);
+  
+    pedidoSelecionado.produtos.forEach((produto, index) => {
+      y += 10;
+      doc.text(produto.name, col1X, y);
+      doc.text(produto.marca, col2X, y);
+      doc.text(produto.unit, col3X, y);
+      doc.text(produto.quantidade.toString(), col4X, y);
+      doc.text(produto.observacao || "Nenhuma observação", col5X, y);
+  
+      y += 5;
+      doc.line(col1X, y, col5X + 40, y);
+  
+      if (y > 250) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+  
+    doc.save('pedido.pdf');
+  };
+  
+  
+  
+  
+return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
       <h2 className="text-2xl font-bold mb-4">Status dos Pedidos</h2>
@@ -184,7 +244,6 @@ export default function StatusPedidos() {
         <div className="flex flex-wrap gap-4"> 
           <Input type="text" placeholder="Número do Pedido ou Fornecedor" value={numeroPedidoFornecedor} onChange={(e) => setNumeroPedidoFornecedor(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="text" placeholder="NotaFiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
-
           <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}className="p-2 border border-gray-300 rounded w-full sm:w-auto">
@@ -249,9 +308,9 @@ export default function StatusPedidos() {
 
               </div>
             <div className="flex justify-end">{/*Limpar o motivo após o cancelamento*/}
-            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" onClick={() => {if (!numeroNotaFiscal || !chaveAcesso) {toast.error("Preencha a Nota Fiscal e a Chave de Acesso antes de aprovar.");return;} 
-              handleAtualizarStatus(pedidoSelecionado.id, "Aprovado", "", numeroNotaFiscal, chaveAcesso); setModalAbertoAprovacao(false); setNumeroNotaFiscal(""); setChaveAcesso("");}}> Confirmar Aprovação</Button>
-                </div>
+              <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" onClick={() => {if (!numeroNotaFiscal || !chaveAcesso) {toast.error("Preencha a Nota Fiscal e a Chave de Acesso antes de aprovar.");return;} 
+                handleAtualizarStatus(pedidoSelecionado.id, "Aprovado", "", numeroNotaFiscal, chaveAcesso); setModalAbertoAprovacao(false); setNumeroNotaFiscal(""); setChaveAcesso("");}}> Confirmar Aprovação</Button>
+            </div>
           </div>
         </div>
       )}
@@ -284,15 +343,13 @@ export default function StatusPedidos() {
             <p className="mb-2 font-semibold">E-mail:{" "}<span className="font-normal">{pedidoSelecionado.fornecedor?.email || "Não informado"}</span></p>
             <p className="mb-2 font-semibold">Período que irá suprir:</p>
             <p className="mb-2 font-semibold">De:{" "}<span className="font-normal">{formatDate(pedidoSelecionado.periodoInicio || "Não informado")}</span>{" "}Até:{" "}<span className="font-normal">{formatDate(pedidoSelecionado.periodoFim || "Não informado")}</span></p>
-            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p>            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p>
+            <p className="mb-4 font-semibold">Motivo de Cancelamento:{" "}<span className="font-normal">{pedidoSelecionado.motivoCancelamento || "Não informado"}</span></p> 
             <p className="mb-4 font-semibold">Nota Fiscal:{" "}<span className="font-normal">{pedidoSelecionado.numeroNotaFiscal || "Não informado"}</span></p>
             <p className="mb-4 font-semibold">Chave de Acesso:{" "}<span className="font-normal">{pedidoSelecionado.chaveAcesso || "Não informado"}</span></p>
-
-
             <Button className="bg-green-600 text-white mr-4 mb-8" onClick={(exportToExcel)}>Exportar Produtos para Excel</Button>
             <Link to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx" target="_blank"><Button className="bg-blue-600 text-white mr-4">Consultar NF</Button></Link>
             <Link to="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank"> <Button className="bg-yellow-600 text-white">Consultar Cupom Fiscal</Button></Link>
-
+            <Button className="bg-red-600 text-white ml-4 mb-8" onClick={exportToPDF}>Exportar PDF</Button>
             {/* Tabela de produtos - Responsiva */}
             <div className="overflow-x-auto mb-4">
               <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
@@ -325,8 +382,7 @@ export default function StatusPedidos() {
                         <td className="px-4 py-2">{produto.unitPrice}</td>
                         <td className="px-4 py-2">{produto.totalPrice}</td>
                         <td className="px-4 py-2">{produto.observacao}</td>
-                      </tr>
-                    ))) : (<tr><td colSpan="11" className="text-center p-4 text-gray-500">Nenhum produto encontrado para este pedido.</td></tr>)}
+                      </tr> ))) : (<tr><td colSpan="11" className="text-center p-4 text-gray-500">Nenhum produto encontrado para este pedido.</td></tr>)}
                 </tbody>
               </table>
             </div>
@@ -384,8 +440,11 @@ export default function StatusPedidos() {
             {modalSelecionarProduto && (
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
               <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-                <Button className="absolute top-4 right-4 bg-red-500 text-white w-10 h-10 rounded-full hover:bg-red-600" onClick={() => setModalSelecionarProduto(false)} aria-label="Fechar modal">×</Button>
+                <Button className="absolute top-4 right-4 bg-red-500 text-white w-10 h-10 rounded-full hover:bg-red-600" onClick={() => setModalSelecionarProduto(false)} aria-label="Fechar modal"> ×</Button>
                 <h3 className="text-2xl font-bold text-center mb-4">Selecionar Produto</h3>
+                <div className="flex justify-center mb-4">
+                  <Input type="text" placeholder="Buscar por nome ou SKU" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="p-2 border border-gray-300 rounded w-full max-w-md" />
+                </div>
                 <Table className="min-w-full text-sm border rounded-xl shadow">
                   <thead className="bg-gray-100 text-gray-700">
                     <tr>
@@ -396,16 +455,14 @@ export default function StatusPedidos() {
                     </tr>
                   </thead>
                   <tbody>
-                    {produtosDisponiveis.map((produto) => (
+                    {produtosFiltrados.map((produto) => (
                       <tr key={produto.sku} className="border-t hover:bg-gray-50">
                         <td className="p-2 text-center">{produto.sku}</td>
                         <td className="p-2 text-center">{produto.name}</td>
                         <td className="p-2 text-center">{produto.marca}</td>
-                        <td className="p-2 text-center">
-                          <Button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"  onClick={() => {handleSelecionarProduto(produto); setModalSelecionarProduto(false);}}>Selecionar</Button>
-                        </td>
-                      </tr>
-                    ))}
+                        <td className="p-2 text-center"><Button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" 
+                          onClick={() => { handleSelecionarProduto(produto); setModalSelecionarProduto(false); }}> Selecionar </Button></td>
+                      </tr>))}
                   </tbody>
                 </Table>
               </div>

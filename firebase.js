@@ -19,5 +19,5 @@ const dbRealtime = getDatabase(app);
 const dbFirestore = getFirestore(app);
 const auth = getAuth(app);  
 
-export { dbRealtime, dbFirestore, auth,  ref, set, get, child, update, onValue, push, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword };
+export { dbRealtime, dbFirestore, auth,  ref, set,  get, child, update, onValue, push, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword };
 export const db = dbRealtime;
