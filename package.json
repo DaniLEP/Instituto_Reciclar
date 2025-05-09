@@ -29,6 +29,7 @@
     "firebase": "^11.7.1",
     "framer-motion": "^12.10.0",
     "jspdf": "^1.5.3",
+    "jspdf-autotable": "^5.0.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.487.0",
     "prop-types": "^15.8.1",
