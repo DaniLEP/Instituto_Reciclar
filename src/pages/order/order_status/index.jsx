@@ -7,12 +7,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button/button";
 import { Table } from "@/components/ui/table/table";
-import { db, dbRealtime, onValue } from "../../../../firebase"; 
+import { db, dbRealtime, onValue, auth } from "../../../../firebase"; 
 import jsPDF from "jspdf";
 
 export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
-  const [pedidoSelecionado, setPedidoSelecionado] = useState({numeroPedido: "", status: "", fornecedor: {}, periodoInicio: null, periodoFim: null, motivoCancelamento: "", produtos: [],});
+  const [pedidoSelecionado, setPedidoSelecionado] = useState({numeroPedido: "", recebido: "", status: "", fornecedor: {}, periodoInicio: null, periodoFim: null, motivoCancelamento: "", produtos: [],});
   const [modalAberto, setModalAberto] = useState(false);
   const [modalAbertoCancelamento, setModalAbertoCancelamento] = useState(false);
   const [motivoCancelamento, setMotivoCancelamento] = useState("");
@@ -21,6 +21,7 @@ export default function StatusPedidos() {
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("");
+  const [projeto, setProjeto] = useState("");
   const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
   const [modalSelecionarProduto, setModalSelecionarProduto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
@@ -30,7 +31,8 @@ export default function StatusPedidos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [desconto, setDesconto] = useState(0);
   const [editandoDesconto, setEditandoDesconto] = useState(false);
-  const [salvandoDesconto, setSalvandoDesconto] = useState(false); // Remover
+  const [salvandoDesconto, setSalvandoDesconto] = useState(false);
+  const [recebido, setRecebido] = useState("");
 
 useEffect(() => {
   if (pedidoSelecionado) {
@@ -66,7 +68,7 @@ useEffect(() => {
   const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscal, chaveAcesso) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
     const dataCadastro = new Date().toISOString();
-    const updates = {status: novoStatus, ...(motivo && { motivoCancelamento: motivo }), ...(numeroNotaFiscal && { numeroNotaFiscal }), ...(chaveAcesso && { chaveAcesso }), dataCadastro};
+    const updates = {status: novoStatus, ...(motivo && { motivoCancelamento: motivo }), ...(numeroNotaFiscal && { numeroNotaFiscal }), ...(recebido && {recebido}) , ...(chaveAcesso && { chaveAcesso }), dataCadastro};
     update(pedidoRef, updates)
       .then(() => {
         toast.success(`Status atualizado para ${novoStatus}`);
@@ -89,9 +91,8 @@ useEffect(() => {
         const fornecedor = pedido.fornecedor;
   
         const produtoPromises = pedido.produtos.map(async (produto) => {
-          const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido",
+          const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, projeto: produto.projeto || "Indefido", category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido",
             peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido", supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || ""});console.log("Produto salvo com ID:", result.key);});
-            
         await Promise.all(produtoPromises);
         console.log("Todos os produtos foram enviados para o estoque.");} 
       else {console.warn("Pedido não encontrado!");}} 
@@ -99,8 +100,7 @@ useEffect(() => {
         toast.error("Erro ao enviar produtos para o estoque");
       }
   };
-  
-  
+
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
     let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
@@ -115,7 +115,7 @@ useEffect(() => {
   const exportToExcel = () => {
     if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {toast.error("Nenhum produto para exportar!"); return;}
     const ws = XLSX.utils.json_to_sheet(
-    pedidoSelecionado.produtos.map((produto) => ({SKU: produto.sku, Produto: produto.name, Marca: produto.marca, Peso: produto.peso, UnidadeMedida: produto.unit, Quantidade: `${produto.quantidade} unidades`, Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.obersavacao,})));
+    pedidoSelecionado.produtos.map((produto) => ({Projeto: produto.projeto, SKU: produto.sku, Produto: produto.name, Marca: produto.marca, Peso: produto.peso, UnidadeMedida: produto.unit, Quantidade: `${produto.quantidade} unidades`, Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.obersavacao,})));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Produtos");
     XLSX.writeFile(wb, `Pedido_${pedidoSelecionado.numeroPedido}.xlsx`);
@@ -155,15 +155,18 @@ useEffect(() => {
   };
 
   const handleSelecionarProduto = (produtoSelecionado) => {
-    const novoProduto = {...produtoSelecionado, quantidade: 1, unitPrice: parseFloat(produtoSelecionado.unitPrice || 0), totalPrice: parseFloat(produtoSelecionado.unitPrice || 0).toFixed(2), observacoes: "",};
-    setPedidoSelecionado((prev) => ({ ...prev, produtos: [...(prev.produtos || []), novoProduto]}));
-  };
+    const novoProduto = {
+      ...produtoSelecionado, quantidade: 1, unitPrice: parseFloat(produtoSelecionado.unitPrice || 0), totalPrice: parseFloat(produtoSelecionado.unitPrice || 0).toFixed(2), observacoes: "",};
+    setPedidoSelecionado((prev) => ({...prev,produtos: [...(prev.produtos || []), novoProduto],}));
+  }; 
+
+  const navigate = useNavigate(); 
   
   const produtosFiltrados = produtosDisponiveis.filter((produto) =>
     produto.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );  
-  const handleLimparFiltros = () => { setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
+  const handleLimparFiltros = () => { setProjeto(""), setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
   const handleFiltro = () => {
     let filteredPedidos = pedidos;
     if (numeroPedidoFornecedor) {
@@ -172,14 +175,13 @@ useEffect(() => {
     if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));} 
     if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));}
     if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
-    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal);}
-    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal);}
-
+    if (projeto) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === projeto);}
+    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal && pedido.numeroNotaFiscal.toString().includes(numeroNotaFiscal.toString()));}
     setPedidosFiltrados(filteredPedidos);
   };
 
-  const navigate = useNavigate();
   const handleVoltar = () => navigate(-1);
+
   const exportarConsultaParaExcel = () => {
     if (pedidosFiltrados.length === 0) {toast.error("Nenhum pedido filtrado para exportar!"); return;}
     const dataParaExportar = pedidosFiltrados.map((pedido) => ({Número: pedido.numeroPedido, Data: formatDate(pedido.dataPedido), Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado", Categoria: pedido.category || "Não informado", Status: pedido.status, MotivoCancelamento: pedido.motivoCancelamento || ""}));
@@ -189,62 +191,61 @@ useEffect(() => {
     XLSX.writeFile(wb, "Pedidos_Filtrados.xlsx");
   };
 
-  
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(12);
-    doc.setFont("Helvetica");
-    doc.setFontSize(10);
-  
-    doc.text('Fornecedor: ' + pedidoSelecionado.fornecedor?.razaoSocial, 20, 20);
-    doc.text('Data do Pedido: ' + pedidoSelecionado.dataPedido, 20, 30);
-    
-    // Exibindo o período que irá suprir
-    const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
-    doc.text(periodo, 20, 40);
-    
-    let y = 50;
-    const col1X = 10;
-    const col2X = 40;
-    const col3X = 70;
-    const col4X = 90;
-    const col5X = 140;
-  
-    doc.text('Produto', col1X, y);
-    doc.text('Marca', col2X, y);
-    doc.text('Unidade', col3X, y);
-    doc.text('Quantidade', col4X, y);
-    doc.text('Observação', col5X, y);
-    
+const exportToPDF = () => {
+  if (!pedidoSelecionado) {
+    console.error("Pedido não selecionado.");
+    return;
+  }
+
+  const doc = new jsPDF();
+  doc.setFontSize(12);
+  doc.setFont("Helvetica");
+  doc.setFontSize(10);
+
+  doc.text('Projeto Custeador: ' + (pedidoSelecionado.projeto || ""), 20, 10);
+  doc.text('Fornecedor: ' + (pedidoSelecionado.fornecedor?.razaoSocial || ""), 20, 20);
+  doc.text('Data do Pedido: ' + (pedidoSelecionado.dataPedido || ""), 20, 30);
+
+  const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
+  doc.text(periodo, 20, 40);
+
+  let y = 50;
+  const col1X = 20;
+  const col2X = 60;
+  const col3X = 80;
+  const col4X = 110;
+  const col5X = 140;
+
+  doc.text('Produto', col1X, y);
+  doc.text('Marca', col2X, y);
+  doc.text('Unidade', col3X, y);
+  doc.text('Quantidade', col4X, y);
+  doc.text('Observação', col5X, y);
+
+  y += 5;
+  doc.line(col1X, y, col5X + 40, y);
+
+  (pedidoSelecionado.produtos || []).forEach((produto) => {y += 10;
+    doc.text(String(produto.name || ""), col1X, y);
+    doc.text(String(produto.marca || ""), col2X, y);
+    doc.text(String(produto.unit || ""), col3X, y);
+    doc.text(String(produto.quantidade || "0"), col4X, y);
+    doc.text(String(produto.observacao || "Nenhuma observação"), col5X, y);
     y += 5;
     doc.line(col1X, y, col5X + 40, y);
-  
-    pedidoSelecionado.produtos.forEach((produto, index) => {
-      y += 10;
-      doc.text(produto.name, col1X, y);
-      doc.text(produto.marca, col2X, y);
-      doc.text(produto.unit, col3X, y);
-      doc.text(produto.quantidade.toString(), col4X, y);
-      doc.text(produto.observacao || "Nenhuma observação", col5X, y);
-  
-      y += 5;
-      doc.line(col1X, y, col5X + 40, y);
-  
-      if (y > 250) {
-        doc.addPage();
-        y = 20;
-      }
-    });
-  
-    doc.save('pedido.pdf');
-  };
+
+    if (y > 250) {
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  doc.save('pedido.pdf');
+};
+
 
   const totalPedido = useMemo(() => {
-    return pedidoSelecionado?.produtos?.reduce(
-      (acc, item) => acc + parseFloat(item.totalPrice || 0),
-      0
-    );
+    return pedidoSelecionado?.produtos?.reduce((acc, item) => acc + parseFloat(item.totalPrice || 0), 0);
   }, [pedidoSelecionado]);
 
   const totalComDesconto = useMemo(() => {
@@ -257,18 +258,11 @@ useEffect(() => {
 const salvarDescontoNoPedido = async () => {
   if (!pedidoSelecionado?.id) return;
   setSalvandoDesconto(true);
-
   try {
-    await update(ref(db, `novosPedidos/${pedidoSelecionado.id}`), {
-      desconto,
-    });
-
+    await update(ref(db, `novosPedidos/${pedidoSelecionado.id}`), { desconto, });
     setEditandoDesconto(false);
-  } catch (error) {
-    console.error("Erro ao salvar desconto:", error);
-  } finally {
-    setSalvandoDesconto(false);
-  }
+  } catch (error) {console.error("Erro ao salvar desconto:", error);
+  } finally {setSalvandoDesconto(false);}
 };
   
 return (
@@ -280,7 +274,7 @@ return (
       <div className="mb-3">
         <div className="flex flex-wrap gap-4"> 
           <Input type="text" placeholder="Número do Pedido ou Fornecedor" value={numeroPedidoFornecedor} onChange={(e) => setNumeroPedidoFornecedor(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
-          <Input type="text" placeholder="NotaFiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
+          <Input type="text" placeholder="Nota Fiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="p-2 border border-gray-300 rounded w-full sm:w-auto"/>
           <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}className="p-2 border border-gray-300 rounded w-full sm:w-auto">
@@ -288,6 +282,12 @@ return (
               <option value="Pendente">Pendente</option>
               <option value="Aprovado">Aprovado</option>
               <option value="Cancelado">Cancelado</option>
+          </select>
+            <select value={projeto} onChange={(e) => setProjeto(e.target.value)}className="p-2 border border-gray-300 rounded w-full sm:w-auto">
+              <option value="">Selecione o Projeto</option>
+              <option value="CONDECA">CONDECA</option>
+              <option value="FUMCAD">FUMCAD</option>
+              <option value="INSTITUTO RECICLAR">Instituto Reciclar</option>
           </select>
           <Button onClick={handleFiltro} className="bg-blue-500 text-white p-2 rounded w-full sm:w-auto">Consultar</Button>
           <Button onClick={handleLimparFiltros} className="bg-blue-500 text-white p-2 rounded w-full sm:w-auto">Limpar Filtro</Button>
@@ -300,6 +300,7 @@ return (
           <thead className="bg-gray-200">
             <tr>
               <th className="p-2">Número</th>
+              <th className="p-2">Projeto Custeador</th>
               <th className="p-2">Nota Fiscal</th>
               <th className="p-2">Data</th>
               <th className="p-2">Fornecedor</th>
@@ -312,6 +313,7 @@ return (
           {pedidosFiltrados.length > 0 ? ( pedidosFiltrados.map((pedido) => (
                 <tr key={pedido.id} className="border-b hover:bg-gray-100 text-center">
                   <td className="p-2">{pedido.numeroPedido}</td>
+                  <td className="p-2">{pedido.projeto}</td>
                   <td className="p-2">Nº: {pedido.numeroNotaFiscal}</td>
                   <td className="p-2">{formatDate(pedido.dataPedido)}</td>
                   <td className="p-2">{pedido?.fornecedor?.razaoSocial || "Não informado"}</td>
@@ -336,17 +338,18 @@ return (
       {modalAbertoAprovacao && pedidoSelecionado && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center animate-fade-in">
           <div className="bg-white p-6 rounded-lg shadow-lg relative animate-slide-up overflow-hidden max-w-3xl w-full">
-            <Button className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600" onClick={() => setModalAbertoCancelamento(false)}>X</Button>
+            <Button className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600" onClick={() => setModalAbertoAprovacao(false)}>X</Button>
             <h3 className="text-2xl font-bold mb-4 text-center">Pedido #{pedidoSelecionado.numeroPedido}</h3>
             <h3 className="mb-4 font-semibold">Status:{" "}<span className="font-normal">{pedidoSelecionado.status}</span></h3>
               <div className="mb-4">{/* Campo para numero de acesso e nf */}
-              <Input type="text" placeholder="Número da Nota Fiscal" value={numeroNotaFiscal} onChange={(e) => setNumeroNotaFiscal(e.target.value)} /> <br />
-              <Input type="text" placeholder="Digite a Chave de Acesso" value={chaveAcesso} onChange={(e) => setChaveAcesso(e.target.value)} />
+              <Input type="text" placeholder="Número da Nota Fiscal" value={numeroNotaFiscal} className="mb-4" onChange={(e) => setNumeroNotaFiscal(e.target.value)} /> 
+              <Input type="text" placeholder="Digite a Chave de Acesso" value={chaveAcesso} className="mb-4" onChange={(e) => setChaveAcesso(e.target.value)} /> 
+              <Input type="text" placeholder="Digite o Nome de quem recebeu" value={recebido} onChange={(e) => setRecebido(e.target.value)} />
 
               </div>
             <div className="flex justify-end">{/*Limpar o motivo após o cancelamento*/}
               <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" onClick={() => {if (!numeroNotaFiscal || !chaveAcesso) {toast.error("Preencha a Nota Fiscal e a Chave de Acesso antes de aprovar.");return;} 
-                handleAtualizarStatus(pedidoSelecionado.id, "Aprovado", "", numeroNotaFiscal, chaveAcesso); setModalAbertoAprovacao(false); setNumeroNotaFiscal(""); setChaveAcesso("");}}> Confirmar Aprovação</Button>
+                handleAtualizarStatus(pedidoSelecionado.id, "Aprovado", "", numeroNotaFiscal, chaveAcesso, recebido); setModalAbertoAprovacao(false); setNumeroNotaFiscal(""); setChaveAcesso(""); setRecebido(""); }}> Confirmar Aprovação</Button>
             </div>
           </div>
         </div>
@@ -368,17 +371,20 @@ return (
           </div>
         </div>
       )}
-      {modalAberto && pedidoSelecionado && (
+      {modalAberto && pedidoSelecionado && ( //MODAL DE VISUALIZAÇÃO
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center px-4 z-50 overflow-y-auto">
           <div className="bg-white p-6 rounded-lg shadow-lg relative animate-slide-up w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalAberto(false)}>×</Button>
             <h3 className="text-2xl font-bold mb-4 text-center">Pedido #{pedidoSelecionado.numeroPedido}</h3>
-
             {/* Informações gerais */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="flex flex-col">
                 <span className="font-semibold">Status:</span>
                 <span>{pedidoSelecionado.status}</span>
+              </div>
+               <div className="flex flex-col">
+                <span className="font-semibold">Projeto Custeador:</span>
+                <span>{pedidoSelecionado.projeto || "Não informado"}</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold">Fornecedor:</span>
@@ -412,41 +418,31 @@ return (
                 <span className="font-semibold">Chave de Acesso:</span>
                 <span>{pedidoSelecionado.chaveAcesso || "Não informado"}</span>
               </div>
+               <div className="flex flex-col">
+                <span className="font-semibold">Recebido por:</span>
+                <span>{pedidoSelecionado.recebido || "Não informado"}</span>
+              </div>
             </div>
 
             {/* Valores financeiros */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-gray-100 p-4 rounded-lg shadow">
               <div className="text-lg font-semibold">
-                Valor Total do Pedido: <span className="text-green-600">R$ {totalPedido.toFixed(2)}</span>
+                Valor Total do Pedido: <span className="text-green-600">R$ {totalPedido.toFixed(2)}</span>                    
+                <span className="text-xs block text-gray-500 text-center">Valor sem total sem desconto</span>
               </div>
 
               <div className="text-lg font-semibold">
                 {editandoDesconto ? (
-                  <input
-                    type="number"
-                    value={desconto}
-                    onChange={(e) => setDesconto(Number(e.target.value))}
-                    onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()}
-                    onBlur={salvarDescontoNoPedido}
-                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right"
-                    autoFocus
-                  />
-                ) : (
-                  <span
-                    className="cursor-pointer"
-                    onDoubleClick={() => setEditandoDesconto(true)}
-                  >
+                  <input type="number" value={desconto} onChange={(e) => setDesconto(Number(e.target.value))} onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()} onBlur={salvarDescontoNoPedido}
+                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right" autoFocus /> ) : (
+                  <span className="cursor-pointer" onDoubleClick={() => setEditandoDesconto(true)}>
                     Desconto: <span className="text-orange-600">R$ {desconto.toFixed(2)}</span>
                     <span className="text-xs block text-gray-500">Clique duas vezes para editar</span>
                   </span>
                 )}
               </div>
-
-              <div className="text-lg font-semibold">
-                Total com Desconto: <span className="text-blue-600">R$ {(totalPedido - desconto).toFixed(2)}</span>
-              </div>
+              <div className="text-lg font-semibold"> Total com Desconto: <span className="text-blue-600">R$ {(totalPedido - desconto).toFixed(2)}</span></div>
             </div>
-
             {/* Botões de ações */}
             <div className="flex flex-wrap gap-2 mb-4">
               <Button className="bg-green-600 text-white" onClick={exportToExcel}>Exportar Produtos para Excel</Button>
@@ -458,43 +454,41 @@ return (
               </Link>
               <Button className="bg-red-600 text-white" onClick={exportToPDF}>Exportar PDF</Button>
             </div>
-
             {/* TABELA DE PRODUTOS */}
             <h4 className="text-xl font-bold mt-6 mb-2">Produtos do Pedido</h4>
             <div className="overflow-x-auto">
-      <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
-                      <thead className="bg-gray-200">
-                        <tr>
-                          <th className="p-2">SKU</th>
-                          <th className="p-2">Produto</th>
-                          <th className="p-2">Marca</th>
-                          <th className="p-2">Tipo</th>
-                          <th className="p-2">Grupo</th>
-                          <th className="p-2">Peso Unitário</th>
-                          <th className="p-2">Unidade</th>
-                          <th className="p-2">Quantidade</th>
-                          <th className="p-2">Valor Unitário</th>
-                          <th className="p-2">Valor Total</th>
-                          <th className="p-2">Observações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Array.isArray(pedidoSelecionado?.produtos) && pedidoSelecionado.produtos.length > 0 ? ( pedidoSelecionado.produtos.map((produto, index) => (
-                            <tr key={index} className="border-b">
-                              <td className="px-4 py-2">{produto.sku}</td>
-                              <td className="p-[1px] ">{produto.name}</td>
-                              <td className="px-4 py-2">{produto.marca}</td>
-                              <td className="px-4 py-2">{produto.tipo}</td>
-                              <td className="px-4 py-2">{produto.category}</td>
-                              <td className="px-4 py-2">{produto.peso}</td>
-                              <td className="px-4 py-2">{produto.unit}</td>
-                              <td className="px-4 py-2">{produto.quantidade}</td>
-                              <td className="px-4 py-2">{produto.unitPrice}</td>
-                              <td className="px-4 py-2">{produto.totalPrice}</td>
-                              <td className="px-4 py-2">{produto.observacao}</td>
-                            </tr> ))) : (<tr><td colSpan="11" className="text-center p-4 text-gray-500">Nenhum produto encontrado para este pedido.</td></tr>)}
-                      </tbody>
-                    </table>
+            <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="p-2">SKU</th>
+                    <th className="p-2">Produto</th>
+                    <th className="p-2">Marca</th>
+                    <th className="p-2">Tipo</th>
+                    <th className="p-2">Grupo</th>
+                    <th className="p-2">Peso Unitário</th>
+                    <th className="p-2">Unidade</th>
+                    <th className="p-2">Quantidade</th>
+                    <th className="p-2">Valor Unitário</th>
+                    <th className="p-2">Valor Total</th>
+                    <th className="p-2">Observações</th>
+                </tr>
+              </thead>
+              <tbody>{Array.isArray(pedidoSelecionado?.produtos) && pedidoSelecionado.produtos.length > 0 ? ( pedidoSelecionado.produtos.map((produto, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="px-4 py-2">{produto.sku}</td>
+                    <td className="p-[1px] ">{produto.name}</td>
+                    <td className="px-4 py-2">{produto.marca}</td>
+                    <td className="px-4 py-2">{produto.tipo}</td>
+                    <td className="px-4 py-2">{produto.category}</td>
+                    <td className="px-4 py-2">{produto.peso}</td>
+                    <td className="px-4 py-2">{produto.unit}</td>
+                    <td className="px-4 py-2">{produto.quantidade}</td>
+                    <td className="px-4 py-2">{produto.unitPrice}</td>
+                    <td className="px-4 py-2">{produto.totalPrice}</td>
+                    <td className="px-4 py-2">{produto.observacao}</td>
+                  </tr> ))) : (<tr><td colSpan="11" className="text-center p-4 text-gray-500">Nenhum produto encontrado para este pedido.</td></tr>)}
+            </tbody>
+            </table>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ const firebaseConfig = {
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
-// Inicializando o Firebase (só se não houver app inicializado)
+// Inicializando o Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
 
@@ -26,6 +26,7 @@ export default function NovoPedido() {
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFim, setPeriodoFim] = useState("");
   const [category, setCategory] = useState([]);
+  const [projeto, setProjeto] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
@@ -79,10 +80,10 @@ export default function NovoPedido() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Validação dos campos obrigatórios
-    if (!dataSelecionada || !periodoInicio || !periodoFim || !category || !fornecedorSelecionado || itensPedido.length === 0)
+    if (!dataSelecionada || !periodoInicio || !periodoFim || !category || !projeto || !fornecedorSelecionado || itensPedido.length === 0)
     {toast.error("Por favor, preencha todos os campos obrigatórios!"); return;}
     // Criar um novo pedido
-    const pedido = {numeroPedido, dataPedido: dataSelecionada, periodoInicio, periodoFim, category, fornecedor: dadosFornecedor, produtos: itensPedido, status: "Pendente", dataCriacao: new Date().toISOString(), };
+    const pedido = {numeroPedido, projeto, dataPedido: dataSelecionada, periodoInicio, periodoFim, category, fornecedor: dadosFornecedor, produtos: itensPedido, status: "Pendente", dataCriacao: new Date().toISOString(), };
 
     try {
       const pedidosRef = ref(db, "novosPedidos"); // Referência para os pedidos no Firebase
@@ -150,6 +151,17 @@ export default function NovoPedido() {
                   <option value="Proteina">Proteina</option>
                   <option value="Mantimento">Mantimento</option>
                   <option value="Hortaliças">Hortaliças</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Selecione o Projeto: </label>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <select value={projeto} onChange={(e) => setProjeto(e.target.value)}style={styles.input}>
+                  <option value="Selecionar">Selecione o Projeto</option>
+                  <option value="CONDECA">CONDECA</option>
+                  <option value="FUMCAD">FUMCAD</option>
+                  <option value="INSTITUTO RECICLAR">Instituto Reciclar</option>
                 </select>
               </div>
             </div>
