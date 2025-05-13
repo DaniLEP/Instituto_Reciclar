@@ -3,6 +3,7 @@ import { getDatabase, ref, onValue } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { IoArrowBack } from "react-icons/io5";  // Importando o ícone de seta
 import "react-toastify/dist/ReactToastify.css";
 
 // Configuração do Firebase
@@ -63,17 +64,29 @@ export default function ListaFornecedores() {
         fornecedor.grupo.toLowerCase().includes(filtro.toLowerCase()))
   );
 
-    const handleEdit = (fornecedor) => {
-      if (!fornecedor.id) {
-        toast.error("Erro ao editar: ID do fornecedor não encontrado.");
-        console.error("Fornecedor sem ID:", fornecedor);
-        return;
-      }
-      navigate(`/editar-fornecedor/${fornecedor.id}`);
-    };
+  const handleEdit = (fornecedor) => {
+    if (!fornecedor.id) {
+      toast.error("Erro ao editar: ID do fornecedor não encontrado.");
+      console.error("Fornecedor sem ID:", fornecedor);
+      return;
+    }
+    navigate(`/editar-fornecedor/${fornecedor.id}`);
+  };
+
+  // Função para voltar à página anterior
+  const handleGoBack = () => {
+    navigate(-1); // Navega para a página anterior
+  };
 
   return (
     <div className="p-8 bg-gradient-to-br from-[#0a192f] to-[#1e3a8a] min-h-screen">
+      <button
+        onClick={handleGoBack}
+        className="mb-4 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center space-x-2"
+      >
+        <IoArrowBack className="text-xl" /> {/* Ícone de seta */}
+        <span>Voltar</span>
+      </button>
       <h2 className="text-3xl font-semibold text-center mb-6 text-white">
         Lista de Fornecedores
       </h2>

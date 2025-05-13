@@ -5,9 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { Input } from "@/components/ui/input";
 import { Button } from "react-scroll";
 import { Table } from "@/components/ui/table/table";
-import { FaExclamationCircle } from 'react-icons/fa'; // Ícone de alerta
+import { FaExclamationCircle } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom";
 
 export default function Retirada() {
+  const navigate = useNavigate();
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -25,11 +27,14 @@ export default function Retirada() {
     const now = new Date();
     const validadeDate = new Date(validade);
     const diffTime = validadeDate - now;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
   useEffect(() => {
+    // Define a data atual ao abrir a tela
+    setData(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
+
     const fetchProdutos = async () => {
       const produtosRef = ref(db, "Estoque");
       const snapshot = await get(produtosRef);
@@ -37,7 +42,7 @@ export default function Retirada() {
         const data = snapshot.val();
         const produtosList = Object.entries(data).map(([id, produto]) => ({
           id, ...produto,
-          validadeStatus: calcularDiasParaValidade(produto.validade), // Calculando a diferença
+          validadeStatus: calcularDiasParaValidade(produto.validade),
         }));
         setProdutos(produtosList);
         setFilteredProdutos(produtosList);
@@ -51,9 +56,7 @@ export default function Retirada() {
       setFilteredProdutos(produtos);
     } else {
       const filtered = produtos.filter((produto) =>
-        String(produto.name || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+        String(produto.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         String(produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProdutos(filtered);
@@ -69,8 +72,7 @@ export default function Retirada() {
       const retiradaRef = ref(db, "Retiradas");
       await push(retiradaRef, { sku, name, category, tipo, quantity, peso, retirante, data });
       toast.success("Retirada registrada com sucesso!");
-      // Limpa os campos
-      setSku(""); setName(""); setCategory(""); setTipo(""); setQuantity(""); setPeso(""); setRetirante(""); 
+      setSku(""); setName(""); setCategory(""); setTipo(""); setQuantity(""); setPeso(""); setRetirante("");
       setData(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
     } catch (error) {
       toast.error("Erro ao registrar retirada.");
@@ -118,9 +120,11 @@ export default function Retirada() {
             <option value="Rose">Rose</option>
           </select>
 
-          <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Data" value={new Date(data).toLocaleDateString("pt-BR")} readOnly />
+          <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Data" value={data} readOnly />
 
-          <Button onClick={handleRetirada} className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all font-semibold">Registrar Retirada</Button>
+          <button onClick={handleRetirada} className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all font-semibold">Registrar Retirada</button>
+
+          <button onClick={() => navigate(-1)} className="bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-all font-semibold">Voltar</button>
         </div>
       </div>
 
@@ -136,6 +140,7 @@ export default function Retirada() {
               className="w-full p-3 mb-4 border rounded-lg"
             />
             <div className="overflow-x-auto">
+              <button onClick={() => setIsModalOpen(false)} className="mt-4 mb-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">Fechar</button>
               <Table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 text-sm md:text-base text-center">
@@ -152,7 +157,7 @@ export default function Retirada() {
                 <tbody className="text-center text-sm md:text-base">
                   {filteredProdutos.map((produto) => {
                     const validadeStatus = calcularDiasParaValidade(produto.expiryDate);
-                    const isValidNearExpiry = validadeStatus <= 7; // Alerta para 7 dias próximos ao vencimento
+                    const isValidNearExpiry = validadeStatus <= 7;
 
                     return (
                       <tr key={produto.id} className={`border-b hover:bg-gray-50 ${isValidNearExpiry ? 'bg-red-200' : ''}`}>
@@ -180,7 +185,6 @@ export default function Retirada() {
                 </tbody>
               </Table>
             </div>
-            <button onClick={() => setIsModalOpen(false)} className="mt-4 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">Fechar</button>
           </div>
         </div>
       )}

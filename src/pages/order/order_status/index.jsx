@@ -565,7 +565,7 @@ return (
                         <td className="p-2 text-center">{produto.name}</td>
                         <td className="p-2 text-center">{produto.marca}</td>
                         <td className="p-2 text-center"><Button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" 
-                          onClick={() => { handleSelecionarProduto(produto); setModalSelecionarProduto(false); }}> Selecionar </Button></td>
+                          onClick={() => {handleSelecionarProduto(produto); setModalSelecionarProduto(false); }}> Selecionar </Button></td>
                       </tr>))}
                   </tbody>
                 </Table>
