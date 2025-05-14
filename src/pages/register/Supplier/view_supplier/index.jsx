@@ -3,7 +3,7 @@ import { getDatabase, ref, onValue } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { IoArrowBack } from "react-icons/io5";  // Importando o ícone de seta
+import { IoArrowBack } from "react-icons/io5";
 import "react-toastify/dist/ReactToastify.css";
 
 // Configuração do Firebase
@@ -23,15 +23,19 @@ if (!getApps().length) {
 
 const db = getDatabase();
 
+// Funções com validação
 const formatCNPJ = (cnpj) => {
+  if (!cnpj) return "Não informado";
   return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
 };
 
 const formatTelefone = (telefone) => {
+  if (!telefone) return "Não informado";
   return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 };
 
 const formatCEP = (cep) => {
+  if (!cep) return "Não informado";
   return cep.replace(/(\d{5})(\d{3})/, "$1-$2");
 };
 
@@ -58,10 +62,9 @@ export default function ListaFornecedores() {
 
   const fornecedoresFiltrados = fornecedores.filter(
     (fornecedor) =>
-      fornecedor.razaoSocial.toLowerCase().includes(filtro.toLowerCase()) ||
-      fornecedor.cnpj.includes(filtro) ||
-      (fornecedor.grupo &&
-        fornecedor.grupo.toLowerCase().includes(filtro.toLowerCase()))
+      fornecedor?.razaoSocial?.toLowerCase().includes(filtro.toLowerCase()) ||
+      fornecedor?.cnpj?.includes(filtro) ||
+      fornecedor?.grupo?.toLowerCase().includes(filtro.toLowerCase())
   );
 
   const handleEdit = (fornecedor) => {
@@ -73,9 +76,8 @@ export default function ListaFornecedores() {
     navigate(`/editar-fornecedor/${fornecedor.id}`);
   };
 
-  // Função para voltar à página anterior
   const handleGoBack = () => {
-    navigate(-1); // Navega para a página anterior
+    navigate("/Cadastro");
   };
 
   return (
@@ -84,7 +86,7 @@ export default function ListaFornecedores() {
         onClick={handleGoBack}
         className="mb-4 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center space-x-2"
       >
-        <IoArrowBack className="text-xl" /> {/* Ícone de seta */}
+        <IoArrowBack className="text-xl" />
         <span>Voltar</span>
       </button>
       <h2 className="text-3xl font-semibold text-center mb-6 text-white">
@@ -114,9 +116,9 @@ export default function ListaFornecedores() {
               fornecedoresFiltrados.map((fornecedor) => (
                 <tr key={fornecedor.id} className="border-b hover:bg-gray-100">
                   <td className="p-3">{formatCNPJ(fornecedor.cnpj)}</td>
-                  <td className="p-3">{fornecedor.razaoSocial}</td>
+                  <td className="p-3">{fornecedor.razaoSocial || "Não informado"}</td>
                   <td className="p-3">{formatTelefone(fornecedor.telefone)}</td>
-                  <td className="p-3">{fornecedor.email}</td>
+                  <td className="p-3">{fornecedor.email || "Não informado"}</td>
                   <td
                     className={`p-3 font-semibold ${
                       fornecedor.status === "Ativo"
@@ -124,7 +126,7 @@ export default function ListaFornecedores() {
                         : "text-red-600"
                     }`}
                   >
-                    {fornecedor.status}
+                    {fornecedor.status || "Indefinido"}
                   </td>
                   <td className="p-3">
                     <button

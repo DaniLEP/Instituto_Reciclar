@@ -12,8 +12,8 @@ export default function CadProdutos() {
   const [marca, setMarca] = useState("");
   const [supplier, setSupplier] = useState("");
   const [peso, setPeso] = useState("");
-  const [unitMeasure, setUnitMeasure] = useState("g");
-  const [unit, setUnit] = useState("");
+  const [unitMeasure, setUnitMeasure] = useState("Selecionar");
+  const [unit, setUnit] = useState("Selecionar");
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [saveLoading, setSaveLoading] = useState(false);
@@ -55,25 +55,45 @@ export default function CadProdutos() {
   );
 
   const handleSave = async () => {
-    if (!sku || !name || !marca || !supplier || !peso || !unitMeasure || !unit || !category || !tipo) {
+    if (
+      !sku ||
+      !name ||
+      !marca ||
+      !supplier ||
+      !peso ||
+      unitMeasure === "Selecionar" ||
+      unit === "Selecionar"
+    ) {
       toast.error("Por favor, preencha todos os campos obrigatórios!");
       return;
     }
 
     setSaveLoading(true);
-    const newProduct = { sku, name, marca, supplier, peso, unitMeasure, unit, category, tipo };
+
+    const newProduct = {
+      sku,
+      name,
+      marca,
+      supplier,
+      peso,
+      unitMeasure,
+      unit,
+      category, tipo
+    };
+
     const newProductRef = ref(db, "EntradaProdutos/" + sku);
 
-    set(newProductRef, newProduct)
-      .then(() => {
-        toast.success("Produto salvo com sucesso!");
-        handleClearFields();
-      })
-      .catch((err) => {
-        toast.error("Erro ao salvar o produto: " + err.message);
-      })
-      .finally(() => setSaveLoading(false));
+    try {
+      await set(newProductRef, newProduct);
+      toast.success("Produto salvo com sucesso!");
+      handleClearFields();
+    } catch (err) {
+      toast.error("Erro ao salvar o produto: " + err.message);
+    } finally {
+      setSaveLoading(false);
+    }
   };
+
 
   const handleClearFields = () => {
     setSku("");
@@ -97,8 +117,11 @@ export default function CadProdutos() {
           <Input className="p-5" placeholder="Marca" value={marca} onChange={(e) => setMarca(e.target.value)} />
           <Input className="p-5" placeholder="Fornecedor" value={supplier} onClick={() => setModalOpen(true)} readOnly />
           <Input className="p-5" placeholder="Peso" value={peso} onChange={(e) => setPeso(e.target.value)} />
+          <Input className="p-5" placeholder="Categoria" value={category} onChange={(e) => setCategory(e.target.value)} />
+          <Input className="p-5" placeholder="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} />
+
           <select value={unitMeasure} onChange={(e) => setUnitMeasure(e.target.value)} className="w-full p-2 border rounded-lg">
-            <option value="Selecionar">Selecione a Unidade de Medida</option>
+            <option value="Selecionar" disabled>Selecione a Unidade de Medida</option>
             <option value="g">Gramas</option>
             <option value="kg">Quilos</option>
           </select>

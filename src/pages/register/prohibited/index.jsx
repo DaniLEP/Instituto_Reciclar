@@ -98,6 +98,7 @@ export default function CadastroProdutos() {
   const [expiryDate, setExpiryDate] = useState("");
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [unit, setUnit] = useState("");
 
   useEffect(() => {
     const dbProdutos = ref(db, "EntradaProdutos");
@@ -116,7 +117,7 @@ export default function CadastroProdutos() {
     setMarca(product.marca);
     setSupplier(product.supplier);
     setPeso(product.peso);
-    setUnitmeasure(product.unitmeasure);
+    setUnit(product.unit);
     setCategory(product.category);
     setTipo(product.tipo);
     setUnitPrice(product.unitPrice);
@@ -176,7 +177,7 @@ export default function CadastroProdutos() {
             <Input placeholder="Fornecedor" value={supplier} onChange={(e) => setSupplier(e.target.value)}/>
             <Input placeholder="Quantidade" value={quantity} onChange={handleQuantityChange}/>
             <Input value={peso || ""} placeholder="Peso Unitário" onChange={(e) => setPeso(e.target.value)} />
-            <Input placeholder="Unidade de Medida" value={unitmeasure} onChange={(e) => setUnitmeasure(e.target.value)}/>
+            <Input placeholder="Unidade de Medida" value={unit} readOnly onChange={(e) => setUnit(e.target.value)}/>
             <Input placeholder="Peso Total" disabled value={pesoTotal} />
               <select value={category} onChange={(e) => setCategory(e.target.value)} className="p-2 border rounded">
                 <option value="">Categoria</option>

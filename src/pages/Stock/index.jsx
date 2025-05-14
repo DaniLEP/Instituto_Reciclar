@@ -5,11 +5,7 @@ import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/Button/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Title from "@/components/ui/title";
 import { Table } from "@/components/ui/table/table";
-
-// Configuração do Firebase
-
 const dbProdutos = ref(db, "Estoque");
 
 export default function Estoque() {
@@ -25,7 +21,6 @@ export default function Estoque() {
   const [editando, setEditando] = useState(null);
   const navigate = useNavigate();
 
-  // Carregar produtos do Firebase
   useEffect(() => {
     const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
@@ -35,7 +30,6 @@ export default function Estoque() {
     }); return () => unsubscribe();
   }, []);
 
-  // Recalcula totais quando o filtro muda
   useEffect(() => {calculateTotals(filteredProducts);}, [filteredProducts]);
 
   // Calcular totais
@@ -170,6 +164,21 @@ export default function Estoque() {
             <p className="text-xl font-semibold">{totalQuantity}</p>
           </div>
         </div>
+        {/* Legenda dos Status */}
+      <div className="grid grid-line-1 sm:grid-cols-3 gap-3 text-center mb-4">
+        <div className="flex items-center  gap-2">
+          <span className="text-green-600 text-xl">✅</span>
+          <span>Estoque normal</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-yellow-500 text-xl">⚠️</span>
+          <span>Estoque baixo (menos de 5 unidades)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-red-600 text-xl">❌</span>
+          <span>Produto vencido</span>
+        </div>
+      </div>
         {/* Tabela */}
         <div className="w-full max-h-[70vh] overflow-x-auto overflow-y-auto border rounded-lg shadow-sm bg-white">
           <Table className="min-w-[1200px] table-auto border-collapse">

@@ -70,21 +70,44 @@ import { Button } from "react-scroll";
       }
     };
 
-    const handleSubmit = (e) => {
-    e.preventDefault();
-    const fornecedoresRef = ref(db, "CadastroFornecedores");
-    push(fornecedoresRef, formData)
-    .then(() => { toast.success("Fornecedor cadastrado com sucesso!", {
-        position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",
+const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log(formData);  // Verifique os dados que estão sendo enviados
+
+  // Envia de forma simplificada
+  const fornecedoresRef = ref(db, "CadastroFornecedores");
+  push(fornecedoresRef, {
+    cnpj: formData.cnpj,
+    razaoSocial: formData.razaoSocial,
+    status: formData.status
+  })
+  .then(() => {
+    toast.success("Fornecedor cadastrado com sucesso!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
     });
-    setFormData({ cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo", // Retorna o status para "Ativo" após o cadastro
+    setFormData({
+      cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",
     });
-    })
-      .catch((error) => toast.error("Erro ao cadastrar fornecedor: " + error.message, {
-        position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true,theme: "colored",
-          })
-        );
-    };
+  })
+  .catch((error) => {
+    toast.error("Erro ao cadastrar fornecedor: " + error.message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
+  });
+};
+
 
     const handleBack = () => {navigate(-1);}; // Navega para a página anterior
     
@@ -111,7 +134,14 @@ import { Button } from "react-scroll";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="cep" className="text-sm font-semibold text-gray-700">CEP:</Label>
-                <Input type="number" id="cep" name="cep" value={formData.cep} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+<Input
+  type="text"
+  id="cep"
+  name="cep"
+  value={formData.cep}
+  onChange={handleInputChange}
+  className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="endereco" className="text-sm font-semibold text-gray-700">Endereço:</Label>
@@ -172,9 +202,13 @@ import { Button } from "react-scroll";
 
             {/* Botões */}
             <div className="flex justify-end gap-4 mt-6">
-              <Button type="submit" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md">
-                Cadastrar
-              </Button>
+              <button
+  type="submit"
+  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md"
+>
+  Cadastrar
+</button>
+
               <Button type="button" onClick={handleBack} className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md">
                 Voltar
               </Button>
