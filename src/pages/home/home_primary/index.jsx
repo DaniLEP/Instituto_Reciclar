@@ -59,6 +59,8 @@ export default function Home() {
             <Card to="/home-retirada" imgSrc="/retirada.png" imgAlt="Retirada" title="Retirada" />
             <Card to="/Verificacao_Usuario" imgSrc="/controle.png" imgAlt="Controle de Usuários" title="Controle de Usuários" />
             <Card to="/cardapio" imgSrc="/cardapio.png" imgAlt="Cardápio" title="Cardápio" />
+            <Card to="/manutencao-home" imgSrc="/manuntenção.png" imgAlt="maintenance" title="Manutenção" />
+
 
           </div>
         </div>
