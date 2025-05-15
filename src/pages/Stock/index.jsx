@@ -118,7 +118,7 @@ export default function Estoque() {
       Status: parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
       SKU: item.sku, Nome: item.name, Marca: item.marca, Peso: item.peso, Quantidade: item.quantity, "Unidade de Medida": item.unitmeasure,
       "Valor Unitário": item.unitPrice, "Valor Total": item.totalPrice, "Data de Vencimento": item.expiryDate || "--", "Dias para Consumo": calculateConsumptionDays( item.dateAdded,item.expiryDate), "Data de Cadastro": formatDate(item.dateAdded), Fornecedor: item.supplier, Categoria: item.category || "N/A", Tipo: item.tipo || "N/A",})));
-    const wb = XLSX.utils.book_new();
+      const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Estoque");
       XLSX.writeFile(wb, "Estoque.xlsx");
   };
@@ -133,7 +133,7 @@ export default function Estoque() {
         </div>
         {/* Busca */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Input type="text" placeholder="Buscar SKU, nome, fornecedor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="col-span-2 w-full"/>
+          <Input type="text" placeholder="Buscar SKU, nome, fornecedor, categorias..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="col-span-2 w-full"/>
           <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white w-full">Pesquisar</Button>
         </div>
         {/* Filtro de Datas */}

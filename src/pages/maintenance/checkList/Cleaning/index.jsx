@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { db } from "../../../../firebase";
+import { db } from "../../../../../firebase";
 import { ref, push } from "firebase/database";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -7,32 +7,12 @@ import { Button } from "@/components/ui/Button/button";
 import { Label } from "@/components/ui/label";
 
 const checklistStructure = {
-  "Cozinha": [
-    "Utensilios disponíveis para se servir",
-    "Plaquinhas Indentificações",
-    "Modo certo de servir",
-    "Alimentos servidos no horário correto?",
-    "Temperatura Alimentos",
-    "Temperatura Equipamentos",
-    "Amostra de alimentos",
-    "EPI's necessarios",
-    "Papel toalha no banheiro",
-    "Acessorios não permitidos",
-    "Etiqueta de validade nos produtos abertos",
-    "Etiqueta de validade nos produtos abertos da geladeira",
-    "Etiqueta de validade nos produtos congelados",
-    "Cardapio do dia" ,
-    "Alimentos do cardapio do dia seguinte já separado",
-    "Bancada arrumada",
-    "Celular na área de trabalho",
-    "Luz acesa",
-    "Organização do estoque",
-    "Chão limpo",
-    "Bancada limpa",
+  "Limpeza": [
+
   ]
 };
 
-export default function Checklist() {
+export default function ChecklistLimpeza() {
   const [selectedDate, setSelectedDate] = useState("");
   const [checklist, setChecklist] = useState({});
 
@@ -49,7 +29,7 @@ export default function Checklist() {
     if (!selectedDate) {alert("Por favor, selecione uma data."); return;}
     const formattedDate = format(new Date(selectedDate), "yyyy-MM-dd");
     const dataToSave = {data: formattedDate, checklist, timestamp: Date.now()};
-    try {await push(ref(db, "checklists"), dataToSave);
+    try {await push(ref(db, "checklistsLimpeza"), dataToSave);
       alert("Checklist salvo com sucesso!");
     } catch (error) {
       console.error("Erro ao salvar checklist:", error); 
@@ -58,7 +38,7 @@ export default function Checklist() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">Checklist Cozinha Reciclar</h1>
+      <h1 className="text-3xl font-bold mb-4">Checklist Limpeza - Reciclar</h1>
       <Label className="block mb-6">
         <span className="font-medium">Data:</span>
         <Input type="date" value={selectedDate}

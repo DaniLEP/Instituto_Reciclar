@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signOut, ref, get, auth, db } from "../../../firebase"; // Agora, signOut estará disponível
+import { signOut, ref, get, auth, db } from "../../../firebase"; 
 import { Button } from "@/components/ui/Button/button";
 
 

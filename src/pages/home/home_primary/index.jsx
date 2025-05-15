@@ -60,7 +60,7 @@ export default function Home() {
             <Card to="/Verificacao_Usuario" imgSrc="/controle.png" imgAlt="Controle de Usuários" title="Controle de Usuários" />
             <Card to="/cardapio" imgSrc="/cardapio.png" imgAlt="Cardápio" title="Cardápio" />
             <Card to="/manutencao-home" imgSrc="/manuntenção.png" imgAlt="maintenance" title="Manutenção" />
-
+            <Card to="/manutencao-home" imgSrc="/documentacao.png" imgAlt="documentation" title="Documentação" />
 
           </div>
         </div>

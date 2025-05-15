@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, off } from "firebase/database";
 import { initializeApp, getApps } from "firebase/app";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +21,8 @@ if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
 
-const db = getDatabase();
+const app = getApps()[0];
+const db = getDatabase(app);
 
 // Funções com validação
 const formatCNPJ = (cnpj) => {
@@ -46,26 +47,36 @@ export default function ListaFornecedores() {
 
   useEffect(() => {
     const fornecedoresRef = ref(db, "CadastroFornecedores");
-    onValue(fornecedoresRef, (snapshot) => {
+
+    const listener = onValue(fornecedoresRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const fornecedoresArray = Object.keys(data).map((key) => ({
+        const fornecedoresArray = Object.entries(data).map(([key, val]) => ({
           id: key,
-          ...data[key],
+          ...val,
         }));
         setFornecedores(fornecedoresArray);
       } else {
         setFornecedores([]);
       }
     });
+
+    // Cleanup para remover listener quando componente desmontar
+    return () => off(fornecedoresRef, "value", listener);
   }, []);
 
-  const fornecedoresFiltrados = fornecedores.filter(
-    (fornecedor) =>
-      fornecedor?.razaoSocial?.toLowerCase().includes(filtro.toLowerCase()) ||
-      fornecedor?.cnpj?.includes(filtro) ||
-      fornecedor?.grupo?.toLowerCase().includes(filtro.toLowerCase())
-  );
+  const fornecedoresFiltrados = fornecedores.filter((fornecedor) => {
+    const razaoSocial = fornecedor?.razaoSocial?.toLowerCase() || "";
+    const cnpj = fornecedor?.cnpj || "";
+    const grupo = fornecedor?.grupo?.toLowerCase() || "";
+    const filtroLower = filtro.toLowerCase();
+
+    return (
+      razaoSocial.includes(filtroLower) ||
+      cnpj.includes(filtro) ||
+      grupo.includes(filtroLower)
+    );
+  });
 
   const handleEdit = (fornecedor) => {
     if (!fornecedor.id) {

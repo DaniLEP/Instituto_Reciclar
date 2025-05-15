@@ -15,7 +15,8 @@ export default function  Cardapio() {
           <Card className="align-center" link="/Refeicoes_Servidas" imgSrc="/prancheta.png" title="Lista de Refeições" />
           <Card className="align-center" link="/cardápio-lanche" imgSrc="/lanchetarde.png" title="Lista de Cardápios de Lanche da Tarde " />
           <Card className="align-center" link="/cardápio-almoco" imgSrc="/list-almoço.png" title="Lista de Cardápios de Almoço" />
-
+          <Card className="align-center" link="/" imgSrc="/Cadastro-receita.png" title="Cadatro de Ficha Técnica" />
+          <Card className="align-center" link="/" imgSrc="/view-receita.png" title="Consulta Ficha Técnica" />
           <Card link="/Home" title="Voltar" isBackCard />
         </div>
       </div>

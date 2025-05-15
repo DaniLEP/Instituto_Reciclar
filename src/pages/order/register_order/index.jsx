@@ -148,9 +148,11 @@ export default function NovoPedido() {
               <div style={{ display: "flex", gap: "10px" }}>
                 <select value={category} onChange={(e) => setCategory(e.target.value)}style={styles.input}>
                   <option value="Selecionar">Selecione a Categoria do pedido</option>
-                  <option value="Proteina">Proteina</option>
+                  <option value="Proteina">Proteína</option>
                   <option value="Mantimento">Mantimento</option>
-                  <option value="Hortaliças">Hortaliças</option>
+                  <option value="Hortifrut">Hortifrut</option>
+                  <option value="Doações">Doações</option>
+                  <option value="Produtos de Limpeza">Produtos de Limpeza</option>
                 </select>
               </div>
             </div>
@@ -185,7 +187,7 @@ export default function NovoPedido() {
                         </div>
                       ))) : (<p style={{ textAlign: "center", color: "#777" }}> Nenhum fornecedor encontrado.</p>)}
                   </div>
-<button onClick={() => navigate("/Cadastro_Fornecedor")}
+                <button onClick={() => navigate("/Cadastro_Fornecedor")}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md w-full sm:w-auto transition">Novo Fornecedor +</button>                  <button onClick={() => setShowModalFornecedor(false)} style={{ ...styles.button, marginTop: "1rem", backgroundColor: "#DC3545" }}>Fechar </button>
                 </div>
               </div>
