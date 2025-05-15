@@ -72,11 +72,11 @@ export default function Home() {
             <Card to="/Pedidos" imgSrc="/pedidos.png" imgAlt="Pedidos" title="Pedidos" />
             <Card to="/Cadastro" imgSrc="/item.png" imgAlt="Cadastro" title="Cadastros" />
             <Card to="/Estoque" imgSrc="/estoque.png" imgAlt="Estoque" title="Estoque" />
-            <Card to="/Dashboard" imgSrc="/dashboard.png" imgAlt="Relatórios" title="Relatórios" />
+            <Card to="/Dashboard" imgSrc="/dashborad.png" imgAlt="Relatórios" title="Relatórios" />
             <Card to="/home-retirada" imgSrc="/retirada.png" imgAlt="Retirada" title="Retirada" />
             <Card to="/Verificacao_Usuario" imgSrc="/controle.png" imgAlt="Controle de Usuários" title="Controle de Usuários" />
             <Card to="/cardapio" imgSrc="/cardapio.png" imgAlt="Cardápio" title="Cardápio" />
-            <Card to="/manutencao-home" imgSrc="/manutencao.png" imgAlt="maintenance" title="Manutenção" />
+            <Card to="/manutencao-home" imgSrc="/manuntenção.png" imgAlt="maintenance" title="Manutenção" />
             <Card to="https://drive.google.com/drive/folders/1QdXTwo0zggBmHP1MBih6IMVCQ-WaoBBa?usp=sharing" imgSrc="/documentacao.png" imgAlt="documentation" title="Documentação" external={true} />
           </div>
         </div>

@@ -33,6 +33,7 @@ import ChecklistConsultaLimpeza from './pages/maintenance/checkList/Cleaning/Vie
 import ChecklistLimpeza from './pages/maintenance/checkList/Cleaning';
 import Checklist from './pages/maintenance/checkList/Kitchen';
 import ChecklistConsulta from './pages/maintenance/checkList/Kitchen/view_Checklist';
+// import FichaTecnica from './pages/cardapio/technical_sheet_register';
 
 
 // Constantes para tipos de usuários
@@ -85,6 +86,8 @@ const router = createBrowserRouter([
       { path: '/consultaCheck', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsulta /></ProtectedRoute> },
       { path: '/checkLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistLimpeza /></ProtectedRoute> },
       { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
+      // { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><FichaTecnica /></ProtectedRoute> },
+      { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
 
 
 
