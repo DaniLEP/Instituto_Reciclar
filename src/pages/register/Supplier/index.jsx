@@ -132,11 +132,11 @@ import { Input } from "../../../components/ui/input/index";
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="cnpj" className="text-sm font-semibold text-gray-700">CNPJ:</Label>
-                <Input type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="razaoSocial" className="text-sm font-semibold text-gray-700">Razão Social:</Label>
-                <Input type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 
@@ -155,11 +155,11 @@ import { Input } from "../../../components/ui/input/index";
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="endereco" className="text-sm font-semibold text-gray-700">Endereço:</Label>
-                <Input type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input required type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="numero" className="text-sm font-semibold text-gray-700">Número:</Label>
-                <Input type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 
@@ -167,15 +167,15 @@ import { Input } from "../../../components/ui/input/index";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="bairro" className="text-sm font-semibold text-gray-700">Bairro:</Label>
-                <Input type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input required type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="municipio" className="text-sm font-semibold text-gray-700">Município:</Label>
-                <Input type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input required type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="uf" className="text-sm font-semibold text-gray-700">UF:</Label>
-                <Input type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
+                <Input required type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
               </div>
             </div>
 
@@ -183,15 +183,15 @@ import { Input } from "../../../components/ui/input/index";
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <Label htmlFor="contato" className="text-sm font-semibold text-gray-700">Contato:</Label>
-                <Input type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="telefone" className="text-sm font-semibold text-gray-700">Telefone:</Label>
-                <Input type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
               <div className="flex flex-col">
                 <Label htmlFor="email" className="text-sm font-semibold text-gray-700">E-mail:</Label>
-                <Input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                <Input required type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
               </div>
             </div>
 

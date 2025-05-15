@@ -99,13 +99,13 @@ export default function CadProdutos() {
             <option value="ProdutosLimpeza">Produtos de Limpeza</option>
           </select>
           <select value={unitMeasure} onChange={(e) => setUnitMeasure(e.target.value)} className="w-full p-2 border rounded-lg">
-            <option disabled value="Selecionar">Selecione a Unidade de Medida</option>
+            <option disabled value="Selecionar">Selecione o Peso</option>
             <option value="g">Gramas</option>
             <option value="kg">Quilos</option>
             <option value="ml">Mililitros</option>
           </select>
           <select value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full p-2 border rounded-lg">
-            <option disabled value="Selecionar">Selecionar Unidade</option>
+            <option disabled value="Selecionar">Selecionar Unidade de Medida </option>
             <option value="un">Unidade</option>
             <option value="fd">Fardo</option>
           </select>

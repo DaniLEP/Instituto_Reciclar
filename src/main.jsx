@@ -28,11 +28,11 @@ import { ProtectedRoute } from './components/enum/protectedRouted/protectedRoute
 import ConsultaCardapioLanche from './pages/cardapio/list_lanche';
 import HomeMaintenance from './pages/home/maintenance';
 import Maintences from './pages/maintenance/maintenance';
-import CheckList from './pages/maintenance/checkList';
 import PaginaNaoEncontradaGoogleStyle from '@/components/ui/error';
-import ChecklistConsulta from './pages/maintenance/checkList/view_Checklist';
 import ChecklistConsultaLimpeza from './pages/maintenance/checkList/Cleaning/View_limpeza';
 import ChecklistLimpeza from './pages/maintenance/checkList/Cleaning';
+import Checklist from './pages/maintenance/checkList/Kitchen';
+import ChecklistConsulta from './pages/maintenance/checkList/Kitchen/view_Checklist';
 
 
 // Constantes para tipos de usuários
@@ -81,7 +81,7 @@ const router = createBrowserRouter([
       { path: '/cardápio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><ConsultaCardapioLanche /></ProtectedRoute> },
       { path: '/manutencao-home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><HomeMaintenance /></ProtectedRoute> },
       { path: '/manutencao', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Maintences /></ProtectedRoute> },
-      { path: '/checkList', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><CheckList /></ProtectedRoute> },
+      { path: '/checkList', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Checklist /></ProtectedRoute> },
       { path: '/consultaCheck', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsulta /></ProtectedRoute> },
       { path: '/checkLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistLimpeza /></ProtectedRoute> },
       { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },

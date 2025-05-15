@@ -1,11 +1,13 @@
+// NovoPedido.jsx
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get, push, set } from "firebase/database";
-import { Link, useNavigate } from "react-router-dom"; // Importando o hook useNavigate
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-// Configuração do Firebase
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -16,7 +18,7 @@ const firebaseConfig = {
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 };
 
-// Inicializando o Firebase
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
 
@@ -25,18 +27,20 @@ export default function NovoPedido() {
   const [numeroPedido, setNumeroPedido] = useState("");
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFim, setPeriodoFim] = useState("");
-  const [category, setCategory] = useState([]);
-  const [projeto, setProjeto] = useState([]);
+  const [category, setCategory] = useState("");
+  const [projeto, setProjeto] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
-  const [dadosFornecedor, setDadosFornecedor] = useState({razaoSocial: "", cnpj: "",grupo: "", contato: "", email: "", telefone: ""});
+  const [dadosFornecedor, setDadosFornecedor] = useState({razaoSocial: "", cnpj: "", grupo: "", contato: "", email: "", telefone: ""});
   const [products, setProducts] = useState([]);
   const [productSelecionado, setProductSelecionado] = useState(null);
-  const [dadosProduct, setDadosProduct] = useState({sku: "",name: "", tipo: "", category: "", unidMedida: "", quantidade: 1, observacao: ""});
+  const [dadosProduct, setDadosProduct] = useState({sku: "", name: "", tipo: "", peso: "", unit: "", marca: "", category: "", quantidade: 1, observacao: ""});
   const [showModalFornecedor, setShowModalFornecedor] = useState(false);
   const [showModalProduto, setShowModalProduto] = useState(false);
   const [itensPedido, setItensPedido] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const numero = `PED${Math.floor(Math.random() * 1000000)}`;
@@ -44,65 +48,98 @@ export default function NovoPedido() {
     const fetchFornecedores = async () => {
       const fornecedoresRef = ref(db, "CadastroFornecedores");
       const fornecedorSnapshot = await get(fornecedoresRef);
-      if (fornecedorSnapshot.exists()) {setFornecedores(Object.values(fornecedorSnapshot.val()));}
-      else {toast.error("Nenhum fornecedor encontrado!");}
+      if (fornecedorSnapshot.exists()) setFornecedores(Object.values(fornecedorSnapshot.val()));
+      else toast.error("Nenhum fornecedor encontrado!");
     };
     const fetchProdutos = async () => {
       const produtosRef = ref(db, "EntradaProdutos");
       const produtoSnapshot = await get(produtosRef);
-      if (produtoSnapshot.exists()) {setProducts(Object.values(produtoSnapshot.val()));} 
-      else {toast.error("Nenhum produto encontrado!");}
-    }; fetchFornecedores(); fetchProdutos();}, []);
+      if (produtoSnapshot.exists()) setProducts(Object.values(produtoSnapshot.val()));
+      else toast.error("Nenhum produto encontrado!");
+    };
+    fetchFornecedores();
+    fetchProdutos();
+  }, []);
 
   const handleFornecedorSelect = (fornecedor) => {
     setFornecedorSelecionado(fornecedor);
-    setDadosFornecedor({razaoSocial: fornecedor.razaoSocial, cnpj: fornecedor.cnpj, grupo: fornecedor.grupo, contato: fornecedor.contato, email: fornecedor.email, telefone: fornecedor.telefone});
+    setDadosFornecedor(fornecedor);
     setShowModalFornecedor(false);
-    toast.success("Fornecedor selecionado com sucesso!");};
+    toast.success("Fornecedor selecionado com sucesso!");
+  };
 
   const handleProductSelect = (product) => {
     setProductSelecionado(product);
-    setDadosProduct({sku: product.sku, name: product.name, tipo: product.tipo, marca: product.marca, peso: product.peso, unit: product.unit, category: product.category, quantidade: " ", observacao: "", });
+    setDadosProduct({ ...product, quantidade: 1, observacao: "" });
     setShowModalProduto(false);
     toast.success("Produto selecionado com sucesso!");
   };
 
   const handleAddProductToOrder = () => {
     if (productSelecionado && dadosProduct.quantidade > 0) {
-      const item = { ...dadosProduct, quantidade: dadosProduct.quantidade, observacao: dadosProduct.observacao,};
-      setItensPedido([...itensPedido, item]);
+      setItensPedido([...itensPedido, { ...dadosProduct }]);
       setProductSelecionado(null);
-      setDadosProduct({sku: "", name: "", tipo: "", peso: "", unit: "", marca: "", category: "", quantidade: 1, observacao: "",});
-      toast.info("Produto adicionado ao pedido.");}
-      else {toast.error("Selecione um produto e insira a quantidade válida!");}
+      setDadosProduct({sku: "", name: "", tipo: "", peso: "", unit: "", marca: "", category: "", quantidade: 1, observacao: ""});
+      toast.info("Produto adicionado ao pedido.");
+    } else {
+      toast.error("Selecione um produto e insira a quantidade válida!");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validação dos campos obrigatórios
-    if (!dataSelecionada || !periodoInicio || !periodoFim || !category || !projeto || !fornecedorSelecionado || itensPedido.length === 0)
-    {toast.error("Por favor, preencha todos os campos obrigatórios!"); return;}
-    // Criar um novo pedido
-    const pedido = {numeroPedido, projeto, dataPedido: dataSelecionada, periodoInicio, periodoFim, category, fornecedor: dadosFornecedor, produtos: itensPedido, status: "Pendente", dataCriacao: new Date().toISOString(), };
-
+    if (!dataSelecionada || !periodoInicio || !periodoFim || !category || !projeto || !fornecedorSelecionado || itensPedido.length === 0) {
+      toast.error("Por favor, preencha todos os campos obrigatórios!");
+      return;
+    }
+    const pedido = {
+      numeroPedido,
+      projeto,
+      dataPedido: dataSelecionada,
+      periodoInicio,
+      periodoFim,
+      category,
+      fornecedor: dadosFornecedor,
+      produtos: itensPedido,
+      status: "Pendente",
+      dataCriacao: new Date().toISOString(),
+    };
     try {
-      const pedidosRef = ref(db, "novosPedidos"); // Referência para os pedidos no Firebase
-      const newPedidoRef = push(pedidosRef); // Adicionando o novo pedido
+      const pedidosRef = ref(db, "novosPedidos");
+      const newPedidoRef = push(pedidosRef);
       await set(newPedidoRef, pedido);
-      toast.success("Pedido salvo com sucesso!"); // Feedback de sucesso
-      // Limpar os campos após o envio
-      setDataSelecionada(""); setPeriodoInicio(""); setPeriodoFim(""); setCategory(""); setFornecedorSelecionado(null);  setItensPedido([]);
-    } catch (error) {toast.error("Erro ao salvar o pedido: " + error.message);}
+      toast.success("Pedido salvo com sucesso!");
+      setDataSelecionada("");
+      setPeriodoInicio("");
+      setPeriodoFim("");
+      setCategory("");
+      setProjeto("");
+      setFornecedorSelecionado(null);
+      setItensPedido([]);
+    } catch (error) {
+      toast.error("Erro ao salvar o pedido: " + error.message);
+    }
   };
-  const navigate = useNavigate(); // Criando uma função de navegação
-  const handleVoltar = () => {navigate(-1); }; // Volta para a página anterior  
-  
-  const handleSearchChange = (e) => {setSearchTerm(e.target.value);};
 
   const handleDelete = (index) => {
-  const updatedItens = [...itensPedido]; updatedItens.splice(index, 1); setItensPedido(updatedItens); };
+    const updatedItens = [...itensPedido];
+    updatedItens.splice(index, 1);
+    setItensPedido(updatedItens);
+  };
+
   const filteredProducts = products.filter((product) => {
-  const lowerSearchTerm = searchTerm.toLowerCase(); return (product.name.toLowerCase().includes(lowerSearchTerm) || product.tipo.toLowerCase().includes(lowerSearchTerm) || product.category.toLowerCase().includes(lowerSearchTerm)); });
+    if (!product) return false;
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return (
+      (product.name?.toLowerCase() || "").includes(lowerSearchTerm) ||
+      (product.tipo?.toLowerCase() || "").includes(lowerSearchTerm) ||
+      (product.category?.toLowerCase() || "").includes(lowerSearchTerm)
+    );
+  });
+
+  const handleVoltar = () => navigate(-1);
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
+
 
   const styles = {
     container: {maxWidth: "95%", margin: "0 auto", padding: "5%", fontFamily: "Arial, sans-serif", backgroundColor: "#f4f6f9", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", overflow: "hidden"},
