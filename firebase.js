@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase, ref, get, set, remove, update, push, child,  onValue } from "firebase/database";
+import { getDatabase, ref, get, set, remove, update, push, child,  onValue,  } from "firebase/database";
 import { getAuth, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, Timestamp, addDoc, collection } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -19,5 +19,5 @@ const dbRealtime = getDatabase(app);
 const dbFirestore = getFirestore(app);
 const auth = getAuth(app);  
 
-export { dbRealtime, dbFirestore, auth,  ref,  remove ,set,  get, child, update, onValue, push, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword };
+export { dbRealtime, dbFirestore, auth,  ref,  remove ,set,  get, child, Timestamp, collection,addDoc,update, onValue, push, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword };
 export const db = dbRealtime;
