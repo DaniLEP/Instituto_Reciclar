@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue, update } from 'firebase/database';
-import { db } from '../../../../firebase';
+import { db } from '../../../../../firebase';
 import { useNavigate } from 'react-router-dom';  // Certifique-se de importar o hook
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button/button';

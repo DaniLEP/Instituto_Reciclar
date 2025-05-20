@@ -22,10 +22,10 @@ import EditarFornecedor from '@/pages/register/Supplier/edit_supplier';
 import CardapioSemana2 from '@/pages/cardapio/almoco/index.jsx';
 import Cardapio from './pages/cardapio/cadapio_primary';
 import CardapioLanche from './pages/cardapio/lanche/index';
-import CarregarCardapios from './pages/cardapio/list_almoco';
+import CarregarCardapios from './pages/cardapio/almoco/list_almoco';
 import { UserType } from './components/enum/usertype/usertype.js';
 import { ProtectedRoute } from './components/enum/protectedRouted/protectedRouted';
-import ConsultaCardapioLanche from './pages/cardapio/list_lanche';
+import ConsultaCardapioLanche from './pages/cardapio/lanche/list_lanche';
 import HomeMaintenance from './pages/home/maintenance';
 import Maintences from './pages/maintenance/maintenance';
 import PaginaNaoEncontradaGoogleStyle from '@/components/ui/error';
@@ -35,6 +35,8 @@ import Checklist from './pages/maintenance/checkList/Kitchen';
 import ChecklistConsulta from './pages/maintenance/checkList/Kitchen/view_Checklist';
 import FichaTecnica from './pages/cardapio/technical_sheet_register';
 import ConsultaReceitas from './pages/cardapio/technical_sheet_register/view_technical';
+import ConsultaCardapioCafe from './pages/cardapio/breakfast/list_breakfast';
+import CadastroCardapioCafe from './pages/cardapio/breakfast';
 
 
 // Constantes para tipos de usuários
@@ -89,7 +91,8 @@ const router = createBrowserRouter([
       { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
       { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><FichaTecnica /></ProtectedRoute> },
       { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaReceitas /></ProtectedRoute> },
-
+      { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
+      { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioCafe /></ProtectedRoute> },
 
 
 

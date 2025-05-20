@@ -19,6 +19,8 @@ export default function Estoque() {
   const [filtroFim, setFiltroFim] = useState("");
   const [valorEditado, setValorEditado] = useState("");
   const [editando, setEditando] = useState(null);
+  const [statusFiltro, setStatusFiltro] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function Estoque() {
     const filtered = productsData.filter((item) => {
       if (!term) return true;
       if (!isNaN(searchTerm)) return String(item.sku) === searchTerm.trim();
-      return [item.name, item.supplier, item.marca, item.category, item.tipo].some((field) => field?.toLowerCase().includes(term));
+      return [item.name, item.supplier, item.marca, item.category, item.tipo, item.status].some((field) => field?.toLowerCase().includes(term));
       });setFilteredProducts(filtered);
   };
 
@@ -75,6 +77,23 @@ export default function Estoque() {
     const diff = exp - today;
     return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   };
+
+const getStatus = (item) => {
+  if (parseInt(item.quantity, 10) < 5) return "Estoque Baixo";
+  if (isExpired(item.expiryDate)) return "Produto Vencido";
+  return "Estoque Abastecido";
+};
+
+
+const handleStatusFilter = (status) => {
+  setStatusFiltro(status);
+  if (!status) {
+    setFilteredProducts(productsData);
+    return;
+  }
+  const filtered = productsData.filter((item) => getStatus(item) === status);
+  setFilteredProducts(filtered);
+};
 
   // Formatar data sem shift de fuso
   const formatDate = (date) => {
@@ -136,6 +155,17 @@ export default function Estoque() {
           <Input type="text" placeholder="Buscar SKU, nome, fornecedor, categorias..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="col-span-2 w-full"/>
           <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white w-full">Pesquisar</Button>
         </div>
+        {/* Busca por status */}
+        <div className="mb-6">
+        <Label className="block text-gray-700 mb-1">Filtrar por Status</Label>
+        <select value={statusFiltro} onChange={(e) => handleStatusFilter(e.target.value)} className="w-full p-2 border rounded bg-white text-gray-700">
+          <option value="">Todos</option>
+          <option value="Estoque Abastecido">Estoque Abastecido</option>
+          <option value="Estoque Baixo">Estoque Baixo</option>
+          <option value="Produto Vencido">Produto Vencido</option>
+        </select>
+      </div>
+
         {/* Filtro de Datas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
           <div>

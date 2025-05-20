@@ -12,6 +12,8 @@ export default function  Cardapio() {
           <Card link="/cadastro-de-almoço" imgSrc="/almoço.png" title="Cadastro de Cardápio de Almoço" />
           <Card link="/cadastro-cardápio-lanche" imgSrc="/cafe-da-manha.png" title="Cadastro de Cardápio de Lanche da Tarde" />  
           <Card link="/Cadastro_Refeicoes" imgSrc="/refeição.jpeg" title="Cadastro de Refeições" />
+          <Card link="/cadastro-cardapio-cafe" imgSrc="/coffe.png" title="Cadastro de Cardápio de Café da Manhã" />
+          <Card link="/consultar-cardapio-cafe" imgSrc="/cafe.png" title="Lista de Cardápios de Café da Manhã" />
           <Card className="align-center" link="/Refeicoes_Servidas" imgSrc="/prancheta.png" title="Lista de Refeições" />
           <Card className="align-center" link="/cardápio-lanche" imgSrc="/lanchetarde.png" title="Lista de Cardápios de Lanche da Tarde " />
           <Card className="align-center" link="/cardápio-almoco" imgSrc="/list-almoço.png" title="Lista de Cardápios de Almoço" />

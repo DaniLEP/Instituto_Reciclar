@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue, update } from 'firebase/database';
-import { db } from '../../../../firebase';
+import { db } from '../../../../../firebase';
 import { useNavigate } from 'react-router-dom';  // Certifique-se de importar o hook
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button/button';
@@ -11,7 +11,7 @@ import Title from '@/components/ui/title';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
-const ConsultaCardapio = () => {
+const ConsultaCardapioCafe = () => {
   const [cardapios, setCardapios] = useState([]);
   const [filtroInicio, setFiltroInicio] = useState('');
   const [filtroFim, setFiltroFim] = useState('');
@@ -19,7 +19,7 @@ const ConsultaCardapio = () => {
   const [celulaEditando, setCelulaEditando] = useState({});
 
   useEffect(() => {
-    const cardapioRef = ref(db, 'cardapioAlmoco');
+    const cardapioRef = ref(db, 'cardapioCafe');
     onValue(cardapioRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -65,7 +65,7 @@ const ConsultaCardapio = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Cardápio');
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, 'cardapioAlmoco.xlsx');
+    saveAs(blob, 'cardapioCafe.xlsx');
   };
 
   const limparConsulta = () => {
@@ -80,7 +80,7 @@ const ConsultaCardapio = () => {
 
   const handleBlur = async () => {
     const { cardapioId, semana, secao, dia, valor } = celulaEditando;
-    const caminho = `cardapioAlmoco/${cardapioId}/composicoes/${semana}/cardapio/${secao}/${dia}`;
+    const caminho = `cardapioCafe/${cardapioId}/composicoes/${semana}/cardapio/${secao}/${dia}`;
   
     const objetoAtualizacao = {
       [caminho]: valor, // Aqui você deve garantir que valor é uma string
@@ -205,4 +205,4 @@ const ConsultaCardapio = () => {
   );
 };
 
-export default ConsultaCardapio;
+export default ConsultaCardapioCafe;
