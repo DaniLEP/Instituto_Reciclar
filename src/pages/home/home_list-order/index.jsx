@@ -6,6 +6,7 @@ export default function ListaPedidos() {
   const navigate = useNavigate();
   const goToShoppingList = () => navigate('/Cadastro_Produtos');
   const goToOrderStatus = () => navigate('/Gestão_Pedido');
+  const goToListCompras = () => navigate('/Lista_Compras');
 
   return (
     <>
@@ -23,6 +24,11 @@ export default function ListaPedidos() {
               <div onClick={goToOrderStatus} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
                 <img src="/status.png" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Status do Pedido"/>
                 <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Status do Pedido</h2>
+              </div>
+               {/* Card 2 - Status do Pedido */}
+              <div onClick={goToListCompras} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                <img src="/list-compras.png" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="Lista de Compras"/>
+                <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Lista de Compras</h2>
               </div>
                 {/* Card 3 - Voltar */}
                 <div className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">

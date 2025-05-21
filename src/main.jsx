@@ -37,6 +37,7 @@ import FichaTecnica from './pages/cardapio/technical_sheet_register';
 import ConsultaReceitas from './pages/cardapio/technical_sheet_register/view_technical';
 import ConsultaCardapioCafe from './pages/cardapio/breakfast/list_breakfast';
 import CadastroCardapioCafe from './pages/cardapio/breakfast';
+import BaixoEstoquePage from './pages/order/Shopping-List';
 
 
 // Constantes para tipos de usuários
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
       { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaReceitas /></ProtectedRoute> },
       { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
       { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioCafe /></ProtectedRoute> },
+      { path: '/Lista_Compras', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< BaixoEstoquePage /></ProtectedRoute> },
 
 
 

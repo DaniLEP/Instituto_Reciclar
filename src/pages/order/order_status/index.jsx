@@ -371,93 +371,104 @@ return (
           </div>
         </div>
       )}
-      {modalAberto && pedidoSelecionado && ( //MODAL DE VISUALIZAÇÃO
+      {modalAberto && pedidoSelecionado && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center px-4 z-50 overflow-y-auto">
           <div className="bg-white p-6 rounded-lg shadow-lg relative animate-slide-up w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalAberto(false)}>×</Button>
-            <h3 className="text-2xl font-bold mb-4 text-center">Pedido #{pedidoSelecionado.numeroPedido}</h3>
+            <Button
+              className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600"
+              onClick={() => setModalAberto(false)}
+            >
+              ×
+            </Button>
+
+            <h3 className="text-2xl font-bold mb-4 text-center">
+              Pedido #{pedidoSelecionado.numeroPedido}
+            </h3>
+
             {/* Informações gerais */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex flex-col">
-                <span className="font-semibold">Status:</span>
-                <span>{pedidoSelecionado.status}</span>
-              </div>
-               <div className="flex flex-col">
-                <span className="font-semibold">Projeto Custeador:</span>
-                <span>{pedidoSelecionado.projeto || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Fornecedor:</span>
-                <span>{pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Contato:</span>
-                <span>{pedidoSelecionado.fornecedor?.contato || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Telefone:</span>
-                <span>{pedidoSelecionado.fornecedor?.telefone || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">E-mail:</span>
-                <span>{pedidoSelecionado.fornecedor?.email || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Período que irá suprir:</span>
-                <span>De: {formatDate(pedidoSelecionado.periodoInicio)} Até: {formatDate(pedidoSelecionado.periodoFim)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Motivo de Cancelamento:</span>
-                <span>{pedidoSelecionado.motivoCancelamento || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Nota Fiscal:</span>
-                <span>{pedidoSelecionado.numeroNotaFiscal || "Não informado"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Chave de Acesso:</span>
-                <span>{pedidoSelecionado.chaveAcesso || "Não informado"}</span>
-              </div>
-               <div className="flex flex-col">
-                <span className="font-semibold">Recebido por:</span>
-                <span>{pedidoSelecionado.recebido || "Não informado"}</span>
-              </div>
+              {[
+                ["Status", pedidoSelecionado.status],
+                ["Projeto Custeador", pedidoSelecionado.projeto || "Não informado"],
+                ["Fornecedor", pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"],
+                ["Contato", pedidoSelecionado.fornecedor?.contato || "Não informado"],
+                ["Telefone", pedidoSelecionado.fornecedor?.telefone || "Não informado"],
+                ["E-mail", pedidoSelecionado.fornecedor?.email || "Não informado"],
+                [
+                  "Período que irá suprir",
+                  `De: ${formatDate(pedidoSelecionado.periodoInicio)} Até: ${formatDate(pedidoSelecionado.periodoFim)}`
+                ],
+                ["Motivo de Cancelamento", pedidoSelecionado.motivoCancelamento || "Não informado"],
+                ["Nota Fiscal", pedidoSelecionado.numeroNotaFiscal || "Não informado"],
+                ["Chave de Acesso", pedidoSelecionado.chaveAcesso || "Não informado"],
+                ["Recebido por", pedidoSelecionado.recebido || "Não informado"]
+              ].map(([label, value], index) => (
+                <div key={index} className="flex flex-col">
+                  <span className="font-semibold">{label}:</span>
+                  <span>{value}</span>
+                </div>
+              ))}
             </div>
 
             {/* Valores financeiros */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-gray-100 p-4 rounded-lg shadow">
               <div className="text-lg font-semibold">
-                Valor Total do Pedido: <span className="text-green-600">R$ {totalPedido.toFixed(2)}</span>                    
-                <span className="text-xs block text-gray-500 text-center">Valor sem total sem desconto</span>
+                Valor Total do Pedido:
+                <span className="text-green-600"> R$ {(Number(totalPedido) || 0).toFixed(2)}</span>
+                <span className="text-xs block text-gray-500 text-center">Valor sem desconto</span>
               </div>
 
               <div className="text-lg font-semibold">
                 {editandoDesconto ? (
-                  <input type="number" value={desconto} onChange={(e) => setDesconto(Number(e.target.value))} onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()} onBlur={salvarDescontoNoPedido}
-                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right" autoFocus /> ) : (
+                  <input
+                    type="number"
+                    value={desconto}
+                    onChange={(e) => setDesconto(Number(e.target.value))}
+                    onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()}
+                    onBlur={salvarDescontoNoPedido}
+                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right"
+                    autoFocus
+                  />
+                ) : (
                   <span className="cursor-pointer" onDoubleClick={() => setEditandoDesconto(true)}>
                     Desconto: <span className="text-orange-600">R$ {desconto.toFixed(2)}</span>
                     <span className="text-xs block text-gray-500">Clique duas vezes para editar</span>
                   </span>
                 )}
               </div>
-              <div className="text-lg font-semibold"> Total com Desconto: <span className="text-blue-600">R$ {(totalPedido - desconto).toFixed(2)}</span></div>
+
+              <div className="text-lg font-semibold">
+                Total com Desconto:
+                <span className="text-blue-600"> R$ {(totalPedido - desconto).toFixed(2)}</span>
+              </div>
             </div>
-            {/* Botões de ações */}
+
+            {/* Botões de ação */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <Button className="bg-green-600 text-white" onClick={exportToExcel}>Exportar Produtos para Excel</Button>
-              <Link to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx" target="_blank">
+              <Button className="bg-green-600 text-white" onClick={exportToExcel}>
+                Exportar Produtos para Excel
+              </Button>
+              <Link
+                to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx"
+                target="_blank"
+              >
                 <Button className="bg-blue-600 text-white">Consultar NF</Button>
               </Link>
-              <Link to="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank">
+              <Link
+                to="https://www.nfe.fazenda.gov.br/portal/principal.aspx"
+                target="_blank"
+              >
                 <Button className="bg-yellow-600 text-white">Consultar Cupom Fiscal</Button>
               </Link>
-              <Button className="bg-red-600 text-white" onClick={exportToPDF}>Exportar PDF</Button>
+              <Button className="bg-red-600 text-white" onClick={exportToPDF}>
+                Exportar PDF
+              </Button>
             </div>
-            {/* TABELA DE PRODUTOS */}
+
+            {/* Tabela de produtos */}
             <h4 className="text-xl font-bold mt-6 mb-2">Produtos do Pedido</h4>
             <div className="overflow-x-auto">
-            <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
+              <table className="min-w-[1000px] w-full bg-white border border-gray-300 rounded-lg shadow text-sm text-center">
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="p-2">SKU</th>
@@ -471,24 +482,34 @@ return (
                     <th className="p-2">Valor Unitário</th>
                     <th className="p-2">Valor Total</th>
                     <th className="p-2">Observações</th>
-                </tr>
-              </thead>
-              <tbody>{Array.isArray(pedidoSelecionado?.produtos) && pedidoSelecionado.produtos.length > 0 ? ( pedidoSelecionado.produtos.map((produto, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="px-4 py-2">{produto.sku}</td>
-                    <td className="p-[1px] ">{produto.name}</td>
-                    <td className="px-4 py-2">{produto.marca}</td>
-                    <td className="px-4 py-2">{produto.tipo}</td>
-                    <td className="px-4 py-2">{produto.category}</td>
-                    <td className="px-4 py-2">{produto.peso}</td>
-                    <td className="px-4 py-2">{produto.unit}</td>
-                    <td className="px-4 py-2">{produto.quantidade}</td>
-                    <td className="px-4 py-2">{produto.unitPrice}</td>
-                    <td className="px-4 py-2">{produto.totalPrice}</td>
-                    <td className="px-4 py-2">{produto.observacao}</td>
-                  </tr> ))) : (<tr><td colSpan="11" className="text-center p-4 text-gray-500">Nenhum produto encontrado para este pedido.</td></tr>)}
-            </tbody>
-            </table>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(pedidoSelecionado?.produtos) && pedidoSelecionado.produtos.length > 0 ? (
+                    pedidoSelecionado.produtos.map((produto, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="px-4 py-2">{produto.sku}</td>
+                        <td className="px-4 py-2">{produto.name}</td>
+                        <td className="px-4 py-2">{produto.marca}</td>
+                        <td className="px-4 py-2">{produto.tipo}</td>
+                        <td className="px-4 py-2">{produto.category}</td>
+                        <td className="px-4 py-2">{produto.peso}</td>
+                        <td className="px-4 py-2">{produto.unit}</td>
+                        <td className="px-4 py-2">{produto.quantidade}</td>
+                        <td className="px-4 py-2">{produto.unitPrice}</td>
+                        <td className="px-4 py-2">{produto.totalPrice}</td>
+                        <td className="px-4 py-2">{produto.observacao}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={11} className="text-center p-4 text-gray-500">
+                        Nenhum produto encontrado para este pedido.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

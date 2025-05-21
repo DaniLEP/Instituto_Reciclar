@@ -225,7 +225,8 @@ export default function NovoPedido() {
                       ))) : (<p style={{ textAlign: "center", color: "#777" }}> Nenhum fornecedor encontrado.</p>)}
                   </div>
                 <button onClick={() => navigate("/Cadastro_Fornecedor")}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md w-full sm:w-auto transition">Novo Fornecedor +</button>                  <button onClick={() => setShowModalFornecedor(false)} style={{ ...styles.button, marginTop: "1rem", backgroundColor: "#DC3545" }}>Fechar </button>
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md w-full sm:w-auto transition">Novo Fornecedor +</button>
+                <button onClick={() => setShowModalFornecedor(false)} style={{ ...styles.button, marginTop: "1rem", backgroundColor: "#DC3545" }}>Fechar </button>
                 </div>
               </div>
             )}
