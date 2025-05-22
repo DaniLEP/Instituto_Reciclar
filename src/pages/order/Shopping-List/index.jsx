@@ -1,3 +1,5 @@
+// 
+
 import { useEffect, useState } from 'react';
 import { db } from '../../../../firebase';
 import { ref, onValue, push, set, get } from 'firebase/database';
@@ -25,7 +27,7 @@ export default function BaixoEstoquePage() {
   const [fornecedores, setFornecedores] = useState([]);
   const [periodoInicio, setPeriodoInicio] = useState('');
   const [periodoFim, setPeriodoFim] = useState('');
-  const [categoria, setCategoria] = useState('');
+  const [category, setCategory] = useState('');
   const [projeto, setProjeto] = useState('');
   const [numeroPedido, setNumeroPedido] = useState('');
 
@@ -53,7 +55,7 @@ export default function BaixoEstoquePage() {
     get(pedidosRef).then((snapshot) => {
       const data = snapshot.val();
       const numero = data ? Object.keys(data).length + 1 : 1;
-      setNumeroPedido(`PED-${numero.toString().padStart(4, '0')}`);
+      setNumeroPedido(`Lista-${numero.toString().padStart(4, '0')}`);
     });
   }, []);
 
@@ -87,12 +89,20 @@ export default function BaixoEstoquePage() {
       alert('A lista de compras está vazia.');
       return;
     }
+    if (!projeto) {
+      alert('Por favor, selecione um projeto.');
+      return;
+    }
+    if (!category) {
+      alert('Por favor, selecione uma categoria.');
+      return;
+    }
 
     const novaListaRef = push(ref(db, 'novosPedidos'));
     const dataPedidoFormatada = new Date().toISOString().split('T')[0];
     const dataCriacaoFormatada = new Date().toISOString();
 
-    set(novaListaRef, {
+    const pedido = {
       numeroPedido,
       fornecedor: {
         cnpj: fornecedorSelecionado.cnpj || '',
@@ -104,8 +114,11 @@ export default function BaixoEstoquePage() {
       },
       dataPedido: dataPedidoFormatada,
       dataCriacao: dataCriacaoFormatada,
-      periodo: { periodoInicio, periodoFim },
-      categoria,
+      periodo: {
+        inicio: periodoInicio,
+        fim: periodoFim,
+      },
+      category,
       projeto,
       itens: listaCompras.map(({ quantidade, observacao, id, name, marca }) => ({
         id,
@@ -115,16 +128,18 @@ export default function BaixoEstoquePage() {
         observacao,
       })),
       status: 'Pendente',
-    });
+    };
 
-    setListaCompras([]);
-    setModalAberto(false);
-    setFornecedor('');
-    setFornecedorSelecionado(null);
-    setPeriodoInicio('');
-    setPeriodoFim('');
-    setCategoria('');
-    setProjeto('');
+    set(novaListaRef, pedido).then(() => {
+      setListaCompras([]);
+      setModalAberto(false);
+      setFornecedor('');
+      setFornecedorSelecionado(null);
+      setPeriodoInicio('');
+      setPeriodoFim('');
+      setCategory('');
+      setProjeto('');
+    });
   };
 
   const atualizarItemLista = (index, campo, valor) => {
@@ -134,7 +149,6 @@ export default function BaixoEstoquePage() {
       return novaLista;
     });
   };
-
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Lista de Compras</h1>
@@ -257,20 +271,20 @@ export default function BaixoEstoquePage() {
 
             <Input type="date" value={periodoInicio} onChange={(e) => setPeriodoInicio(e.target.value)} />
             <Input type="date" value={periodoFim} onChange={(e) => setPeriodoFim(e.target.value)} />
-            <select className="w-full p-2 border rounded" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-                <option value="Selecionar">Selecione a Categoria do pedido</option>
-                <option value="Proteina">Proteína</option>
-                <option value="Mantimento">Mantimento</option>
-                <option value="Hortifrut">Hortifrut</option>
-                <option value="Doações">Doações</option>
-                <option value="Produtos de Limpeza">Produtos de Limpeza</option>
+            <select className="w-full p-2 border rounded" value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="">Selecione a Categoria do pedido</option>
+                  <option value="Proteina">Proteína</option>
+                  <option value="Mantimento">Mantimento</option>
+                  <option value="Hortifrut">Hortifrut</option>
+                  <option value="Doações">Doações</option>
+                  <option value="Produtos de Limpeza">Produtos de Limpeza</option>
             </select>
             <select className="w-full p-2 border rounded mt-4" value={projeto} onChange={(e) => setProjeto(e.target.value)}>
-                <option value="Selecionar">Selecione o Projeto</option>
-                <option value="CONDECA">CONDECA</option>
-                <option value="FUMCAD">FUMCAD</option>
-                <option value="INSTITUTO RECICLAR">Instituto Reciclar</option>
-            </select>        
+                  <option value="">Selecione o Projeto</option>
+                  <option value="CONDECA">CONDECA</option>
+                  <option value="FUMCAD">FUMCAD</option>
+                  <option value="INSTITUTO RECICLAR">Instituto Reciclar</option>
+            </select>
             </div>
           <DialogFooter>
             <Button onClick={salvarListaCompras} className="bg-blue-600 hover:bg-blue-700">
