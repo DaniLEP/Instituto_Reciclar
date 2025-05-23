@@ -147,7 +147,7 @@ export default function Login() {
             {isLoading ? (
               <span className="inline-block w-4 h-4 border-2 border-white border-t-purple-500 rounded-full animate-spin mr-2"></span>
             ) : (
-              "Entrar"
+              "Acessar Plataforma "
             )}
           </Button>
         </form>
