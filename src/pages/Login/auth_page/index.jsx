@@ -3,19 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
+import {  ref, get } from "firebase/database";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button/button";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "../../../../firebase"; // Importando as instâncias
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
-const UserType = {
-  ADMIN: "admin",
-  COZINHA: "cozinha",
-  TI: "ti",
-};
+const UserType = { ADMIN: "Admin", COZINHA: "Cozinha", TI: "T.I",};
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -25,64 +22,40 @@ export default function Login() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  
   const navigate = useNavigate();
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (!validateEmail(email)) {
-      toast.error("E-mail inválido.");
-      return;
-    }
-
+    if (!validateEmail(email)) { toast.error("E-mail inválido."); return;}
     setIsLoading(true);
     setErrorMessage("");
-
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
       const userRef = ref(db, "usuarios/" + user.uid); // Use db aqui, não database
       const snapshot = await get(userRef);
 
       if (snapshot.exists()) {
         const userData = snapshot.val();
         const funcao = userData.funcao;
-
-        if (!funcao || !Object.values(UserType).includes(funcao)) {
-          toast.error("Função de usuário inválida.");
-          return;
-        }
-
+        if (!funcao || !Object.values(UserType).includes(funcao)) { toast.error("Função de usuário inválida."); return;}
         // Redirecionamento conforme função
-        if (funcao === UserType.ADMIN) {
-          navigate("/Home");
-        } else if (funcao === UserType.COZINHA) {
-          navigate("/Home");
-        } else if (funcao === UserType.TI) {
-          navigate("/Home");
-        } else {
-          navigate("/Home");
-        }
-        
-        toast.success("Login bem-sucedido, bem-vindo!");
-      } else {
-        setErrorMessage("Usuário não encontrado no sistema.");
-        toast.error("Usuário não encontrado no sistema.");
-      }
-    } catch (error) {
+        if (funcao === UserType.ADMIN) { navigate("/Home");}
+        else if (funcao === UserType.COZINHA) { navigate("/Home");}
+        else if (funcao === UserType.TI) { navigate("/Home");}
+        else { navigate("/Home");}
+
+        toast.success("Login bem-sucedido, bem-vindo!");} 
+      else {setErrorMessage("Usuário não encontrado no sistema."); toast.error("Usuário não encontrado no sistema.");}} 
+    catch (error) {
       console.error("Erro ao logar:", error.code, error.message);
-      if (error.code === "auth/user-not-found") {
-        toast.error("Usuário não encontrado.");
-      } else if (error.code === "auth/wrong-password") {
-        toast.error("Senha incorreta.");
-      } else if (error.code === "auth/invalid-credential") {
-        toast.error("Credenciais inválidas. Verifique e-mail e senha.");
-      } else {
-        toast.error("Erro ao fazer login.");
-      }
+      if (error.code === "auth/user-not-found") { toast.error("Usuário não encontrado.");} 
+      else if (error.code === "auth/wrong-password") { toast.error("Senha incorreta.");} 
+      else if (error.code === "auth/invalid-credential") {toast.error("Credenciais inválidas. Verifique e-mail e senha."); }
+      else { toast.error("Erro ao fazer login.");}
     } finally {
       setIsLoading(false);
     }
@@ -91,19 +64,36 @@ export default function Login() {
   const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
 
   const handlePasswordReset = async () => {
-    if (!validateEmail(resetEmail)) {
-      toast.error("Digite um e-mail válido!");
-      return;
-    }
-
-    try {
-      await sendPasswordResetEmail(auth, resetEmail);
-      toast.success("Instruções enviadas para seu e-mail.");
-      setShowResetModal(false);
+    if (!validateEmail(resetEmail)) { toast.error("Digite um e-mail válido!"); return; }
+    try {await sendPasswordResetEmail(auth, resetEmail);
+      toast.success("Instruções enviadas para seu e-mail.");setShowResetModal(false);
     } catch (error) {
       toast.error("Erro ao enviar e-mail de redefinição.");
     }
+
+
   };
+  const handleGoogleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const userRef = ref(db, "usuarios/" + user.uid);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      const funcao = userData.funcao;
+      if (!funcao || !Object.values(UserType).includes(funcao)) { toast.error("Função de usuário inválida."); return;}
+      // Redirecionamento conforme função
+      if (funcao === UserType.ADMIN) { navigate("/Home"); } 
+      else if (funcao === UserType.COZINHA) {navigate("/Home"); }
+      else if (funcao === UserType.TI) {navigate("/Home"); } toast.success("Login com Google bem-sucedido!");}
+      else { toast.error("Usuário não encontrado no sistema."); }
+  } catch (error) {console.error("Erro ao entrar com Google:", error);
+    toast.error("Erro ao entrar com Google.");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 to-blue-900 p-5">
@@ -113,77 +103,30 @@ export default function Login() {
         <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar</h2>
         <form onSubmit={handleSubmit} className="text-left">
           <Label htmlFor="email">E-mail:</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-3 rounded border border-gray-300 mb-4 bg-gray-50"
-          />
-
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}  
+            className="w-full p-3 rounded border border-gray-300 mb-4 bg-gray-50" />
           <Label htmlFor="password">Senha:</Label>
           <div className="relative mb-6">
-            <Input
-              id="password"
-              type={isPasswordVisible ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50"
-            />
-            <FontAwesomeIcon
-              icon={isPasswordVisible ? faEyeSlash : faEye}
-              onClick={togglePasswordVisibility}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 cursor-pointer"
-            />
+            <Input  id="password" type={isPasswordVisible ? "text" : "password"}  value={password}  onChange={(e) => setPassword(e.target.value)} 
+              className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50" />
+            <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye}  onClick={togglePasswordVisibility} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 cursor-pointer" />
           </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 rounded-lg bg-gradient-to-br from-purple-700 to-blue-800 text-white font-semibold hover:from-pink-500 hover:to-purple-700 transition duration-300 mb-3"
-          >
+          <button type="submit" disabled={isLoading}
+            className="w-full py-3 rounded-lg bg-gradient-to-br from-purple-700 to-blue-800 text-white font-semibold hover:from-pink-500 hover:to-purple-700 transition duration-300 mb-3">
             {isLoading ? (
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-purple-500 rounded-full animate-spin mr-2"></span>
-            ) : (
-              "Acessar Plataforma "
-            )}
-          </Button>
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-purple-500 rounded-full animate-spin mr-2"></span> ) : ("Acessar Plataforma ")}</button>
+           <button onClick={handleGoogleLogin} className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2 rounded shadow hover:bg-gray-100"><img src="../iconGoogle.png" alt="Google" className="w-5 h-5" /><span>Entrar com Google</span></button>        
         </form>
-
         {errorMessage && <p className="text-red-500 text-sm mt-2">{errorMessage}</p>}
-
-        <button
-          onClick={() => setShowResetModal(true)}
-          className="w-full mt-4 text-gray-500 underline text-sm"
-        >
-          Esqueceu a senha?
-        </button>
-
+        <button onClick={() => setShowResetModal(true)} className="w-full mt-4 text-gray-500 underline text-sm" > Esqueceu a senha?</button>
         {showResetModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg w-full max-w-sm text-center">
               <h3 className="text-lg font-bold mb-4">Recuperação de Senha</h3>
-              <Input
-                type="email"
-                placeholder="Digite seu e-mail"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full p-3 mb-3 rounded border border-gray-300"
-              />
-              <Button
-                onClick={handlePasswordReset}
-                className="w-full py-3 bg-pink-600 text-white font-bold rounded mb-3"
-              >
-                Enviar
-              </Button>
-              <Button
-                onClick={() => setShowResetModal(false)}
-                className="w-full py-3 bg-gray-300 text-black font-bold rounded"
-              >
-                Fechar
-              </Button>
+              <Input type="email" placeholder="Digite seu e-mail" value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}  className="w-full p-3 mb-3 rounded border border-gray-300" />
+              <Button  onClick={handlePasswordReset}  className="w-full py-3 bg-pink-600 text-white font-bold rounded mb-3">Enviar</Button>
+              <Button onClick={() => setShowResetModal(false)} className="w-full py-3 bg-gray-300 text-black font-bold rounded" >  Fechar </Button>
             </div>
           </div>
         )}

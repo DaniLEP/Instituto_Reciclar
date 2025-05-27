@@ -24,18 +24,13 @@ export  function ProtectedRoute({ children, allowedTypes }) {
           } else {
             console.warn("Usuário não encontrado no banco de dados.");
             setUserType("desconhecido");
-            //TODO: deslogar o user
           }
         })
         .catch((error) => {
           console.error("Erro ao buscar dados do usuário:", error);
-            //TODO: deslogar o user
-
         })
         .finally(() => setIsLoading(false));
     } else {
-            //TODO: deslogar o user
-
       navigate("/");
       setIsLoading(false);
     }

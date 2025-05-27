@@ -1,7 +1,7 @@
 export const UserType = {
-  ADMIN: "admin",
-  COZINHA: "cozinha",
-  TI: "ti",
+  ADMIN: "Admin",
+  COZINHA: "Cozinha",
+  TI: "T.I",
 };
 
 

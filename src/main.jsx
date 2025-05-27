@@ -66,7 +66,6 @@ const router = createBrowserRouter([
     errorElement: <PaginaNaoEncontradaGoogleStyle />,
     children: [
       { path: '/', element: <LoginForm /> },
-
       { path: '/Home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Home /></ProtectedRoute> },
       { path: '/Pedidos', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><ListaPedidos /></ProtectedRoute> },
       { path: '/Cadastro', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Cadastro /></ProtectedRoute> },
@@ -95,125 +94,31 @@ const router = createBrowserRouter([
       { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
       { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioCafe /></ProtectedRoute> },
       { path: '/Lista_Compras', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< BaixoEstoquePage /></ProtectedRoute> },
-
-
-
-      {
-        path: '/Estoque',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Estoque...</div>}>
-              <Estoque />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Dashboard',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Dashboard...</div>}>
-              <Relatorio />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Cadastro_Geral',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}>
-              <CadProdutos />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Entrada_Produtos',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Entrada de Produtos...</div>}>
-              <EntradaProdutos />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Cadastro_Refeicoes',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Cadastro de Refeições...</div>}>
-              <CadastroRefeicoes />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Dashboard_Refeicoes',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Dashboard de Refeições...</div>}>
-              <RelatorioRef />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Historico_Retirada',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}>
-              <HistoricoRetiradas />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Cadastro_Produtos',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Novo Pedido...</div>}>
-              <NovoPedido />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Gerenciador_Produtos',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Gerenciador...</div>}>
-              <Gerenciador />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Cadastro_Fornecedor',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}>
-              <CadastroFornecedores />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/Refeicoes_Servidas',
-        element: (
-          <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
-            <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>
-              <ExibirRefeicoes />
-            </Suspense>
-          </ProtectedRoute>
-        ),
+      {path: '/Estoque', 
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Estoque...</div>}><Estoque /></Suspense></ProtectedRoute>)},
+      {path: '/Dashboard',
+        element: (<ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Dashboard...</div>}> <Relatorio /> </Suspense> </ProtectedRoute>),},
+      {path: '/Cadastro_Geral',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>  <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}> <CadProdutos /></Suspense> </ProtectedRoute> ),},
+      {path: '/Entrada_Produtos',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Entrada de Produtos...</div>}><EntradaProdutos /> </Suspense> </ProtectedRoute>), },
+      {path: '/Cadastro_Refeicoes',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Cadastro de Refeições...</div>}> <CadastroRefeicoes /> </Suspense> </ProtectedRoute> ), },
+      {path: '/Dashboard_Refeicoes', 
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Dashboard de Refeições...</div>}>  <RelatorioRef /> </Suspense> </ProtectedRoute>),},
+      {path: '/Historico_Retirada',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}><HistoricoRetiradas /> </Suspense> </ProtectedRoute> ),},
+      { path: '/Cadastro_Produtos',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Novo Pedido...</div>}>  <NovoPedido /> </Suspense> </ProtectedRoute> ),},
+      {path: '/Gerenciador_Produtos',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Gerenciador...</div>}> <Gerenciador /> </Suspense> </ProtectedRoute> ),},
+      {path: '/Cadastro_Fornecedor',
+        element: (<ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}> <CadastroFornecedores /> </Suspense> </ProtectedRoute> ), },
+      {path: '/Refeicoes_Servidas',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>  <ExibirRefeicoes /> </Suspense></ProtectedRoute>),
       },
     ],
   },
 ]);
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
-);
+createRoot(document.getElementById('root')).render( <StrictMode> <RouterProvider router={router} /> </StrictMode>);
