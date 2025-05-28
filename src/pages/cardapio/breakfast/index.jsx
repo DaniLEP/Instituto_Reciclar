@@ -24,7 +24,7 @@ const criarComposicaoInicial = () => {
   return composicao;
 };
 
-const CadastroCardapioCafe = () => {
+const CadastroCardapioLanche = () => {
   const navigate = useNavigate();
   const [dadosNutri, setDadosNutri] = useState(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
   const [composicoes, setComposicoes] = useState(Array(5).fill().map(() => criarComposicaoInicial()));
@@ -151,4 +151,4 @@ const CadastroCardapioCafe = () => {
   );
 };
 
-export default CadastroCardapioCafe;
+export default CadastroCardapioLanche;

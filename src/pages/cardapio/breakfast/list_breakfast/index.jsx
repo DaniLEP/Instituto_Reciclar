@@ -11,7 +11,7 @@ import Title from '@/components/ui/title';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
-const ConsultaCardapioCafe = () => {
+const ConsultaCardapioLanche = () => {
   const [cardapios, setCardapios] = useState([]);
   const [filtroInicio, setFiltroInicio] = useState('');
   const [filtroFim, setFiltroFim] = useState('');
@@ -205,4 +205,4 @@ const ConsultaCardapioCafe = () => {
   );
 };
 
-export default ConsultaCardapioCafe;
+export default ConsultaCardapioLanche;
