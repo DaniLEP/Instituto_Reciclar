@@ -15,20 +15,16 @@ export default function Cadastro() {
   >
       <div>
         <h1 className="text-[5rem] font-bold text-white space-x-6 text-center mb-4">
-          Cadastro
+          Cadastros
         </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Cards */}
           <Card
             link="/Cadastro_Geral"
             imgSrc="/cadastro.png"
-            title="Cadastro de Produtos"
+            title="Produtos"
           />
-          <Card
-            link="/Gerenciador_Produtos"
-            imgSrc="/caracteristicas.png"
-            title="Produtos Cadastrados"
-          />  
+        
           <Card
             link="/Entrada_Produtos"
             imgSrc="/caixa-de-entrada.png"
@@ -37,8 +33,13 @@ export default function Cadastro() {
           <Card
             link="/Cadastro_Fornecedor"
             imgSrc="/forncedor.png"
-            title="Fornecedor"
+            title="Fornecedores"
           />
+            <Card
+            link="/Gerenciador_Produtos"
+            imgSrc="/caracteristicas.png"
+            title="Lista de Produtos"
+          />  
             <Card
             link="/Visualizar_Fornecedores"
             imgSrc="/lista-de-contatos.png"            

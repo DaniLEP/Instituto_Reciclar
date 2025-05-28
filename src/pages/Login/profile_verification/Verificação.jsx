@@ -95,7 +95,7 @@ export default function AdminUsuarios() {
   return (
     <div className="min-h-screen p-5 flex flex-col items-center bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
       <h1 className="text-white font-bold text-4xl md:text-6xl lg:text-8xl mb-8">
-        Administração de Usuários
+        Gerenciador de Usuários
       </h1>
 
       <Table className="w-full border-collapse mt-6 hidden md:table text-center">

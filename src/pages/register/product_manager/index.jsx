@@ -73,7 +73,7 @@ function Gerenciador() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-700 to-pink-500 p-6 text-white font-roboto">
       <ToastContainer />
-      <Title className="text-3xl font-bold text-center mb-6">Cadastro de Produtos</Title>
+      <Title className="text-3xl font-bold text-center mb-6">Produtos Cadastrados</Title>
       <SearchWrapper>
         <SearchInput type="text" placeholder="Filtrar por SKU, Nome, Fornecedor, Categoria ou Tipo..." onChange={(e) => handleSearchChange(e.target.value)}/>
       </SearchWrapper>

@@ -22,34 +22,20 @@ const Card = ({ link, imgSrc, title, isBackCard }) => (
   </div>
 );
 
-export default function RetiradaProdutos() {
-  return (
+export default function  FichaTecnicaHome() {
+   return (
     <div className="min-h-screen p-5 bg-gradient-to-br from-[#6a11cb] to-[#2575fc] flex justify-center items-center">
       <div className="text-center px-4">
-        <h1 className="text-white font-bold text-6xl md:text-8xl">Retiradas</h1>
+        <h1 className="text-white font-bold text-6xl md:text-8xl">Ficha Técnica</h1>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mt-12">
           {/* Card 1 – Nova Retirada */}
-          <Card
-            link="/Retirada"
-            imgSrc="/retiradas.png"
-            title="Saída de Produtos"
-          />
-
-          {/* Card 2 – Histórico */}
-          <Card
-            link="/Historico_Retirada"
-            imgSrc="/historico-retiradas.png"
-            title="Histórico de Saídas"
-          />
-
-          {/* Card 3 – Voltar */}
-          <Card
-            link="/Home"
-            title="Voltar"
-            isBackCard
-          />
+          <Card className="align-center" link="/cadatro-receita" imgSrc="/Cadastro-receita.png" title="Cadastrar" />
+          <Card className="align-center" link="/consultar-receita" imgSrc="/view-receita.png" title="Consultar" />
+          <Card link="/cardapio" title="Voltar" isBackCard />
         </div>
       </div>
     </div>
   );
 }
+
+

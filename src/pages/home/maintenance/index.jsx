@@ -15,7 +15,7 @@ export default function HomeMaintenance() {
       <div className="min-h-screen py-5 flex items-center justify-center bg-gradient-to-br from-[#6a11cb] to-[#2575fc]">
         <div className=" mx-auto px-4 text-center">
           {/* Título Responsivo */}
-          <h1 className="text-white font-bold font-[Novatica Bold] text-6xl lg:text-8xl ">Manutenções</h1>
+          <h1 className="text-white font-bold font-[Novatica Bold] text-6xl lg:text-8xl ">Manutenções/Checklist</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
             {/* Card 1 - CheckList Diario*/}
             <div onClick={goToChecklist} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
