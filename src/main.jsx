@@ -48,7 +48,7 @@ import CadastroCardapioLanche from './pages/cardapio/breakfast';
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
 const ADMIN_ONLY = [UserType.ADMIN];
-const ALL_TYPES = [UserType.ADMIN, UserType.USER, UserType.COZINHA, UserType.TI];
+const ALL_TYPES = [UserType.ADMIN, UserType.USER, UserType.TI];
 const ADMIN_TI = [UserType.ADMIN, UserType.TI];
 
 // Rotas com lazy loading
@@ -94,7 +94,7 @@ const router = createBrowserRouter([
       { path: '/consultaCheck', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsulta /></ProtectedRoute> },
       { path: '/checkLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistLimpeza /></ProtectedRoute> },
       { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
-      { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES,ADMIN_ONLY, ADMIN_TI]}><FichaTecnica /></ProtectedRoute> },
+      { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><FichaTecnica /></ProtectedRoute> },
       { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaReceitas /></ProtectedRoute> },
       { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
       { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioCafe /></ProtectedRoute> },
@@ -137,3 +137,6 @@ const router = createBrowserRouter([
   },
 ]);
 createRoot(document.getElementById('root')).render( <StrictMode> <RouterProvider router={router} /> </StrictMode>);
+
+
+

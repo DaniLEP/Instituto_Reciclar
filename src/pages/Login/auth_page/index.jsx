@@ -73,26 +73,40 @@ export default function Login() {
 
 
   };
-  const handleGoogleLogin = async () => {
+const handleGoogleLogin = async () => {
   const provider = new GoogleAuthProvider();
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
+
+    // Verifica se o domínio do e-mail é "@reciclar.org.br"
+    const email = user.email;
+    if (!email.endsWith("@reciclar.org.br")) {
+      toast.error("Apenas contas @reciclar.org.br são permitidas.");
+      return;
+    }
+
     const userRef = ref(db, "usuarios/" + user.uid);
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
       const userData = snapshot.val();
       const funcao = userData.funcao;
-      if (!funcao || !Object.values(UserType).includes(funcao)) { toast.error("Função de usuário inválida."); return;}
+      if (!funcao || !Object.values(UserType).includes(funcao)) {
+        toast.error("Função de usuário inválida.");
+        return;
+      }
       // Redirecionamento conforme função
-      if (funcao === UserType.ADMIN) { navigate("/Home"); } 
-      else if (funcao === UserType.COZINHA) {navigate("/Home"); }
-      else if (funcao === UserType.TI) {navigate("/Home"); } toast.success("Login com Google bem-sucedido!");}
-      else { toast.error("Usuário não encontrado no sistema."); }
-  } catch (error) {console.error("Erro ao entrar com Google:", error);
+      navigate("/Home");
+      toast.success("Login com Google bem-sucedido!");
+    } else {
+      toast.error("Usuário não encontrado no sistema.");
+    }
+  } catch (error) {
+    console.error("Erro ao entrar com Google:", error);
     toast.error("Erro ao entrar com Google.");
   }
 };
+
 
 
   return (
