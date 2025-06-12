@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase, ref, set, onValue } from "firebase/database";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast, ToastContainer } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button/button";
-
-// 🔥 Inicialização Firebase
+import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+// 🔥 Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
   authDomain: "bancoestoquecozinha.firebaseapp.com",
@@ -27,13 +26,15 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
-    if (!products || products.length === 0) return; setFilteredProducts(products);
+    if (!products || products.length === 0) return;
+    setFilteredProducts(products);
   }, [products]);
 
   useEffect(() => {
     if (!products) return;
-    const filtered = products.filter(
-      (product) => product.sku.toLowerCase().includes(searchTerm.toLowerCase()) || product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = products.filter((product) =>
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
@@ -42,8 +43,13 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-6xl relative overflow-y-auto max-h-[90vh]">
         <h2 className="text-xl font-bold mb-4">Escolha um Produto</h2>
-        <Input type="text" placeholder="Buscar por SKU ou Nome" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"/>
+        <Input
+          type="text"
+          placeholder="Buscar por SKU ou Nome"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 mb-4 border rounded"
+        />
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -65,22 +71,26 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
                   <td className="p-2 text-center">{product.name}</td>
                   <td className="p-2 text-center">{product.marca}</td>
                   <td className="p-2 text-center">{product.supplier}</td>
-                  <td className="p-2 text-center">{product.peso} {product.unitmeasure}</td>
-                  <td className="p-2 text-center">{product.unit}</td>
+                  <td className="p-2 text-center">{product.peso} </td>
+                  <td className="p-2 text-center">{product.unit} {product.unitMeasure}</td>
                   <td className="p-2 text-center">{product.category}</td>
-                  <td className="p-2 text-center"><Button onClick={() => onSelectProduct(product)} className="px-3 py-1 bg-blue-600 text-white rounded text-xs">Selecionar</Button></td>
+                  <td className="p-2 text-center">
+                    <Button onClick={() => onSelectProduct(product)} className="px-3 py-1 bg-blue-600 text-white rounded text-xs">
+                      Selecionar
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <Button onClick={onClose} className="absolute top-2 right-2 text-white  bg-[red]">Fechar</Button>
+        <Button onClick={onClose} className="absolute top-2 right-2 text-white bg-red-600">Fechar</Button>
       </div>
     </div>
   );
 };
 
-// 🔧 Componente principal
+// 📦 Componente principal
 export default function CadastroProdutos() {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
@@ -105,11 +115,17 @@ export default function CadastroProdutos() {
     onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const loadedProducts = Object.keys(data).map((key) => ({ ...data[key], sku: key, }));
+        const loadedProducts = Object.keys(data).map((key) => ({ ...data[key], sku: key }));
         setProducts(loadedProducts);
       }
     });
   }, []);
+
+  const resetForm = () => {
+    setSku(""); setName(""); setMarca(""); setSupplier(""); setPeso(""); setUnitmeasure("");
+    setQuantity(""); setPesoTotal(""); setCategory(""); setTipo("");
+    setUnitPrice(""); setTotalPrice(""); setDateAdded(""); setExpiryDate("");
+  };
 
   const handleSelectProduct = (product) => {
     setSku(product.sku);
@@ -129,25 +145,64 @@ export default function CadastroProdutos() {
   };
 
   const handleSave = () => {
-    console.log("ADICIONANDO PRODUTO AO ESTOQUE")
-      const resetForm = () => {setSku(""); setName(""); setMarca(""); setSupplier(""); setPeso(""); setUnitmeasure(""); setQuantity(""); setPesoTotal(""); setCategory(""); setTipo(""); setUnitPrice(""); setTotalPrice(""); setDateAdded(""); setExpiryDate("");};
-      
+    if (!sku || !quantity) {
+      toast.error("Preencha SKU e Quantidade.");
+      return;
+    }
 
-    const newProduct = {sku: sku || "", name: name || "", marca: marca || "", supplier: supplier || "", peso: peso || "", unitmeasure: unitmeasure || "", quantity: quantity || "", category: category || "", tipo: tipo || "", unitPrice: unitPrice || "", totalPrice: totalPrice || "", dateAdded: dateAdded || "", expiryDate: expiryDate || ""};
-    
-    const newProductRef = ref(db, `Estoque/${sku}`);
-    set(newProductRef, newProduct)
-      .then(() => {toast.success("Produto adicionado ao Estoque!");
-        resetForm();
-      }).catch((error) => toast.error("Erro ao salvar: " + error.message));
+    const estoqueRef = ref(db, `Estoque/${sku}`);
+    onValue(estoqueRef, (snapshot) => {
+      const existingData = snapshot.val();
+      const quantidadeAtual = parseInt(quantity);
+      const pesoFloat = parseFloat(peso) || 0;
+      const precoUnit = parseFloat((unitPrice || "0").replace(/\D/g, "")) / 100;
+
+      if (existingData) {
+        const novaQuantidade = (parseInt(existingData.quantity) || 0) + quantidadeAtual;
+        const novoPesoTotal = pesoFloat * novaQuantidade;
+        const novoTotalPrice = precoUnit * novaQuantidade;
+
+        set(estoqueRef, {
+          ...existingData,
+          quantity: novaQuantidade,
+          pesoTotal: novoPesoTotal,
+          totalPrice: novoTotalPrice.toFixed(2),
+          dateAdded: dateAdded || new Date().toISOString().split("T")[0],
+          expiryDate: expiryDate || existingData.expiryDate || ""
+        }).then(() => {
+          toast.success("Produto atualizado com sucesso!");
+          resetForm();
+        }).catch((error) => toast.error("Erro ao atualizar: " + error.message));
+      } else {
+        const novoProduto = {
+          sku, name, marca, supplier, peso, unitmeasure, unit,
+          quantity: quantidadeAtual,
+          pesoTotal: pesoFloat * quantidadeAtual,
+          category, tipo,
+          unitPrice,
+          totalPrice: precoUnit * quantidadeAtual,
+          dateAdded: dateAdded || new Date().toISOString().split("T")[0],
+          expiryDate: expiryDate || ""
+        };
+
+        set(estoqueRef, novoProduto)
+          .then(() => {
+            toast.success("Produto adicionado ao estoque!");
+            resetForm();
+          })
+          .catch((error) => toast.error("Erro ao salvar: " + error.message));
+      }
+    }, { onlyOnce: true });
   };
 
   const handleQuantityChange = (e) => {
     const q = e.target.value;
     setQuantity(q);
     if (peso && q) setPesoTotal(parseFloat(peso) * parseInt(q));
-    if (unitPrice && q) {const parsed = parseFloat(unitPrice.replace(/\D/g, "")) / 100;
-      setTotalPrice(parsed * parseInt(q));}
+    if (unitPrice && q) {
+      const parsed = parseFloat(unitPrice.replace(/\D/g, "")) / 100;
+      setTotalPrice(parsed * parseInt(q));
+    }
   };
 
   const handleUnitPriceChange = (e) => {
@@ -156,15 +211,20 @@ export default function CadastroProdutos() {
       style: "currency", currency: "BRL",
     }).format(inputValue / 100);
     setUnitPrice(formattedValue);
-    if (quantity) {const parsed = parseFloat(formattedValue.replace(/\D/g, "")) / 100;
-      setTotalPrice(parsed * quantity);}
+
+    if (quantity) {
+      const parsed = parseFloat(formattedValue.replace(/\D/g, "")) / 100;
+      setTotalPrice(parsed * parseInt(quantity));
+    }
   };
 
   const handlePesoChange = (e) => {
     const p = e.target.value;
-    setPeso(p); if (quantity && p) setPesoTotal(p * quantity);
+    setPeso(p);
+    if (quantity && p) {
+      setPesoTotal(parseFloat(p) * parseInt(quantity));
+    }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-gray-800 p-4 sm:p-6">
       <div className="w-full max-w-screen-xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-10">
@@ -202,3 +262,5 @@ export default function CadastroProdutos() {
     </div>
   );
 }
+
+

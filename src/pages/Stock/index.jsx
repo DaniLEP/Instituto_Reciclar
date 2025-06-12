@@ -96,15 +96,19 @@ const handleStatusFilter = (status) => {
 };
 
   // Formatar data sem shift de fuso
-  const formatDate = (date) => {
-    if (!date) return "--";
-    const [y, m, d] = date.slice(0, 10).split("-");
-    const dt = new Date(Date.UTC(+y, +m - 1, +d));
-    const dd = String(dt.getUTCDate()).padStart(2, "0");
-    const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
-    const yyyy = dt.getUTCFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-  };
+const formatDate = (date) => {
+  if (!date) return "--";
+  try {
+    const d = new Date(date);
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const year = d.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  } catch {
+    return "--";
+  }
+};
+
 
   const isExpired = (expiryDate) => {
     if (!expiryDate) return false;
@@ -206,7 +210,7 @@ const handleStatusFilter = (status) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-red-600 text-xl">❌</span>
-          <span>Produto vencido</span>
+          <span>Próximos do vencimento / vencidos</span>
         </div>
       </div>
         {/* Tabela */}
@@ -219,8 +223,8 @@ const handleStatusFilter = (status) => {
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Nome</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Marca</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Peso</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Qtd.</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Unid. Medida</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Qtd.</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Unit.</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Total</th>
                 <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Vencimento</th>
@@ -239,21 +243,21 @@ const handleStatusFilter = (status) => {
                 return (
                   <tr key={idx} className="hover:bg-gray-50 even:bg-white odd:bg-gray-100">
                     <td className="p-2 text-center">{low ? "⚠️" : expired ? "❌" : "✅"}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.sku}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.name}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.marca}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.peso}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.unitmeasure}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.unitPrice}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{item.totalPrice}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center cursor-pointer" onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)}>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.sku}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.name}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.marca}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.peso}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.unit}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.unitPrice}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.totalPrice}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center cursor-pointer" onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)}>
                       {editando === item.sku ? (<Input type="date" value={valorEditado} onChange={handleChange} onBlur={() => handleSave(item.sku)} className="border rounded w-full text-sm" autoFocus/>) : (formatDate(item.expiryDate))}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{days}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-center">{formatDate(item.dateAdded)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.supplier}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.category || "N/A"}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.tipo || "N/A"}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{days}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{formatDate(item.dateAdded)}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.supplier}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.category || "N/A"}</td>
+                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.tipo || "N/A"}</td>
                   </tr>
                 );
               })}
