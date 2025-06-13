@@ -25,7 +25,7 @@ import { Input } from "../../../components/ui/input/index";
     export default function CadastroFornecedores () {
     const navigate = useNavigate(); // Instância do navigate
 
-    const [formData, setFormData] = useState({cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",  });// Status inicial como "Ativo"
+    const [formData, setFormData] = useState({cnpj: "", formasPag: "", observacoes: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",  });// Status inicial como "Ativo"
   
 
     const handleInputChange = (e) => {
@@ -101,6 +101,8 @@ import { Input } from "../../../components/ui/input/index";
             contato: "",
             telefone: "",
             email: "",
+            observacoes: "",
+            formasPag: "",
             grupo: "Mantimentos",
             status: "Ativo",
           });
@@ -195,6 +197,17 @@ import { Input } from "../../../components/ui/input/index";
               </div>
             </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col">
+                <Label htmlFor="formasPag" className="text-sm font-semibold text-gray-700">Formas de Pagamentos:</Label>
+                <Input  type="text" id="formasPag" name="formasPag" value={formData.formasPag} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+              </div>
+              <div className="flex flex-col">
+                <Label htmlFor="observacoes" className="text-sm font-semibold text-gray-700">Observações:</Label>
+                <Input  type="text" id="observacoes" name="observacoes" value={formData.observacoes} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+              </div>
+            </div>
+
             {/* Grupo 5: Grupo, Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col">
@@ -234,4 +247,99 @@ import { Input } from "../../../components/ui/input/index";
   );
 };
 
+// import * as XLSX from "xlsx";
+// import { getDatabase, ref, push } from "firebase/database";
+// import { toast } from "react-toastify";
 
+// function UploadPlanilha() {
+//   const db = getDatabase();
+
+//   // Função para normalizar cabeçalhos da planilha
+//   const normalizeKey = (key) =>
+//     key
+//       .toLowerCase()
+//       .normalize("NFD")
+//       .replace(/[\u0300-\u036f]/g, "") // remove acentos
+//       .replace(/\s+/g, ""); // remove espaços
+
+//   const handleFileUpload = async (event) => {
+//     const file = event.target.files[0];
+//     if (!file) return;
+
+//     const reader = new FileReader();
+
+//     reader.onload = async (e) => {
+//       const data = new Uint8Array(e.target.result);
+//       const workbook = XLSX.read(data, { type: "array" });
+
+//       const sheet = workbook.Sheets[workbook.SheetNames[0]];
+//       const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+//       if (!jsonData.length) {
+//         toast.error("A planilha está vazia ou mal formatada.");
+//         return;
+//       }
+
+//       try {
+//         const fornecedoresRef = ref(db, "CadastroFornecedores");
+
+//         for (const rawItem of jsonData) {
+//           // Normaliza as chaves da planilha (ex: "Razão Social" → "razaosocial")
+//           const item = {};
+//           for (const key in rawItem) {
+//             item[normalizeKey(key)] = rawItem[key];
+//           }
+
+//           // Criação do objeto final para salvar
+//           const fornecedor = {
+//             cnpj: String(item.cnpj || "").padStart(14, "0"),
+//             razaosocial: String(item.razaosocial || ""),
+//             endereco: String(item.endereco || ""),
+//             numero: String(item.numero || ""),
+//             bairro: String(item.bairro || ""),
+//             cep: String(item.cep || "").padStart(8, "0"),
+//             municipio: String(item.municipio || ""),
+//             uf: String(item.uf || ""),
+//             pais: String(item.pais || "Brasil"),
+//             complemento: String(item.complemento || ""),
+//             contato: String(item.contato || ""),
+//             telefone: String(item.telefone || ""),
+//             email: String(item.email || ""),
+//             observacoes: String(item.observacoes || ""),
+//             formaspag: String(item.formaspag || ""),
+//             grupo: String(item.grupo || "Mantimentos"),
+//             status: String(item.status || "Ativo"),
+//           };
+
+//           await push(fornecedoresRef, fornecedor);
+//         }
+
+//         toast.success("Planilha importada com sucesso!");
+//       } catch (error) {
+//         console.error("Erro ao importar:", error);
+//         toast.error("Erro ao importar a planilha.");
+//       }
+//     };
+
+//     reader.readAsArrayBuffer(file);
+//   };
+
+//   return (
+//     <div className="mb-8 w-full max-w-4xl bg-white p-4 rounded-lg shadow-md">
+//       <label className="block font-medium mb-2 text-gray-700">
+//         Importar Fornecedores (Excel):
+//       </label>
+//       <input
+//         type="file"
+//         accept=".xlsx, .xls, .csv"
+//         onChange={handleFileUpload}
+//         className="block w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-lg cursor-pointer focus:outline-none"
+//       />
+//       <p className="mt-2 text-xs text-gray-500">
+//         A primeira aba da planilha será usada. Os nomes das colunas devem ser consistentes.
+//       </p>
+//     </div>
+//   );
+// }
+
+// export default UploadPlanilha;

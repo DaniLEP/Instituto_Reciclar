@@ -201,7 +201,6 @@ const exportToPDF = () => {
   doc.setFontSize(12);
   doc.setFont("Helvetica");
   doc.setFontSize(10);
-
   doc.text('Projeto Custeador: ' + (pedidoSelecionado.projeto || ""), 20, 10);
   doc.text('Fornecedor: ' + (pedidoSelecionado.fornecedor?.razaoSocial || ""), 20, 20);
   doc.text('Data do Pedido: ' + (pedidoSelecionado.dataPedido || ""), 20, 30);
@@ -224,7 +223,6 @@ const exportToPDF = () => {
 
   y += 5;
   doc.line(col1X, y, col5X + 40, y);
-
   (pedidoSelecionado.produtos || []).forEach((produto) => {y += 10;
     doc.text(String(produto.name || ""), col1X, y);
     doc.text(String(produto.marca || ""), col2X, y);
@@ -233,7 +231,6 @@ const exportToPDF = () => {
     doc.text(String(produto.observacao || "Nenhuma observação"), col5X, y);
     y += 5;
     doc.line(col1X, y, col5X + 40, y);
-
     if (y > 250) {
       doc.addPage();
       y = 20;
@@ -371,20 +368,12 @@ return (
           </div>
         </div>
       )}
+      {/* Modal de Visualização */}
       {modalAberto && pedidoSelecionado && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center px-4 z-50 overflow-y-auto">
           <div className="bg-white p-6 rounded-lg shadow-lg relative animate-slide-up w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <Button
-              className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600"
-              onClick={() => setModalAberto(false)}
-            >
-              ×
-            </Button>
-
-            <h3 className="text-2xl font-bold mb-4 text-center">
-              Pedido #{pedidoSelecionado.numeroPedido}
-            </h3>
-
+            <Button className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600" onClick={() => setModalAberto(false)}>×</Button>
+            <h3 className="text-2xl font-bold mb-4 text-center">Pedido #{pedidoSelecionado.numeroPedido}</h3>
             {/* Informações gerais */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               {[
@@ -394,10 +383,7 @@ return (
                 ["Contato", pedidoSelecionado.fornecedor?.contato || "Não informado"],
                 ["Telefone", pedidoSelecionado.fornecedor?.telefone || "Não informado"],
                 ["E-mail", pedidoSelecionado.fornecedor?.email || "Não informado"],
-                [
-                  "Período que irá suprir",
-                  `De: ${formatDate(pedidoSelecionado.periodoInicio)} Até: ${formatDate(pedidoSelecionado.periodoFim)}`
-                ],
+                ["Período que irá suprir", `De: ${formatDate(pedidoSelecionado.periodoInicio)} Até: ${formatDate(pedidoSelecionado.periodoFim)}`],
                 ["Motivo de Cancelamento", pedidoSelecionado.motivoCancelamento || "Não informado"],
                 ["Nota Fiscal", pedidoSelecionado.numeroNotaFiscal || "Não informado"],
                 ["Chave de Acesso", pedidoSelecionado.chaveAcesso || "Não informado"],
@@ -412,57 +398,35 @@ return (
 
             {/* Valores financeiros */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-gray-100 p-4 rounded-lg shadow">
-              <div className="text-lg font-semibold">
-                Valor Total do Pedido:
+              <div className="text-lg font-semibold">Valor Total do Pedido:
                 <span className="text-green-600"> R$ {(Number(totalPedido) || 0).toFixed(2)}</span>
                 <span className="text-xs block text-gray-500 text-center">Valor sem desconto</span>
               </div>
 
               <div className="text-lg font-semibold">
                 {editandoDesconto ? (
-                  <input
-                    type="number"
-                    value={desconto}
-                    onChange={(e) => setDesconto(Number(e.target.value))}
-                    onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()}
-                    onBlur={salvarDescontoNoPedido}
-                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right"
-                    autoFocus
-                  />
-                ) : (
+                  <input type="number" value={desconto} onChange={(e) => setDesconto(Number(e.target.value))} onKeyDown={(e) => e.key === "Enter" && salvarDescontoNoPedido()} onBlur={salvarDescontoNoPedido}
+                    className="border border-gray-300 rounded px-2 py-1 w-32 text-right" autoFocus />) : (
                   <span className="cursor-pointer" onDoubleClick={() => setEditandoDesconto(true)}>
                     Desconto: <span className="text-orange-600">R$ {desconto.toFixed(2)}</span>
                     <span className="text-xs block text-gray-500">Clique duas vezes para editar</span>
-                  </span>
-                )}
+                  </span> )}
               </div>
-
-              <div className="text-lg font-semibold">
-                Total com Desconto:
+              <div className="text-lg font-semibold">Total com Desconto:
                 <span className="text-blue-600"> R$ {(totalPedido - desconto).toFixed(2)}</span>
               </div>
             </div>
 
             {/* Botões de ação */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <Button className="bg-green-600 text-white" onClick={exportToExcel}>
-                Exportar Produtos para Excel
-              </Button>
-              <Link
-                to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx"
-                target="_blank"
-              >
+              <Button className="bg-green-600 text-white" onClick={exportToExcel}> Exportar Produtos para Excel </Button>
+              <Link to="https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx"target="_blank" >
                 <Button className="bg-blue-600 text-white">Consultar NF</Button>
               </Link>
-              <Link
-                to="https://www.nfe.fazenda.gov.br/portal/principal.aspx"
-                target="_blank"
-              >
+              <Link to="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank">
                 <Button className="bg-yellow-600 text-white">Consultar Cupom Fiscal</Button>
               </Link>
-              <Button className="bg-red-600 text-white" onClick={exportToPDF}>
-                Exportar PDF
-              </Button>
+              <Button className="bg-red-600 text-white" onClick={exportToPDF}> Exportar PDF </Button>
             </div>
 
             {/* Tabela de produtos */}
@@ -501,13 +465,8 @@ return (
                         <td className="px-4 py-2">{produto.observacao}</td>
                       </tr>
                     ))
-                  ) : (
-                    <tr>
-                      <td colSpan={11} className="text-center p-4 text-gray-500">
-                        Nenhum produto encontrado para este pedido.
-                      </td>
-                    </tr>
-                  )}
+                  ) : (<tr><td colSpan={11} className="text-center p-4 text-gray-500"> 
+                  Nenhum produto encontrado para este pedido. </td></tr>)}
                 </tbody>
               </table>
             </div>
@@ -547,11 +506,11 @@ return (
                       <td className="p-1 text-center"><Input type="text" value={produto.tipo} onChange={(e) => handleEditar(index, "tipo", e.target.value)} /></td>
                       <td className="p-1 text-center"><Input type="text" value={produto.category} onChange={(e) => handleEditar(index, "category", e.target.value)} /></td>
                       <td className="p-1 text-center"><Input type="number" value={produto.peso} onChange={(e) => handleEditar(index, "peso", e.target.value)} /></td>
-                      <td className="p-1 text-center"><Input type="text" value={produto.unit} onChange={(e) => handleEditar(index, "unit", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.uniteasure} onChange={(e) => handleEditar(index, "unit", e.target.value)} /></td>
                       <td className="p-1 text-center"><Input type="number" value={produto.quantidade} onChange={(e) => handleEditar(index, "quantidade", e.target.value)} /></td>
                       <td className="p-1 text-center"><Input type="number" value={produto.unitPrice} onChange={(e) => handleEditar(index, "unitPrice", e.target.value)} /></td>
                       <td className="p-[1px] text-center">{(produto.quantidade * produto.unitPrice).toFixed(2)}</td>
-                      <td className="p-1 text-center"><Input type="text" value={produto.observacao} onChange={(e) => handleEditar(index, "observacoes", e.target.value)} /></td>
+                      <td className="p-1 text-center"><Input type="text" value={produto.observacao} onChange={(e) => handleEditar(index, "observacao", e.target.value)} /></td>
                       <td className="p-1 text-center"><Button variant="destructive" onClick={() => handleDelete(index)}>Excluir</Button></td>
                     </tr>
                   ))}

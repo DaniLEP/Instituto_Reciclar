@@ -26,6 +26,8 @@ export default function EditarFornecedor() {
     telefone: "",
     email: "",
     grupo: "",
+    observacoes: "",
+    formasPag: "",
     status: "Ativo",
   });
 
@@ -153,7 +155,7 @@ export default function EditarFornecedor() {
           <div>
             <Label className="text-gray-700">Telefone:</Label>
             <InputMask
-              mask="(99) 99999-9999"
+              mask="(99) 9999-9999"
               value={fornecedor.telefone}
               onChange={handleChange}
             >
@@ -164,6 +166,16 @@ export default function EditarFornecedor() {
           <div>
             <Label className="text-gray-700">E-mail:</Label>
             <Input type="email" name="email" value={fornecedor.email} onChange={handleChange} />
+          </div>
+
+           <div>
+            <Label className="text-gray-700">Formas de Pagamentos:</Label>
+            <Input type="text" name="formasPag" value={fornecedor.formasPag} onChange={handleChange} />
+          </div>
+
+           <div>
+            <Label className="text-gray-700">Observações:</Label>
+            <Input type="text" name="observacoes" value={fornecedor.observacoes} onChange={handleChange} />
           </div>
 
           <div>

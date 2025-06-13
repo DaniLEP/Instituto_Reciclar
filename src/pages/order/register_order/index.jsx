@@ -222,7 +222,7 @@ export default function NovoPedido() {
                           </div>
                           <button onClick={() => handleFornecedorSelect(fornecedor)} style={{ ...styles.button, backgroundColor: "#007BFF", margin: "0", padding: "0.5rem 1rem" }}> Selecionar </button>
                         </div>
-                      ))) : (<p style={{ textAlign: "center", color: "#777" }}> Nenhum fornecedor encontrado.</p>)}
+                      ))) : (<p style={{ textAlign: "center", color: "#777" }}>Nenhum fornecedor encontrado.</p>)}
                   </div>
                 <button onClick={() => navigate("/Cadastro_Fornecedor")}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md w-full sm:w-auto transition">Novo Fornecedor +</button>
@@ -290,7 +290,7 @@ export default function NovoPedido() {
                             <td style={styles.tableCell}>{product.marca}</td>
                             <td style={styles.tableCell}>{product.category}</td>
                             <td style={styles.tableCell}>{product.peso} {product.unitMeasure}</td>
-                            <td style={styles.tableCell}>{product.unit}</td>
+                            <td style={styles.tableCell}>{product.unitMeasure}</td>
                             <td style={styles.tableCell}><button onClick={() => handleProductSelect(product)} style={styles.button}>Selecionar</button></td>
                           </tr>))}
                       </tbody>
@@ -329,7 +329,7 @@ export default function NovoPedido() {
                 </div>
                 <div>
                   <label>Unidade de Medida: </label>
-                  <input type="text" value={dadosProduct.unit} readOnly style={styles.input} />
+                  <input type="text" value={dadosProduct.unitMeasure} readOnly style={styles.input} />
                 </div>
                 <div>
                   <label>Quantidade: </label>
