@@ -24,7 +24,7 @@ const criarComposicaoInicial = () => {
   return composicao;
 };
 
-const CadastroCardapioLanche = () => {
+const CadastroCardapioCafe = () => {
   const navigate = useNavigate();
   const [dadosNutri, setDadosNutri] = useState(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
   const [composicoes, setComposicoes] = useState(Array(5).fill().map(() => criarComposicaoInicial()));
@@ -52,6 +52,7 @@ const CadastroCardapioLanche = () => {
 
     const dados = {
       dataCadastro: new Date().toISOString(),
+      tipo: "Cafe da Manhã",
       periodo: {
         inicio: dadosNutri[0].dataInicio,
         fim: dadosNutri[4].dataFim
@@ -74,8 +75,8 @@ const CadastroCardapioLanche = () => {
     }
 
     try {
-      await push(ref(db, 'cardapioCafe'), dados);
-      toast.success("Cardápio salvo com sucesso!");
+      await push(ref(db, 'cardapiosPendentes'), dados);
+      toast.success("Cardápio enviado para aprovação!");
 
       // Resetando os estados após salvar
       setDadosNutri(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
@@ -143,7 +144,7 @@ const CadastroCardapioLanche = () => {
 
       <div className="flex justify-center mt-6">
         <Button onClick={salvarCardapio} className="bg-green-600 hover:bg-green-700 text-white w-[1150px] font-bold px-6 rounded-lg shadow-md transition-all">
-          Salvar Cardápio
+        Enviar para Aprovação
         </Button>
       </div>
       <ToastContainer />
@@ -151,4 +152,4 @@ const CadastroCardapioLanche = () => {
   );
 };
 
-export default CadastroCardapioLanche;
+export default CadastroCardapioCafe;

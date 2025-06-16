@@ -41,9 +41,12 @@ import BaixoEstoquePage from './pages/order/Shopping-List';
 import FichaTecnicaHome from './pages/cardapio/cadapio_primary/fichaTecnica';
 import RefeicoesHome from './pages/cardapio/cadapio_primary/refeicoes';
 import OpcoesCardapios from './pages/cardapio/cadapio_primary/opcoesCardapios';
-import CadastroCardapio from '@/pages/cardapio/almoco/index.jsx';
+import CadastroCardapioAlmoco from '@/pages/cardapio/almoco/index.jsx';
 import ConsultaCardapioAlmoco from './pages/cardapio/almoco/list_almoco';
-import CadastroCardapioLanche from './pages/cardapio/breakfast';
+import AprovacaoCardapios from './pages/cardapio/Aprovacao';
+import CardapiosReprovados from './pages/cardapio/reprovados';
+import GerenciadorCardapios from './pages/cardapio/cadapio_primary/gerenciador';
+import CadastroCardapio from './pages/cardapio';
 
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
@@ -102,10 +105,11 @@ const router = createBrowserRouter([
       { path: '/ficha-tecnica', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< FichaTecnicaHome /></ProtectedRoute> },
       { path: '/refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< RefeicoesHome /></ProtectedRoute> },
       { path: '/cardapios', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< OpcoesCardapios /></ProtectedRoute> },
-      { path: '/cadastro-de-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapio /></ProtectedRoute> },
+      { path: '/cadastro-de-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioAlmoco /></ProtectedRoute> },
       { path: '/cardapio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioAlmoco /></ProtectedRoute> },
-      { path: '/cadastro-cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioLanche /></ProtectedRoute> },
+      { path: '/cadastro-cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
       { path: '/cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioLanche /></ProtectedRoute> },
+      { path: '/cadastro-refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroRefeicoes /></ProtectedRoute> },
 
 
 
@@ -129,9 +133,25 @@ const router = createBrowserRouter([
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Gerenciador...</div>}> <Gerenciador /> </Suspense> </ProtectedRoute> ),},
       {path: '/Cadastro_Fornecedor',
         element: (<ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}> <CadastroFornecedores /> </Suspense> </ProtectedRoute> ), },
-      {path: '/Refeicoes_Servidas',
+      {path: '/refeicoes-servidas',
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
             <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>  <ExibirRefeicoes /> </Suspense></ProtectedRoute>),
+      },
+      {path: '/Gerenciador-cardapios',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Cardapios Pendentes...</div>}>  <AprovacaoCardapios /> </Suspense></ProtectedRoute>),
+      },
+      {path: '/Gerenciador-cardapios-reprovados',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Cardapios Reprovados...</div>}>  <CardapiosReprovados /> </Suspense></ProtectedRoute>),
+      },
+        {path: '/Gerenciador',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Cardapios...</div>}>  <GerenciadorCardapios /> </Suspense></ProtectedRoute>),
+      },
+       {path: '/carada',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Cardapios...</div>}>  <CadastroCardapio /> </Suspense></ProtectedRoute>),
       },
     ],
   },

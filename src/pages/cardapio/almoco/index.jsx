@@ -24,7 +24,7 @@ const criarComposicaoInicial = () => {
   return composicao;
 };
 
-const CadastroCardapio = () => {
+const CadastroCardapioAlmoco = () => {
   const navigate = useNavigate();
   const [dadosNutri, setDadosNutri] = useState(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
   const [composicoes, setComposicoes] = useState(Array(5).fill().map(() => criarComposicaoInicial()));
@@ -41,50 +41,55 @@ const CadastroCardapio = () => {
     setDadosNutri(novosDados);
   };
 
+
+
   const salvarCardapio = async () => {
-    for (let i = 0; i < 5; i++) {
-      const { nomeNutri, crn3, dataInicio, dataFim } = dadosNutri[i];
-      if (!nomeNutri || !crn3 || !dataInicio || !dataFim) {
-        toast.error(`Por favor, preencha todos os dados do nutricionista para a Semana ${i + 1}.`);
-        return;
-      }
+  for (let i = 0; i < 5; i++) {
+    const { nomeNutri, crn3, dataInicio, dataFim } = dadosNutri[i];
+    if (!nomeNutri || !crn3 || !dataInicio || !dataFim) {
+      toast.error(`Por favor, preencha todos os dados do nutricionista para a Semana ${i + 1}.`);
+      return;
     }
+  }
 
-    const dados = {
-      dataCadastro: new Date().toISOString(),
-      periodo: {
-        inicio: dadosNutri[0].dataInicio,
-        fim: dadosNutri[4].dataFim
-      },
-      composicoes: {}
-    };
-
-    for (let i = 0; i < 5; i++) {
-      dados.composicoes[`semana${i + 1}`] = {
-        nutricionista: {
-          nome: dadosNutri[i].nomeNutri,
-          crn3: dadosNutri[i].crn3
-        },
-        periodo: {
-          inicio: dadosNutri[i].dataInicio,
-          fim: dadosNutri[i].dataFim
-        },
-        cardapio: composicoes[i]
-      };
-    }
-
-    try {
-      await push(ref(db, 'cardapioAlmoco'), dados);
-      toast.success("Cardápio salvo com sucesso!");
-
-      // Resetando os estados após salvar
-      setDadosNutri(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
-      setComposicoes(Array(5).fill().map(() => criarComposicaoInicial()));
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao salvar o cardápio.");
-    }
+  const dados = {
+    status: 'pendente',
+    tipo: 'Almoco',
+    dataCadastro: new Date().toISOString(),
+    periodo: {
+      inicio: dadosNutri[0].dataInicio,
+      fim: dadosNutri[4].dataFim
+    },
+    composicoes: {}
   };
+
+  for (let i = 0; i < 5; i++) {
+    dados.composicoes[`semana${i + 1}`] = {
+      nutricionista: {
+        nome: dadosNutri[i].nomeNutri,
+        crn3: dadosNutri[i].crn3
+      },
+      periodo: {
+        inicio: dadosNutri[i].dataInicio,
+        fim: dadosNutri[i].dataFim
+      },
+      cardapio: composicoes[i]
+    };
+  }
+
+  try {
+    await push(ref(db, 'cardapiosPendentes'), dados); // Envio para aprovação
+    toast.success("Cardápio enviado para aprovação!");
+
+    setDadosNutri(Array(5).fill({ nomeNutri: '', crn3: '', dataInicio: '', dataFim: '' }));
+    setComposicoes(Array(5).fill().map(() => criarComposicaoInicial()));
+  } catch (error) {
+    console.error(error);
+    toast.error("Erro ao enviar cardápio para aprovação.");
+  }
+};
+
+
 
   return (
     <div className="p-6 max-w-8xl mx-auto bg-gradient-to-r from-blue-900 to-gray-800 min-h-screen">
@@ -142,13 +147,17 @@ const CadastroCardapio = () => {
       ))}
 
       <div className="flex justify-center mt-6">
-        <Button onClick={salvarCardapio} className="bg-green-600 hover:bg-green-700 text-white w-[1150px] font-bold px-6 rounded-lg shadow-md transition-all">
-          Salvar Cardápio
-        </Button>
+        <Button
+  onClick={salvarCardapio}
+  className="bg-blue-600 hover:bg-blue-700 text-white w-[1150px] font-bold px-6 rounded-lg shadow-md transition-all"
+>
+  Enviar para Aprovação
+</Button>
+
       </div>
       <ToastContainer />
     </div>
   );
 };
 
-export default CadastroCardapio;
+export default CadastroCardapioAlmoco;

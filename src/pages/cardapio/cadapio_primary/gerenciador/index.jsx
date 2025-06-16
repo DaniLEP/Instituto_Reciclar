@@ -2,54 +2,29 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-export default function OpcoesCardapios() {
+export default function GerenciadorCardapios() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6a11cb] to-[#2575fc] py-10 px-4">
       <div className="w-full max-w-7xl">
         <h1 className="text-5xl md:text-6xl font-bold text-white text-center mb-2">
-          Cardápio
+          Gerencie os Cardápios
         </h1>
         <p className="text-lg font-semibold text-white text-center mb-8">
-          Cadastro / Consulta
+          Pendentes / Reprovados
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           <Card
-            link="/cadastro-cardapio-cafe"
-            imgSrc="/coffe.png"
-            title="Cadastrar Café da Manhã"
-          />
-          <Card
-            link="/consultar-cardapio-cafe"
-            imgSrc="/cafe.png"
-            title="Consultar Café da Manhã"
-          />
-          <Card
-            link="/cadastro-de-almoco"
-            imgSrc="/almoço.png"
-            title="Cadastrar Almoço"
-          />
-          <Card
-            link="/cardapio-almoco"
-            imgSrc="/list-almoço.png"
-            title="Consultar Almoço"
-          />
-          <Card
-            link="/cadastro-cardapio-lanche"
-            imgSrc="/cafe-da-manha.png"
-            title="Cadastrar Lanche da Tarde"
-          />
-          <Card
-            link="/cardapio-lanche"
-            imgSrc="/lanchinho.png"
-            title="Consultar Lanche da Tarde"
-          />
-            <Card
-            link="/Gerenciador"
+            link="/Gerenciador-cardapios"
             imgSrc="/gerenciamento-de-pedidos.png"
-            title="Gerenciador de Cardápios"
+            title="Cardápios Pendentes"
           />
-          <Card link="/cardapio" title="Voltar" isBackCard />
+          <Card
+            link="/Gerenciador-cardapios-reprovados"
+            imgSrc="/list-almoço.png"
+            title="Consulta Cardápios Reprovados"
+          />
+          <Card link="/cardapios" title="Voltar" isBackCard />
         </div>
       </div>
     </div>
