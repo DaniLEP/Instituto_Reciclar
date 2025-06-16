@@ -306,6 +306,7 @@ export default function HistoricoRetiradas() {
           <tr>
             <th className="p-4">SKU</th>
             <th className="p-4">Produto</th>
+            <th className="p-4">Marca</th>
             <th className="p-4">Categoria</th>
             <th className="p-4">Quantidade</th>
             <th className="p-4">Peso(KG)</th>
@@ -322,6 +323,7 @@ export default function HistoricoRetiradas() {
               <tr key={index} className="text-center border-t hover:bg-gray-100 transition-colors">
                 <td className="p-4">{retirada.sku}</td>
                 <td className="p-4">{retirada.name}</td>
+                <td className="p-4">{retirada.marca}</td>
                 <td className="p-4">{retirada.category}</td>
                 <td className="p-4">{retirada.quantity}</td>
                 <td className="p-4">{retirada.peso}</td>

@@ -264,3 +264,86 @@ export default function CadastroProdutos() {
 }
 
 
+// import { useState } from "react";
+// import * as XLSX from "xlsx";
+// import { getDatabase, ref, set } from "firebase/database";
+// import { toast } from "react-toastify";
+// import { Input } from "@/components/ui/input";
+
+// // Firebase já deve estar inicializado no projeto
+// const db = getDatabase();
+
+// export default function ImportarPlanilhaEstoque() {
+//   const [loading, setLoading] = useState(false);
+
+//   const handleFileUpload = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     setLoading(true);
+//     const reader = new FileReader();
+
+//     reader.onload = async (evt) => {
+//       try {
+//         const bstr = evt.target.result;
+//         const wb = XLSX.read(bstr, { type: "binary" });
+//         const wsname = wb.SheetNames[0];
+//         const ws = wb.Sheets[wsname];
+//         const data = XLSX.utils.sheet_to_json(ws);
+
+//         for (const item of data) {
+//           const sku = item.sku?.toString();
+//           if (!sku) continue;
+
+//           const estoqueRef = ref(db, `Estoque/${sku}`);
+//           const quantity = parseInt(item.quantity) || 0;
+//           const peso = parseFloat(item.peso) || 0;
+//           const precoUnit = parseFloat(item.unitPrice) || 0;
+
+//           const novoProduto = {
+//             sku,
+//             name: item.name || "",
+//             marca: item.marca || "",
+//             supplier: item.supplier || "",
+//             peso: peso,
+//             unitmeasure: item.unitmeasure || "",
+//             unit: item.unit || "",
+//             quantity: quantity,
+//             pesoTotal: peso * quantity,
+//             category: item.category || "",
+//             tipo: item.tipo || "",
+//             unitPrice: precoUnit.toFixed(2),
+//             totalPrice: (precoUnit * quantity).toFixed(2),
+//             dateAdded: item.dateAdded || new Date().toISOString().split("T")[0],
+//             expiryDate: item.expiryDate || "",
+//           };
+
+//           await set(estoqueRef, novoProduto);
+//         }
+
+//         toast.success("✅ Planilha importada com sucesso!");
+//       } catch (error) {
+//         console.error("Erro ao importar:", error);
+//         toast.error("❌ Erro ao importar planilha.");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     reader.readAsBinaryString(file);
+//   };
+
+//   return (
+//     <div className="my-6">
+//       <label className="font-medium mb-2 block">📥 Importar planilha Excel (.xlsx ou .xls)</label>
+//       <Input
+//         type="file"
+//         accept=".xlsx,.xls"
+//         onChange={handleFileUpload}
+//         disabled={loading}
+//       />
+//       {loading && <p className="text-blue-700 mt-2">Importando dados...</p>}
+//     </div>
+//   );
+// }
+

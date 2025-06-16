@@ -33,7 +33,6 @@ import ChecklistConsultaLimpeza from './pages/maintenance/checkList/Cleaning/Vie
 import ChecklistLimpeza from './pages/maintenance/checkList/Cleaning';
 import Checklist from './pages/maintenance/checkList/Kitchen';
 import ChecklistConsulta from './pages/maintenance/checkList/Kitchen/view_Checklist';
-import FichaTecnica from './pages/cardapio/technical_sheet_register';
 import ConsultaReceitas from './pages/cardapio/technical_sheet_register/view_technical';
 import ConsultaCardapioCafe from './pages/cardapio/breakfast/list_breakfast';
 import CadastroCardapioCafe from './pages/cardapio/breakfast';
@@ -48,6 +47,7 @@ import CardapiosReprovados from './pages/cardapio/reprovados';
 import GerenciadorCardapios from './pages/cardapio/cadapio_primary/gerenciador';
 import CadastroCardapio from './pages/cardapio';
 import ViewCardapio from './pages/cardapio/view';
+import CadastroReceitas from './pages/cardapio/technical_sheet_register';
 
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
@@ -76,51 +76,51 @@ const router = createBrowserRouter([
     errorElement: <PaginaNaoEncontradaGoogleStyle />,
     children: [
       { path: '/', element: <LoginForm /> },
-      { path: '/Home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ...NUTRICIONISTA_ONLY ,...ADMIN_ONLY, ...COZINHA_ONLY, ...ADMIN_TI]}><Home /></ProtectedRoute> },
+      { path: '/Home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES,  ...NUTRICIONISTA_ONLY ,...ADMIN_ONLY, ...COZINHA_ONLY, ...ADMIN_TI]}><Home /></ProtectedRoute> },
       { path: '/Pedidos', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><ListaPedidos /></ProtectedRoute> },
       { path: '/Cadastro', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><Cadastro /></ProtectedRoute> },
-      { path: '/home-retirada', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><RetiradaProdutos /></ProtectedRoute> },
-      { path: '/Retirada', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Retirada /></ProtectedRoute> },
+      { path: '/home-retirada', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}><RetiradaProdutos /></ProtectedRoute> },
+      { path: '/Retirada', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}><Retirada /></ProtectedRoute> },
       { path: '/Editar_Produto/:id', element: <ProtectedRoute allowedTypes={[ ...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><EditarProduto /></ProtectedRoute> },
-      { path: '/Meu_Perfil', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Profile /></ProtectedRoute> },
+      { path: '/Meu_Perfil', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}><Profile /></ProtectedRoute> },
       { path: '/Registro_Usuario', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><Registro /></ProtectedRoute> },
       { path: '/Verificacao_Usuario', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><AdminUsuarios /></ProtectedRoute> },
       { path: '/Visualizar_Fornecedores', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><VisualizarFornecedores /></ProtectedRoute> },
       { path: '/Gestão_Pedido', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><StatusPedidos /></ProtectedRoute> },
       { path: '/editar-fornecedor/:id', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><EditarFornecedor /></ProtectedRoute> },
       { path: '/cadastro-de-almoço', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><CardapioSemana2 /></ProtectedRoute> },
-      { path: '/cardapio', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Cardapio /></ProtectedRoute> },
+      { path: '/cardapio', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}><Cardapio /></ProtectedRoute> },
       { path: '/cadastro-cardápio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><CardapioLanche /></ProtectedRoute> },
-      { path: '/cardápio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><CarregarCardapios /></ProtectedRoute> },
+      { path: '/cardápio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ...COZINHA_ONLY, ADMIN_ONLY, ADMIN_TI]}><CarregarCardapios /></ProtectedRoute> },
       { path: '/cardápio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><ConsultaCardapioLanche /></ProtectedRoute> },
       { path: '/manutencao-home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><HomeMaintenance /></ProtectedRoute> },
       { path: '/manutencao', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><Maintences /></ProtectedRoute> },
-      { path: '/checkList', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Checklist /></ProtectedRoute> },
-      { path: '/consultaCheck', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsulta /></ProtectedRoute> },
-      { path: '/checkLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistLimpeza /></ProtectedRoute> },
-      { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
-      { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><FichaTecnica /></ProtectedRoute> },
-      { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaReceitas /></ProtectedRoute> },
-      { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
-      { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioCafe /></ProtectedRoute> },
-      { path: '/Lista_Compras', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>< BaixoEstoquePage /></ProtectedRoute> },
-      { path: '/ficha-tecnica', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< FichaTecnicaHome /></ProtectedRoute> },
-      { path: '/refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< RefeicoesHome /></ProtectedRoute> },
-      { path: '/cardapios', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< OpcoesCardapios /></ProtectedRoute> },
-      { path: '/cadastro-de-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioAlmoco /></ProtectedRoute> },
-      { path: '/cardapio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioAlmoco /></ProtectedRoute> },
-      { path: '/cadastro-cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
-      { path: '/cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioLanche /></ProtectedRoute> },
-      { path: '/cadastro-refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>< CadastroRefeicoes /></ProtectedRoute> },
+      { path: '/checkList', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}><Checklist /></ProtectedRoute> },
+      { path: '/consultaCheck', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsulta /></ProtectedRoute> },
+      { path: '/checkLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< ChecklistLimpeza /></ProtectedRoute> },
+      { path: '/consultaLimpeza', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< ChecklistConsultaLimpeza /></ProtectedRoute> },
+      { path: '/cadatro-receita', element: <ProtectedRoute allowedTypes={[ALL_TYPES, ADMIN_ONLY,  ...NUTRICIONISTA_ONLY, ...COZINHA_ONLY, ...ADMIN_TI]}><CadastroReceitas /></ProtectedRoute> },
+      { path: '/consultar-receita', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY,  ...NUTRICIONISTA_ONLY, ADMIN_TI]}>< ConsultaReceitas /></ProtectedRoute> },
+      { path: '/cadastro-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI,  ...NUTRICIONISTA_ONLY]}>< CadastroCardapioCafe /></ProtectedRoute> },
+      { path: '/consultar-cardapio-cafe', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI,  ...NUTRICIONISTA_ONLY]}>< ConsultaCardapioCafe /></ProtectedRoute> },
+      { path: '/Lista_Compras', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI,  ...NUTRICIONISTA_ONLY]}>< BaixoEstoquePage /></ProtectedRoute> },
+      { path: '/ficha-tecnica', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI,  ...NUTRICIONISTA_ONLY]}>< FichaTecnicaHome /></ProtectedRoute> },
+      { path: '/refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI,  ...NUTRICIONISTA_ONLY]}>< RefeicoesHome /></ProtectedRoute> },
+      { path: '/cardapios', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< OpcoesCardapios /></ProtectedRoute> },
+      { path: '/cadastro-de-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioAlmoco /></ProtectedRoute> },
+      { path: '/cardapio-almoco', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< ConsultaCardapioAlmoco /></ProtectedRoute> },
+      { path: '/cadastro-cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY,  ...NUTRICIONISTA_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>< CadastroCardapioCafe /></ProtectedRoute> },
+      { path: '/cardapio-lanche', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY,  ...NUTRICIONISTA_ONLY, ADMIN_TI]}>< ConsultaCardapioLanche /></ProtectedRoute> },
+      { path: '/cadastro-refeicoes', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ...NUTRICIONISTA_ONLY, ADMIN_TI]}>< CadastroRefeicoes /></ProtectedRoute> },
 
 
 
       {path: '/Estoque', 
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Estoque...</div>}><Estoque /></Suspense></ProtectedRoute>)},
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Estoque...</div>}><Estoque /></Suspense></ProtectedRoute>)},
       {path: '/Dashboard',
         element: (<ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Dashboard...</div>}> <Relatorio /> </Suspense> </ProtectedRoute>),},
       {path: '/Cadastro_Geral',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}>  <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}> <CadProdutos /></Suspense> </ProtectedRoute> ),},
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>  <Suspense fallback={<div>Carregando Cadastro de Produtos...</div>}> <CadProdutos /></Suspense> </ProtectedRoute> ),},
       {path: '/Entrada_Produtos',
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Entrada de Produtos...</div>}><EntradaProdutos /> </Suspense> </ProtectedRoute>), },
       {path: '/Cadastro_Refeicoes',
@@ -128,7 +128,7 @@ const router = createBrowserRouter([
       {path: '/Dashboard_Refeicoes', 
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Dashboard de Refeições...</div>}>  <RelatorioRef /> </Suspense> </ProtectedRoute>),},
       {path: '/Historico_Retirada',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}><HistoricoRetiradas /> </Suspense> </ProtectedRoute> ),},
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Histórico de Retiradas...</div>}><HistoricoRetiradas /> </Suspense> </ProtectedRoute> ),},
       { path: '/Cadastro_Produtos',
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Novo Pedido...</div>}>  <NovoPedido /> </Suspense> </ProtectedRoute> ),},
       {path: '/Gerenciador_Produtos',
@@ -136,7 +136,7 @@ const router = createBrowserRouter([
       {path: '/Cadastro_Fornecedor',
         element: (<ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}> <Suspense fallback={<div>Carregando Cadastro de Fornecedor...</div>}> <CadastroFornecedores /> </Suspense> </ProtectedRoute> ), },
       {path: '/refeicoes-servidas',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}>
             <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>  <ExibirRefeicoes /> </Suspense></ProtectedRoute>),
       },
       {path: '/Gerenciador-cardapios',
@@ -144,19 +144,19 @@ const router = createBrowserRouter([
             <Suspense fallback={<div>Carregando Cardapios Pendentes...</div>}>  <AprovacaoCardapios /> </Suspense></ProtectedRoute>),
       },
       {path: '/Gerenciador-cardapios-reprovados',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}>
             <Suspense fallback={<div>Carregando Cardapios Reprovados...</div>}>  <CardapiosReprovados /> </Suspense></ProtectedRoute>),
       },
         {path: '/Gerenciador',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}>
             <Suspense fallback={<div>Carregando Cardapios...</div>}>  <GerenciadorCardapios /> </Suspense></ProtectedRoute>),
       },
        {path: '/cadastro-de-cardapio',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}>
             <Suspense fallback={<div>Carregando Cardapios...</div>}>  <CadastroCardapio /> </Suspense></ProtectedRoute>),
       },
              {path: '/consultar-cardapio',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}>
             <Suspense fallback={<div>Carregando Cardapios...</div>}>  <ViewCardapio /> </Suspense></ProtectedRoute>),
       },
 

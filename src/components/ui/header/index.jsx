@@ -45,12 +45,12 @@ export default function Header() {
     { path: "/retirada", label: "Retirada", funcao: ["Admin", "Cozinha"] },
     { path: "/Verificacao_Usuario", label: "Gerenciador de Usuários", funcao: ["Admin"] },
     { path: "/Estoque", label: "Estoque", funcao: ["Admin", "Cozinha"] },
-    { path: "/cardapio", label: "Cardápio / Ficha Técnica / Refeições", funcao: ["Admin", "Cozinha"] },
+    { path: "/cardapio", label: "Cardápio / Ficha Técnica / Refeições", funcao: ["Admin", "Cozinha", "Nutricionista"] },
     { path: "/manutencao-home", label: "Manutenção", funcao: ["Admin", "tecnico"] },
     {
       path: "https://drive.google.com/drive/folders/1QdXTwo0zggBmHP1MBih6IMVCQ-WaoBBa?usp=sharing",
       label: "Documentação",
-      funcao: ["Admin", "T.I"],
+      funcao: ["Admin"],
       external: true,
     },
   ];

@@ -285,6 +285,7 @@ export default function Retirada() {
   const [category, setCategory] = useState("");
   const [tipo, setTipo] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [marca, setMarca] = useState("");
   const [peso, setPeso] = useState("");
   const [retirante, setRetirante] = useState("");
   const [produtos, setProdutos] = useState([]);
@@ -349,57 +350,90 @@ export default function Retirada() {
         String(produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase())
       ); setFilteredProdutos(filtered); }}, [searchTerm, produtos]);
 
-  const handleRetirada = async () => {
-    if (!sku || !name || !category || !tipo || !quantity || !peso || !retirante) {
-      toast.error("Por favor, preencha todos os campos.");
+const handleRetirada = async () => {
+  if (!sku || !name || !marca || !category || !tipo || !quantity || !peso || !retirante) {
+    toast.error("Por favor, preencha todos os campos.");
+    return;
+  }
+
+  const retiradaNum = Number(quantity);
+  if (isNaN(retiradaNum) || retiradaNum <= 0) {
+    toast.error("Quantidade inválida.");
+    return;
+  }
+
+  try {
+    const retiradaRef = ref(db, "Retiradas");
+    await push(retiradaRef, {
+      sku,
+      name,
+      marca,
+      category,
+      tipo,
+      quantity: retiradaNum,
+      peso,
+      retirante,
+      dataPedido: dataSelecionada,
+    });
+
+    const estoqueRef = ref(db, "Estoque");
+    const snapshot = await get(estoqueRef);
+
+    if (!snapshot.exists()) {
+      toast.error("Estoque não encontrado.");
       return;
     }
-    const retiradaNum = Number(quantity);
-    if (isNaN(retiradaNum) || retiradaNum <= 0) {toast.error("Quantidade inválida.");
+
+    const estoqueData = snapshot.val();
+    const produtoEncontrado = Object.entries(estoqueData).find(
+      ([_, produto]) => produto.sku === sku
+    );
+
+    if (!produtoEncontrado) {
+      toast.error("Produto não encontrado no estoque.");
       return;
     }
 
-    try {
-      const retiradaRef = ref(db, "Retiradas");
-      await push(retiradaRef, {sku, name, category, tipo, quantity: retiradaNum, peso, retirante, dataPedido: dataSelecionada });
-      const produtoRef = ref(db, `Estoque/${sku}`);
-      const produtoSnapshot = await get(produtoRef);
-      const produto = produtoSnapshot.val();
+    const [produtoId, produto] = produtoEncontrado;
+    const estoqueAtual = Number(produto.quantity);
+    const novaQuantidade = estoqueAtual - retiradaNum;
 
-      if (produto) {
-        const estoqueAtual = Number(produto.quantity);
-        const novaQuantidade = estoqueAtual - retiradaNum;
+    const produtoRef = ref(db, `Estoque/${produtoId}`);
 
-        if (novaQuantidade <= 0) {
-          await remove(produtoRef);
-          toast.success("Produto removido do estoque devido à quantidade esgotada.");
-          setProdutos((prev) => prev.filter((p) => p.sku !== sku));
-        } else {
-          await update(produtoRef, { quantity: novaQuantidade });
-          toast.success("Retirada registrada e estoque atualizado.");
-          setProdutos((prev) => prev.map((p) => p.sku === sku ? { ...p, quantity: novaQuantidade } : p)
-          );
-        }
-      }
-
-      setSku("");
-      setName("");
-      setCategory("");
-      setTipo("");
-      setQuantity("");
-      setPeso("");
-      setRetirante("");
-      setDataSelecionada(new Date().toISOString().split("T")[0]);
-
-    } catch (error) {
-      toast.error("Erro ao registrar retirada.");
-      console.error(error);
+    if (novaQuantidade <= 0) {
+      await remove(produtoRef);
+      toast.success("Produto removido do estoque devido à quantidade esgotada.");
+      setProdutos((prev) => prev.filter((p) => p.sku !== sku));
+    } else {
+      await update(produtoRef, { quantity: novaQuantidade });
+      toast.success("Retirada registrada e estoque atualizado.");
+      setProdutos((prev) =>
+        prev.map((p) => p.sku === sku ? { ...p, quantity: novaQuantidade } : p)
+      );
     }
-  };
+
+    // Resetar campos
+    setSku("");
+    setName("");
+    setMarca("");
+    setCategory("");
+    setTipo("");
+    setQuantity("");
+    setPeso("");
+    setRetirante("");
+    setDataSelecionada(new Date().toISOString().split("T")[0]);
+
+  } catch (error) {
+    toast.error("Erro ao registrar retirada.");
+    console.error(error);
+  }
+};
+
 
   const handleProdutoSelecionado = (produto) => {
     setSku(produto.sku);
     setName(produto.name);
+    setMarca(produto.marca);
     setCategory(produto.category);
     setTipo(produto.tipo);
     setPeso(produto.peso);
@@ -424,7 +458,8 @@ export default function Retirada() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Retirada de Produtos</h1>
         <div className="grid grid-cols-1 gap-4">
           <Input className="p-3 border rounded-lg cursor-pointer transition-all" type="text" placeholder="SKU" value={sku} readOnly onClick={() => setIsModalOpen(true)} />
-          <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Nome do Produto" value={name} readOnly />
+          <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Nome do Produto" value={name} readOnly />          
+          <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Marca" value={marca} readOnly />
           <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Categoria" value={category} readOnly/>
           <Input className="p-3 border rounded-lg bg-gray-100" type="text" placeholder="Tipo"  value={tipo} readOnly/>
           <Input className="p-3 border rounded-lg"  type="number" min={1} placeholder="Quantidade" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
@@ -460,6 +495,7 @@ export default function Retirada() {
                 <thead>
                   <tr className="bg-gray-100 text-sm md:text-base text-center">
                     <th className="p-2">Nome</th>
+                    <th className="p-2">Marca</th>
                     <th className="p-2">SKU</th>
                     <th className="p-2">Categoria</th>
                     <th className="p-2">Tipo</th>
@@ -476,6 +512,7 @@ export default function Retirada() {
                     return (
                      <tr key={produto.id} className={`border-b hover:bg-gray-50 ${produto.validadeStatus <= 7 ? 'bg-red-100 border border-red-500' : ''}`}>
                         <td className="p-2">{produto.name}</td>
+                        <td className="p-2">{produto.marca}</td>
                         <td className="p-2">{produto.sku}</td>
                         <td className="p-2">{produto.category}</td>
                         <td className="p-2">{produto.tipo}</td>

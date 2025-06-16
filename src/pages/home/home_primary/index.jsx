@@ -94,7 +94,7 @@ export default function Home() {
     { to: "/Verificacao_Usuario", img: "/controle.png", title: "Gerenciador de Usuários", funcao: ["Admin"] },
     { to: "/cardapio", img: "/cardapio.png", title: "Cardápio / Ficha Técnica / Refeições", funcao: ["Admin", "Nutricionista", "Cozinha"] },
     { to: "/manutencao-home", img: "/manuntenção.png", title: "Manutenção", funcao: ["Admin"] },
-    { to: "https://drive.google.com/drive/folders/1QdXTwo0zggBmHP1MBih6IMVCQ-WaoBBa?usp=sharing", img: "/documentacao.png", title: "Documentação", funcao: ["Admin", "", ""], external: true },
+    { to: "https://drive.google.com/drive/folders/1QdXTwo0zggBmHP1MBih6IMVCQ-WaoBBa?usp=sharing", img: "/documentacao.png", title: "Documentação", funcao: ["Admin"], external: true },
   ];
 
   const cardsPermitidos = cards.filter((card) => card.funcao.includes(usuario.funcao));
