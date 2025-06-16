@@ -76,6 +76,7 @@ export default function Registro() {
             <option value="">Selecione a função</option>
             <option value="Admin">Admin</option>
             <option value="Cozinha">Cozinha</option>
+            <option value="Nutri">Nutricionista</option>
             <option value="T.I">T.I</option>
           </select>
           {/* SENHA */}

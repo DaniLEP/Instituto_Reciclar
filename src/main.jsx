@@ -47,9 +47,11 @@ import AprovacaoCardapios from './pages/cardapio/Aprovacao';
 import CardapiosReprovados from './pages/cardapio/reprovados';
 import GerenciadorCardapios from './pages/cardapio/cadapio_primary/gerenciador';
 import CadastroCardapio from './pages/cardapio';
+import ViewCardapio from './pages/cardapio/view';
 
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
+const NUTRICIONISTA_ONLY = [UserType.NUTRICIONISTA];
 const ADMIN_ONLY = [UserType.ADMIN];
 const ALL_TYPES = [UserType.ADMIN, UserType.USER, UserType.TI];
 const ADMIN_TI = [UserType.ADMIN, UserType.TI];
@@ -74,7 +76,7 @@ const router = createBrowserRouter([
     errorElement: <PaginaNaoEncontradaGoogleStyle />,
     children: [
       { path: '/', element: <LoginForm /> },
-      { path: '/Home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><Home /></ProtectedRoute> },
+      { path: '/Home', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ...NUTRICIONISTA_ONLY ,...ADMIN_ONLY, ...COZINHA_ONLY, ...ADMIN_TI]}><Home /></ProtectedRoute> },
       { path: '/Pedidos', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><ListaPedidos /></ProtectedRoute> },
       { path: '/Cadastro', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}><Cadastro /></ProtectedRoute> },
       { path: '/home-retirada', element: <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, COZINHA_ONLY, ADMIN_TI]}><RetiradaProdutos /></ProtectedRoute> },
@@ -149,10 +151,20 @@ const router = createBrowserRouter([
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
             <Suspense fallback={<div>Carregando Cardapios...</div>}>  <GerenciadorCardapios /> </Suspense></ProtectedRoute>),
       },
-       {path: '/carada',
+       {path: '/cadastro-de-cardapio',
         element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
             <Suspense fallback={<div>Carregando Cardapios...</div>}>  <CadastroCardapio /> </Suspense></ProtectedRoute>),
       },
+             {path: '/consultar-cardapio',
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+            <Suspense fallback={<div>Carregando Cardapios...</div>}>  <ViewCardapio /> </Suspense></ProtectedRoute>),
+      },
+
+
+
+
+
+  
     ],
   },
 ]);

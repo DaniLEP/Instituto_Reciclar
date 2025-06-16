@@ -104,7 +104,7 @@ useEffect(() => {
         transition={{ duration: 0.5 }}
         className="text-center mb-8"
       >
-        <Title className="text-4xl font-extrabold text-white">Consulta de Cardápio</Title>
+        <Title className="text-4xl font-extrabold text-white">Consulta de Cardápio Almoço</Title>
         <p className="text-gray-300 mt-2">Filtre por data e visualize os cardápios cadastrados</p>
       </motion.div>
 

@@ -52,7 +52,7 @@ const CadastroCardapioLanche = () => {
 
     const dados = {
       dataCadastro: new Date().toISOString(),
-      tipo: "Lanche da Tarde",
+      tipo: "LanchedaTarde",
       periodo: {
         inicio: dadosNutri[0].dataInicio,
         fim: dadosNutri[4].dataFim

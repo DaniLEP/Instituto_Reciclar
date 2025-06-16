@@ -10,39 +10,20 @@ export default function OpcoesCardapios() {
           Cardápio
         </h1>
         <p className="text-lg font-semibold text-white text-center mb-8">
-          Cadastro / Consulta
+          Cadastro / Consulta / Gerenciador 
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        
           <Card
-            link="/cadastro-cardapio-cafe"
-            imgSrc="/coffe.png"
-            title="Cadastrar Café da Manhã"
-          />
-          <Card
-            link="/consultar-cardapio-cafe"
+            link="/consultar-cardapio"
             imgSrc="/cafe.png"
-            title="Consultar Café da Manhã"
+            title="Consultar de Cardápios"
           />
           <Card
-            link="/cadastro-de-almoco"
+            link="/cadastro-de-cardapio"
             imgSrc="/almoço.png"
-            title="Cadastrar Almoço"
-          />
-          <Card
-            link="/cardapio-almoco"
-            imgSrc="/list-almoço.png"
-            title="Consultar Almoço"
-          />
-          <Card
-            link="/cadastro-cardapio-lanche"
-            imgSrc="/cafe-da-manha.png"
-            title="Cadastrar Lanche da Tarde"
-          />
-          <Card
-            link="/cardapio-lanche"
-            imgSrc="/lanchinho.png"
-            title="Consultar Lanche da Tarde"
+            title="Cadastrar Cardápios"
           />
             <Card
             link="/Gerenciador"
