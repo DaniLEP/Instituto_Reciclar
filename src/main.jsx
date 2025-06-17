@@ -140,7 +140,7 @@ const router = createBrowserRouter([
             <Suspense fallback={<div>Carregando Refeições Servidas...</div>}>  <ExibirRefeicoes /> </Suspense></ProtectedRoute>),
       },
       {path: '/Gerenciador-cardapios',
-        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI]}>
+        element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ...COZINHA_ONLY, ADMIN_TI]}>
             <Suspense fallback={<div>Carregando Cardapios Pendentes...</div>}>  <AprovacaoCardapios /> </Suspense></ProtectedRoute>),
       },
       {path: '/Gerenciador-cardapios-reprovados',
