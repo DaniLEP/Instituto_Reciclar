@@ -1,5 +1,5 @@
-import { CadastroProjeto } from "@/components/CadastroProjeto";
-import { ListaProjetos } from "@/components/ListaProjetos";
+import { CadastroProjeto } from "../../components/cadastroProjeto/index";
+import { ListaProjetos } from "../../components/listaProjetos/index";
 
 export default function Caixa() {
   return (
