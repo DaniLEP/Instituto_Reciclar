@@ -39,7 +39,6 @@ export default function NovoPedido() {
   const [showModalFornecedor, setShowModalFornecedor] = useState(false);
   const [showModalProduto, setShowModalProduto] = useState(false);
   const [itensPedido, setItensPedido] = useState([]);
-
   const navigate = useNavigate();
 
   useEffect(() => {

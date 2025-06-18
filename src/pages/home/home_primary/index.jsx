@@ -72,6 +72,7 @@ export default function Home() {
 
   const cards = [
     { to: "/Pedidos", img: "/pedidos.png", title: "Pedidos/Compras", funcao: ["Admin"] },
+    { to: "/sistema-caixa", img: "/caixa.png", title: "Saldo", funcao: ["Admin"] },
     { to: "/Cadastro", img: "/item.png", title: "Cadastros", funcao: ["Admin"] },
     { to: "/Estoque", img: "/estoque.png", title: "Estoque", funcao: ["Admin", "Cozinha"] },
     { to: "/Dashboard", img: "/dashborad.png", title: "Relatórios", funcao: ["Admin"] },

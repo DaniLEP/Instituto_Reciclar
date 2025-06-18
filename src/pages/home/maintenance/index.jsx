@@ -5,8 +5,8 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 export default function HomeMaintenance() {
   const navigate = useNavigate();
   const goToChecklist = () => navigate('/checkList');
-  const goToCheckLimpeza = () => navigate('/checkLimpeza');
-    const goToCheckLimpezaConsulta = () => navigate('/consultaLimpeza');
+  // const goToCheckLimpeza = () => navigate('/checkLimpeza');
+  //   const goToCheckLimpezaConsulta = () => navigate('/consultaLimpeza');
   const goToCheckConsulta = () => navigate('/consultaCheck');
   const goToMaintences = () => navigate('/manutencao');
 
@@ -23,20 +23,20 @@ export default function HomeMaintenance() {
               <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">CheckList Diario Cozinha</h2>
             </div>
             {/* Card 2 - CheckList Diario*/}
-          <div onClick={goToCheckLimpeza} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+          {/* <div onClick={goToCheckLimpeza} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
               <img src="/CheckLimpeza.png" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="CheckList"/>
               <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">CheckList Limpeza</h2>
-            </div>
+            </div> */}
 
             {/* Card 3 - Consulta de CheckList */}
              <div onClick={goToCheckConsulta} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
               <img src="/Consulta.png" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="CheckList"/>
               <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">Consulta de CheckList Cozinha</h2>
             </div>
-                  <div onClick={goToCheckLimpezaConsulta} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
+                  {/* <div onClick={goToCheckLimpezaConsulta} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">
               <img src="/checkListLimpeza.png" className="mx-auto h-[100px] md:h-[120px] lg:h-[140px]" alt="CheckList"/>
               <h2 className="text-black text-xl md:text-2xl lg:text-3xl mt-4">CheckList Limpeza</h2>
-            </div>
+            </div> */}
 
               {/* Card 4 - Manutenções */}
               <div onClick={goToMaintences} className="card bg-white rounded-lg shadow-lg p-6 cursor-pointer transform hover:scale-105 transition-transform">

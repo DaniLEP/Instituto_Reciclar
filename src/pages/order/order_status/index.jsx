@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo  } from "react";
+import React,  { useState, useEffect, useMemo  } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ref, get, update, push, set } from "firebase/database";
@@ -9,10 +9,22 @@ import { Button } from "@/components/ui/Button/button";
 import { Table } from "@/components/ui/table/table";
 import { db, dbRealtime, onValue, auth } from "../../../../firebase"; 
 import jsPDF from "jspdf";
+import InputValorCaixa from "../../../components/valorCaixa/index";
+
 
 export default function StatusPedidos() {
   const [pedidos, setPedidos] = useState([]);
-  const [pedidoSelecionado, setPedidoSelecionado] = useState({numeroPedido: "", recebido: "", status: "", fornecedor: {}, periodoInicio: null, periodoFim: null, motivoCancelamento: "", produtos: [],});
+  const [pedidoSelecionado, setPedidoSelecionado] = useState({
+    numeroPedido: "",
+    recebido: "",
+    status: "",
+    fornecedor: {},
+    periodoInicio: null,
+    desconto: 0,
+    periodoFim: null,
+    motivoCancelamento: "",
+    produtos: [],
+  });
   const [modalAberto, setModalAberto] = useState(false);
   const [modalAbertoCancelamento, setModalAbertoCancelamento] = useState(false);
   const [motivoCancelamento, setMotivoCancelamento] = useState("");
@@ -33,78 +45,185 @@ export default function StatusPedidos() {
   const [editandoDesconto, setEditandoDesconto] = useState(false);
   const [salvandoDesconto, setSalvandoDesconto] = useState(false);
   const [recebido, setRecebido] = useState("");
+  const [valorCaixaDigitado, setValorCaixaDigitado] = useState("");
+  const [sobras, setSobras] = useState(0);
 
-useEffect(() => {
-  if (pedidoSelecionado) {
-    setDesconto(pedidoSelecionado.desconto || 0);
-  }
-}, [pedidoSelecionado]);
+  const navigate = useNavigate();
 
+  // Atualiza desconto quando pedidoSelecionado mudar
+  useEffect(() => {
+    if (pedidoSelecionado) {
+      setDesconto(pedidoSelecionado.desconto || 0);
+    }
+  }, [pedidoSelecionado]);
+
+  // Carrega pedidos do Firebase
   useEffect(() => {
     const carregarPedidos = async () => {
       try {
         const pedidosRef = ref(dbRealtime, "novosPedidos");
         const pedidosSnapshot = await get(pedidosRef);
         if (pedidosSnapshot.exists()) {
-          const pedidos = Object.entries(pedidosSnapshot.val()).map(([id, pedido]) => ({ id, ...pedido })); setPedidos(pedidos);setPedidosFiltrados(pedidos);} 
-          else {toast.error("Nenhum pedido encontrado!");}
-      } catch (error) {console.error("Erro ao carregar pedidos:", error); toast.error("Erro ao carregar pedidos");}
-    }; carregarPedidos();}, []);
-  
+          const pedidosDados = Object.entries(pedidosSnapshot.val()).map(
+            ([id, pedido]) => ({ id, ...pedido })
+          );
+          setPedidos(pedidosDados);
+          setPedidosFiltrados(pedidosDados);
+        } else {
+          toast.error("Nenhum pedido encontrado!");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar pedidos:", error);
+        toast.error("Erro ao carregar pedidos");
+      }
+    };
+    carregarPedidos();
+  }, []);
+
+  // Carrega produtos disponíveis quando modal de seleção é aberto
   useEffect(() => {
-    const carregarProdutos = async () => {
+    if (!modalSelecionarProduto) {
+      setProdutosDisponiveis([]);
+      return;
+    }
+
+    const carregarProdutos = () => {
       try {
         const produtosRef = ref(dbRealtime, "EntradaProdutos");
         onValue(produtosRef, (snapshot) => {
           const produtos = snapshot.val();
-          const produtosList = produtos ? Object.keys(produtos).map(key => ({id: key,  ...produtos[key]})) : [];
-          setProdutosDisponiveis(produtosList);});
-      } catch (error) {toast.error("Erro ao carregar produtos");}
-    }; if (modalSelecionarProduto) {
-      carregarProdutos();
-    } else {setProdutosDisponiveis([]); }  return () => {};
+          const produtosList = produtos
+            ? Object.keys(produtos).map((key) => ({ id: key, ...produtos[key] }))
+            : [];
+          setProdutosDisponiveis(produtosList);
+        });
+      } catch (error) {
+        toast.error("Erro ao carregar produtos");
+      }
+    };
+
+    carregarProdutos();
   }, [modalSelecionarProduto]);
 
-  const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscal, chaveAcesso) => {
+  // Calcula total do pedido somando totalPrice de todos os produtos
+  const totalPedido = useMemo(() => {
+    return pedidoSelecionado?.produtos?.reduce(
+      (acc, item) => acc + parseFloat(item.totalPrice || 0),
+      0
+    ) || 0;
+  }, [pedidoSelecionado]);
+
+  // Total com desconto aplicado
+  const totalComDesconto = useMemo(() => {
+    const valor = totalPedido - parseFloat(desconto || 0);
+    return valor > 0 ? valor.toFixed(2) : "0.00";
+  }, [totalPedido, desconto]);
+
+  // Atualiza sobras sempre que valorCaixaDigitado ou totalPedido mudam
+  useEffect(() => {
+    const caixa = parseFloat(valorCaixaDigitado) || 0;
+    const total = parseFloat(totalPedido) || 0;
+    setSobras(caixa - total);
+  }, [valorCaixaDigitado, totalPedido]);
+
+  // Salva valor do caixa no banco
+  const salvarValorCaixaNoBanco = async (valor) => {
+    if (!pedidoSelecionado?.id) return;
+    try {
+      const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`);
+      await update(pedidoRef, { valorCaixa: parseFloat(valor) || 0 });
+      toast.success("Valor do caixa salvo com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar valor do caixa:", error);
+      toast.error("Erro ao salvar valor do caixa");
+    }
+  };
+
+  // Atualiza status do pedido no banco e localmente
+  const handleAtualizarStatus = (
+    pedidoId,
+    novoStatus,
+    motivo,
+    numeroNotaFiscalParam,
+    chaveAcessoParam
+  ) => {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
     const dataCadastro = new Date().toISOString();
-    const updates = {status: novoStatus, ...(motivo && { motivoCancelamento: motivo }), ...(numeroNotaFiscal && { numeroNotaFiscal }), ...(recebido && {recebido}) , ...(chaveAcesso && { chaveAcesso }), dataCadastro};
+    const updates = {
+      status: novoStatus,
+      ...(motivo && { motivoCancelamento: motivo }),
+      ...(numeroNotaFiscalParam && { numeroNotaFiscal: numeroNotaFiscalParam }),
+      ...(recebido && { recebido }),
+      ...(chaveAcessoParam && { chaveAcesso: chaveAcessoParam }),
+      dataCadastro,
+    };
     update(pedidoRef, updates)
       .then(() => {
         toast.success(`Status atualizado para ${novoStatus}`);
-        // Atualiza o estado local imediatamente
         setPedidos((prev) =>
-          prev.map((p) => p.id === pedidoId ? { ...p, ...updates } : p));
-        if (novoStatus === "Aprovado") {enviarParaEstoque(pedidoId);}})
-      .catch(() => {toast.error("Erro ao atualizar status");});
+          prev.map((p) => (p.id === pedidoId ? { ...p, ...updates } : p))
+        );
+        if (novoStatus === "Aprovado") {
+          enviarParaEstoque(pedidoId);
+        }
+      })
+      .catch(() => {
+        toast.error("Erro ao atualizar status");
+      });
   };
-  
+
+  // Envia produtos do pedido para estoque
   const enviarParaEstoque = async (pedidoId) => {
     try {
       const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
       const pedidoSnapshot = await get(pedidoRef);
-  
-      if (pedidoSnapshot.exists()) {
-        const pedido = pedidoSnapshot.val();
-        const estoqueRef = ref(dbRealtime, "Estoque");
-        const dataCadastro = new Date().toISOString().split("T")[0];
-        const fornecedor = pedido.fornecedor;
-  
-        const produtoPromises = pedido.produtos.map(async (produto) => {
-          const result = await push(estoqueRef, {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, projeto: produto.projeto || "Indefido", category: produto.category || "Indefinido", tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido",
-            peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido", supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || ""});console.log("Produto salvo com ID:", result.key);});
-        await Promise.all(produtoPromises);
-        console.log("Todos os produtos foram enviados para o estoque.");} 
-      else {console.warn("Pedido não encontrado!");}} 
-      catch (error) {console.error("Erro ao enviar produtos para o estoque:", error);
-        toast.error("Erro ao enviar produtos para o estoque");
+
+      if (!pedidoSnapshot.exists()) {
+        console.warn("Pedido não encontrado!");
+        return;
       }
+
+      const pedido = pedidoSnapshot.val();
+      const estoqueRef = ref(dbRealtime, "Estoque");
+      const dataCadastro = new Date().toISOString().split("T")[0];
+      const fornecedor = pedido.fornecedor;
+
+      const produtoPromises = pedido.produtos.map(async (produto) => {
+        const dataProduto = {
+          sku: produto.sku || "Indefinido",
+          name: produto.name || "Indefinido",
+          quantity: produto.quantidade || 0,
+          projeto: produto.projeto || "Indefinido",
+          category: produto.category || "Indefinido",
+          tipo: produto.tipo || "Indefinido",
+          marca: produto.marca || "Indefinido",
+          peso: produto.peso || "Indefinido",
+          unitmeasure: produto.unit || "Indefinido",
+          supplier: fornecedor?.razaoSocial || "Indefinido",
+          dateAdded: dataCadastro,
+          unitPrice: produto.unitPrice || 0,
+          totalPrice: produto.totalPrice || 0,
+          expiryDate: produto.expiryDate || "",
+        };
+        const result = await push(estoqueRef, dataProduto);
+        console.log("Produto salvo com ID:", result.key);
+      });
+
+      await Promise.all(produtoPromises);
+      console.log("Todos os produtos foram enviados para o estoque.");
+    } catch (error) {
+      console.error("Erro ao enviar produtos para o estoque:", error);
+      toast.error("Erro ao enviar produtos para o estoque");
+    }
   };
 
+  // Formata data para dd/mm/yyyy
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
-    let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
+    let date =
+      typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
     if (isNaN(date.getTime())) return "Data inválida";
+    // Ajusta fuso horário local
     const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
     const day = String(localDate.getDate()).padStart(2, "0");
     const month = String(localDate.getMonth() + 1).padStart(2, "0");
@@ -112,38 +231,72 @@ useEffect(() => {
     return `${day}/${month}/${year}`;
   };
 
+  // Exporta pedido selecionado para Excel
   const exportToExcel = () => {
-    if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {toast.error("Nenhum produto para exportar!"); return;}
+    if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {
+      toast.error("Nenhum produto para exportar!");
+      return;
+    }
     const ws = XLSX.utils.json_to_sheet(
-    pedidoSelecionado.produtos.map((produto) => ({Projeto: produto.projeto, SKU: produto.sku, Produto: produto.name, Marca: produto.marca, Peso: produto.peso, UnidadeMedida: produto.unit, Quantidade: `${produto.quantidade} unidades`, Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.obersavacao,})));
+      pedidoSelecionado.produtos.map((produto) => ({
+        Projeto: produto.projeto,
+        SKU: produto.sku,
+        Produto: produto.name,
+        Marca: produto.marca,
+        Peso: produto.peso,
+        UnidadeMedida: produto.unit,
+        Quantidade: `${produto.quantidade} unidades`,
+        Tipo: produto.tipo,
+        ValorUnitario: produto.unitPrice,
+        ValorTotal: produto.totalPrice,
+        Observação: produto.observacao || "", // corrigido typo observacao
+      }))
+    );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Produtos");
     XLSX.writeFile(wb, `Pedido_${pedidoSelecionado.numeroPedido}.xlsx`);
   };
 
+  // Edita um campo do produto na lista do pedido selecionado
   const handleEditar = (index, campo, valor) => {
-    const novosProdutos = [...pedidoSelecionado.produtos];
-    novosProdutos[index][campo] = valor; // Atualiza o totalPrice automaticamente
+    const novosProdutos = [...(pedidoSelecionado.produtos || [])];
+    novosProdutos[index][campo] = valor;
     const quantidade = parseFloat(novosProdutos[index].quantidade) || 0;
     const unitPrice = parseFloat(novosProdutos[index].unitPrice) || 0;
     novosProdutos[index].totalPrice = (quantidade * unitPrice).toFixed(2);
-    setPedidoSelecionado((prev) => ({...prev, produtos: novosProdutos,}));
+    setPedidoSelecionado((prev) => ({ ...prev, produtos: novosProdutos }));
   };
-  
-  const handleSalvarEdicao = () => {if (!pedidoSelecionado) {toast.error("Nenhum pedido selecionado para salvar!"); return;}  
+
+  // Salva edição dos produtos no Firebase
+  const handleSalvarEdicao = () => {
+    if (!pedidoSelecionado) {
+      toast.error("Nenhum pedido selecionado para salvar!");
+      return;
+    }
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`);
     update(pedidoRef, { produtos: pedidoSelecionado.produtos })
       .then(() => {
         toast.success("Pedido atualizado com sucesso!");
         setModalAbertoEdit(false);
-        setPedidos((prev) => prev.map((pedido) => pedido.id === pedidoSelecionado.id ? { ...pedido, produtos: pedidoSelecionado.produtos } : pedido));
-        setPedidoSelecionado((prev) => ({...prev, produtos: pedidoSelecionado.produtos})); })
-      .catch(() => {toast.error("Erro ao salvar edição!");});
+        setPedidos((prev) =>
+          prev.map((pedido) =>
+            pedido.id === pedidoSelecionado.id
+              ? { ...pedido, produtos: pedidoSelecionado.produtos }
+              : pedido
+          )
+        );
+        setPedidoSelecionado((prev) => ({ ...prev, produtos: pedidoSelecionado.produtos }));
+      })
+      .catch(() => {
+        toast.error("Erro ao salvar edição!");
+      });
   };
-  
-  const handleDelete = async (index) => {if (!pedidoSelecionado || !pedidoSelecionado.produtos) return;
+
+  // Remove produto do pedido e atualiza Firebase
+  const handleDelete = async (index) => {
+    if (!pedidoSelecionado || !pedidoSelecionado.produtos) return;
     const produtosAtualizados = pedidoSelecionado.produtos.filter((_, i) => i !== index);
-    setPedidoSelecionado((prev) => ({...prev, produtos: produtosAtualizados}));
+    setPedidoSelecionado((prev) => ({ ...prev, produtos: produtosAtualizados }));
     try {
       const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}/produtos`);
       await set(pedidoRef, produtosAtualizados);
@@ -154,114 +307,168 @@ useEffect(() => {
     }
   };
 
+  // Adiciona produto selecionado ao pedido
   const handleSelecionarProduto = (produtoSelecionado) => {
     const novoProduto = {
-      ...produtoSelecionado, quantidade: 1, unitPrice: parseFloat(produtoSelecionado.unitPrice || 0), totalPrice: parseFloat(produtoSelecionado.unitPrice || 0).toFixed(2), observacoes: "",};
-    setPedidoSelecionado((prev) => ({...prev,produtos: [...(prev.produtos || []), novoProduto],}));
-  }; 
+      ...produtoSelecionado,
+      quantidade: 1,
+      unitPrice: parseFloat(produtoSelecionado.unitPrice || 0),
+      totalPrice: parseFloat(produtoSelecionado.unitPrice || 0).toFixed(2),
+      observacao: "",
+    };
+    setPedidoSelecionado((prev) => ({
+      ...prev,
+      produtos: [...(prev.produtos || []), novoProduto],
+    }));
+  };
 
-  const navigate = useNavigate(); 
-  
-  const produtosFiltrados = produtosDisponiveis.filter((produto) =>
-    produto.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    produto.sku?.toLowerCase().includes(searchTerm.toLowerCase())
-  );  
-  const handleLimparFiltros = () => { setProjeto(""), setNumeroPedidoFornecedor(""); setDataInicio(""); setDataFim(""); setStatusFiltro(""); setPedidosFiltrados(pedidos); setNumeroNotaFiscal("");};
+  // Filtra produtos disponíveis conforme termo de busca
+  const produtosFiltrados = produtosDisponiveis.filter(
+    (produto) =>
+      produto.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      produto.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Limpa filtros e reseta pedidos filtrados
+  const handleLimparFiltros = () => {
+    setProjeto("");
+    setNumeroPedidoFornecedor("");
+    setDataInicio("");
+    setDataFim("");
+    setStatusFiltro("");
+    setPedidosFiltrados(pedidos);
+    setNumeroNotaFiscal("");
+  };
+
+  // Aplica filtros aos pedidos
   const handleFiltro = () => {
     let filteredPedidos = pedidos;
     if (numeroPedidoFornecedor) {
       const termo = numeroPedidoFornecedor.toLowerCase();
-      filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroPedido?.toLowerCase().includes(termo) || pedido.fornecedor?.razaoSocial?.toLowerCase().includes(termo));} 
-    if (dataInicio) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio));} 
-    if (dataFim) {filteredPedidos = filteredPedidos.filter((pedido) => new Date(pedido.dataPedido) <= new Date(dataFim));}
-    if (statusFiltro) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);}
-    if (projeto) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === projeto);}
-    if (numeroNotaFiscal) {filteredPedidos = filteredPedidos.filter((pedido) => pedido.numeroNotaFiscal && pedido.numeroNotaFiscal.toString().includes(numeroNotaFiscal.toString()));}
+      filteredPedidos = filteredPedidos.filter(
+        (pedido) =>
+          pedido.numeroPedido?.toLowerCase().includes(termo) ||
+          pedido.fornecedor?.razaoSocial?.toLowerCase().includes(termo)
+      );
+    }
+    if (dataInicio) {
+      filteredPedidos = filteredPedidos.filter(
+        (pedido) => new Date(pedido.dataPedido) >= new Date(dataInicio)
+      );
+    }
+    if (dataFim) {
+      filteredPedidos = filteredPedidos.filter(
+        (pedido) => new Date(pedido.dataPedido) <= new Date(dataFim)
+      );
+    }
+    if (statusFiltro) {
+      filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === statusFiltro);
+    }
+    if (projeto) {
+      filteredPedidos = filteredPedidos.filter((pedido) => pedido.status === projeto);
+    }
+    if (numeroNotaFiscal) {
+      filteredPedidos = filteredPedidos.filter(
+        (pedido) =>
+          pedido.numeroNotaFiscal &&
+          pedido.numeroNotaFiscal.toString().includes(numeroNotaFiscal.toString())
+      );
+    }
     setPedidosFiltrados(filteredPedidos);
   };
 
+  // Navega para página anterior
   const handleVoltar = () => navigate(-1);
 
+  // Exporta pedidos filtrados para Excel
   const exportarConsultaParaExcel = () => {
-    if (pedidosFiltrados.length === 0) {toast.error("Nenhum pedido filtrado para exportar!"); return;}
-    const dataParaExportar = pedidosFiltrados.map((pedido) => ({Número: pedido.numeroPedido, Data: formatDate(pedido.dataPedido), Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado", Categoria: pedido.category || "Não informado", Status: pedido.status, MotivoCancelamento: pedido.motivoCancelamento || ""}));
+    if (pedidosFiltrados.length === 0) {
+      toast.error("Nenhum pedido filtrado para exportar!");
+      return;
+    }
+    const dataParaExportar = pedidosFiltrados.map((pedido) => ({
+      Número: pedido.numeroPedido,
+      Data: formatDate(pedido.dataPedido),
+      Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado",
+      Categoria: pedido.category || "Não informado",
+      Status: pedido.status,
+      MotivoCancelamento: pedido.motivoCancelamento || "",
+    }));
     const ws = XLSX.utils.json_to_sheet(dataParaExportar);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Status dos Pedidos");
     XLSX.writeFile(wb, "Pedidos_Filtrados.xlsx");
   };
 
-const exportToPDF = () => {
-  if (!pedidoSelecionado) {
-    console.error("Pedido não selecionado.");
-    return;
-  }
+  // Exporta pedido selecionado para PDF
+  const exportToPDF = () => {
+    if (!pedidoSelecionado) {
+      console.error("Pedido não selecionado.");
+      return;
+    }
 
-  const doc = new jsPDF();
-  doc.setFontSize(12);
-  doc.setFont("Helvetica");
-  doc.setFontSize(10);
-  doc.text('Projeto Custeador: ' + (pedidoSelecionado.projeto || ""), 20, 10);
-  doc.text('Fornecedor: ' + (pedidoSelecionado.fornecedor?.razaoSocial || ""), 20, 20);
-  doc.text('Data do Pedido: ' + (pedidoSelecionado.dataPedido || ""), 20, 30);
+    const doc = new jsPDF();
+    doc.setFont("Helvetica");
+    doc.setFontSize(10);
+    doc.text("Projeto Custeador: " + (pedidoSelecionado.projeto || ""), 20, 10);
+    doc.text("Fornecedor: " + (pedidoSelecionado.fornecedor?.razaoSocial || ""), 20, 20);
+    doc.text("Data do Pedido: " + (pedidoSelecionado.dataPedido || ""), 20, 30);
 
-  const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
-  doc.text(periodo, 20, 40);
+    const periodo = `Período que irá suprir: ${formatDate(
+      pedidoSelecionado.periodoInicio
+    )} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
+    doc.text(periodo, 20, 40);
 
-  let y = 50;
-  const col1X = 20;
-  const col2X = 60;
-  const col3X = 80;
-  const col4X = 110;
-  const col5X = 140;
+    let y = 50;
+    const col1X = 20;
+    const col2X = 60;
+    const col3X = 80;
+    const col4X = 110;
+    const col5X = 140;
 
-  doc.text('Produto', col1X, y);
-  doc.text('Marca', col2X, y);
-  doc.text('Unidade', col3X, y);
-  doc.text('Quantidade', col4X, y);
-  doc.text('Observação', col5X, y);
+    doc.text("Produto", col1X, y);
+    doc.text("Marca", col2X, y);
+    doc.text("Unidade", col3X, y);
+    doc.text("Quantidade", col4X, y);
+    doc.text("Observação", col5X, y);
 
-  y += 5;
-  doc.line(col1X, y, col5X + 40, y);
-  (pedidoSelecionado.produtos || []).forEach((produto) => {y += 10;
-    doc.text(String(produto.name || ""), col1X, y);
-    doc.text(String(produto.marca || ""), col2X, y);
-    doc.text(String(produto.unit || ""), col3X, y);
-    doc.text(String(produto.quantidade || "0"), col4X, y);
-    doc.text(String(produto.observacao || "Nenhuma observação"), col5X, y);
     y += 5;
     doc.line(col1X, y, col5X + 40, y);
-    if (y > 250) {
-      doc.addPage();
-      y = 20;
+
+    (pedidoSelecionado.produtos || []).forEach((produto) => {
+      y += 10;
+      doc.text(String(produto.name || ""), col1X, y);
+      doc.text(String(produto.marca || ""), col2X, y);
+      doc.text(String(produto.unit || ""), col3X, y);
+      doc.text(String(produto.quantidade || "0"), col4X, y);
+      doc.text(String(produto.observacao || "Nenhuma observação"), col5X, y);
+      y += 5;
+      doc.line(col1X, y, col5X + 40, y);
+      if (y > 250) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    doc.save("pedido.pdf");
+  };
+
+  // Salva desconto no pedido no Firebase
+  const salvarDescontoNoPedido = async () => {
+    if (!pedidoSelecionado?.id) return;
+    setSalvandoDesconto(true);
+    try {
+      await update(ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`), { desconto });
+      setEditandoDesconto(false);
+      toast.success("Desconto salvo com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar desconto:", error);
+      toast.error("Erro ao salvar desconto");
+    } finally {
+      setSalvandoDesconto(false);
     }
-  });
-
-  doc.save('pedido.pdf');
-};
-
-
-  const totalPedido = useMemo(() => {
-    return pedidoSelecionado?.produtos?.reduce((acc, item) => acc + parseFloat(item.totalPrice || 0), 0);
-  }, [pedidoSelecionado]);
-
-  const totalComDesconto = useMemo(() => {
-    const valor = totalPedido - parseFloat(desconto || 0);
-    return valor > 0 ? valor.toFixed(2) : "0.00";
-  }, [totalPedido, desconto]);
-
-;
-
-const salvarDescontoNoPedido = async () => {
-  if (!pedidoSelecionado?.id) return;
-  setSalvandoDesconto(true);
-  try {
-    await update(ref(db, `novosPedidos/${pedidoSelecionado.id}`), { desconto, });
-    setEditandoDesconto(false);
-  } catch (error) {console.error("Erro ao salvar desconto:", error);
-  } finally {setSalvandoDesconto(false);}
-};
-  
+  };
+    
 return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
@@ -416,6 +623,26 @@ return (
                 <span className="text-blue-600"> R$ {(totalPedido - desconto).toFixed(2)}</span>
               </div>
             </div>
+
+
+
+
+          <InputValorCaixa
+        valorInicial={valorCaixaDigitado}
+        onSalvar={(valor) => setValorCaixaDigitado(valor)}
+      />
+
+      {/* Campo que mostra a sobra */}
+      <div className="mb-4">
+        <label className="block font-semibold mb-1">Sobra do Caixa:</label>
+        <input
+          type="number"
+          value={sobras.toFixed(2)}
+          readOnly
+          className="border border-gray-300 rounded px-3 py-1 w-48 bg-gray-100 cursor-not-allowed"
+        />
+      </div>
+
 
             {/* Botões de ação */}
             <div className="flex flex-wrap gap-2 mb-4">

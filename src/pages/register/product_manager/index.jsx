@@ -46,7 +46,8 @@ function Gerenciador() {
   }, []);
 
   const handleSearchChange = debounce((value) => {setSearchTerm(value);}, 500);
-  const filteredProducts = products.filter((product) => {
+const filteredProducts = products
+  .filter((product) => {
     return (
       (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -54,7 +55,13 @@ function Gerenciador() {
       (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.tipo && product.tipo.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+  })
+  .sort((a, b) => {
+    if (!a.name) return 1;
+    if (!b.name) return -1;
+    return a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' });
   });
+
 
   const openModal = (product) => {setEditingProduct(product);setIsModalOpen(true);};
   const closeModal = () => {setEditingProduct(null); setIsModalOpen(false);};
@@ -85,6 +92,7 @@ function Gerenciador() {
               <tr>
                 <th className="px-4 py-3">SKU</th>
                 <th className="px-4 py-3">Produto</th>
+                <th className="px-4 py-3">Marca</th>
                 <th className="px-4 py-3">Fornecedor</th>
                 <th className="px-4 py-3">Tipo</th>
                 <th className="px-4 py-3">Grupo</th>
@@ -98,6 +106,7 @@ function Gerenciador() {
                 <tr key={product.id} className="border-b hover:bg-gray-100">
                   <td className="px-4 py-2">{product.sku}</td>
                   <td className="px-4 py-2">{product.name}</td>
+                  <td className="px-4 py-2">{product.marca}</td>
                   <td className="px-4 py-2">{product.supplier}</td>
                   <td className="px-4 py-2">{product.tipo}</td>
                   <td className="px-4 py-2">{product.category}</td>

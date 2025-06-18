@@ -7,6 +7,7 @@ import { Table } from "@/components/ui/table/table";
 import { getApps, initializeApp } from "firebase/app";
 import { Button } from "@/components/ui/Button/button";
 import { Label } from "@radix-ui/react-label";
+import { ArrowLeft } from "lucide-react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -31,9 +32,13 @@ export default function ExibirRefeicoes() {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
-    let date = new Date(timestamp);
+    let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
     if (isNaN(date.getTime())) return "Data inválida";
-    return new Intl.DateTimeFormat("pt-BR").format(date);
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const year = localDate.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   useEffect(() => {
@@ -143,44 +148,64 @@ export default function ExibirRefeicoes() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-800 to-sky-600 text-white p-6 md:p-10">
-      <div className="bg-white rounded-2xl shadow-xl p-6 text-black max-w-full overflow-x-auto">
-        <h2 className="text-3xl font-bold text-center mb-6 text-indigo-800">📋 Refeições Cadastradas</h2>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-sky-700 text-white p-4 sm:p-6 md:p-10">
+      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 text-gray-800 overflow-auto">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-6 text-indigo-900">🍽️ Refeições Cadastradas</h2>
 
         <div className="flex flex-wrap gap-4 justify-center mb-6">
-          <div className="flex flex-col md:flex-row items-center gap-2">
-            <Label className="text-sm font-medium">Data Início:</Label>
-            <Input type="date" className="rounded-md border px-3 py-2 text-black" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} />
-          </div>
-          <div className="flex flex-col md:flex-row items-center gap-2">
-            <Label className="text-sm font-medium">Data Fim:</Label>
-            <Input type="date" className="rounded-md border px-3 py-2 text-black" value={filtroFim}
-              onChange={(e) => setFiltroFim(e.target.value)} />
-          </div>
-          <Button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold" onClick={filtrarRefeicoes}>Filtrar</Button>
-          <Button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white font-semibold" onClick={limparFiltros}>Limpar</Button>
+          {[{ label: 'Data Início', value: filtroInicio, setValue: setFiltroInicio }, { label: 'Data Fim', value: filtroFim, setValue: setFiltroFim }].map(({ label, value, setValue }, i) => (
+            <div key={i} className="flex flex-col md:flex-row items-center gap-2">
+              <Label className="text-sm font-semibold text-indigo-800">{label}:</Label>
+              <Input
+                type="date"
+                className="rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
+            </div>
+          ))}
+          <Button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl text-white font-semibold shadow-md" onClick={filtrarRefeicoes}>🔍 Filtrar</Button>
+          <Button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-white font-semibold shadow-md" onClick={limparFiltros}>❌ Limpar</Button>
         </div>
 
-        <div className="flex justify-center gap-4 mb-4">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded text-white font-semibold" onClick={exportToExcel}>📁 Exportar Excel</Button>
-          <Button className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded text-white font-semibold" onClick={() => navigate(-1)}>🔙 Voltar</Button>
+        <div className="flex flex-wrap justify-center gap-4 mb-6">
+          <Button className="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-white font-semibold shadow-md" onClick={exportToExcel}>📁 Exportar Excel</Button>
+          <Button className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl text-white font-semibold shadow-md" onClick={() => navigate(-1)}>  <ArrowLeft className="mr-2" size={20} /> Voltar</Button>
         </div>
 
-        <div className="overflow-auto rounded-lg border border-gray-200">
+        <div className="overflow-auto rounded-xl border border-gray-300 shadow">
           <Table className="min-w-full text-sm text-center">
-            <thead className="bg-indigo-700 text-white">
+            <thead className="bg-indigo-800 text-white">
               <tr>
-                {headers.map((header, i) => (<th key={i} className="px-4 py-3 border">{header}</th>))}
+                {headers.map((header, i) => (
+                  <th key={i} className="px-4 py-3 border border-indigo-200 font-semibold whitespace-nowrap">{header}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {refeicoes.map((refeicao) => (
-                <tr key={refeicao.key} className="odd:bg-gray-100 even:bg-gray-50">
+                <tr key={refeicao.key} className="odd:bg-gray-50 even:bg-gray-100 hover:bg-indigo-100 transition-colors">
                   {fields.map((field) => (
-                    <td key={field} className="border px-3 py-2" onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}>
+                    <td
+                      key={field}
+                      className="border border-gray-200 px-3 py-2 text-gray-800 cursor-pointer whitespace-nowrap"
+                      onDoubleClick={() => handleDoubleClick(refeicao.key, field, refeicao[field])}
+                    >
                       {editando?.id === refeicao.key && editando.field === field ? (
-                        <Input type="text" value={valorEditado} onChange={handleChange} onKeyDown={handleKeyDown}
-                          onBlur={handleBlur} autoFocus className="w-full border px-2 py-1 rounded" />) : field === "dataRefeicao" ? (formatDate(refeicao[field])) : (refeicao[field])}
+                        <Input
+                          type="text"
+                          value={valorEditado}
+                          onChange={handleChange}
+                          onKeyDown={handleKeyDown}
+                          onBlur={handleBlur}
+                          autoFocus
+                          className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm shadow-sm"
+                        />
+                      ) : field === "dataRefeicao" ? (
+                        formatDate(refeicao[field])
+                      ) : (
+                        refeicao[field]
+                      )}
                     </td>
                   ))}
                 </tr>

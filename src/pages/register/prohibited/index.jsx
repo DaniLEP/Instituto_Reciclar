@@ -29,27 +29,20 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
     if (!products || products.length === 0) return;
     setFilteredProducts(products);
   }, [products]);
-
   useEffect(() => {
     if (!products) return;
-    const filtered = products.filter((product) =>
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  }, [searchTerm, products]);
+    const filtered = products
+      .filter((product) => product.sku.toLowerCase().includes(searchTerm.toLowerCase()) || product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name));  
+  setFilteredProducts(filtered)}, 
+  [searchTerm, products]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-6xl relative overflow-y-auto max-h-[90vh]">
         <h2 className="text-xl font-bold mb-4">Escolha um Produto</h2>
-        <Input
-          type="text"
-          placeholder="Buscar por SKU ou Nome"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-        />
+        <Input type="text" placeholder="Buscar por SKU ou Nome" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+           className="w-full p-2 mb-4 border rounded" />
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -145,11 +138,7 @@ export default function CadastroProdutos() {
   };
 
   const handleSave = () => {
-    if (!sku || !quantity) {
-      toast.error("Preencha SKU e Quantidade.");
-      return;
-    }
-
+    if (!sku || !quantity) { toast.error("Preencha SKU e Quantidade."); return;}
     const estoqueRef = ref(db, `Estoque/${sku}`);
     onValue(estoqueRef, (snapshot) => {
       const existingData = snapshot.val();
@@ -162,36 +151,19 @@ export default function CadastroProdutos() {
         const novoPesoTotal = pesoFloat * novaQuantidade;
         const novoTotalPrice = precoUnit * novaQuantidade;
 
-        set(estoqueRef, {
-          ...existingData,
-          quantity: novaQuantidade,
-          pesoTotal: novoPesoTotal,
-          totalPrice: novoTotalPrice.toFixed(2),
-          dateAdded: dateAdded || new Date().toISOString().split("T")[0],
-          expiryDate: expiryDate || existingData.expiryDate || ""
-        }).then(() => {
-          toast.success("Produto atualizado com sucesso!");
-          resetForm();
+        set(estoqueRef, {...existingData, quantity: novaQuantidade, pesoTotal: novoPesoTotal, totalPrice: novoTotalPrice.toFixed(2), 
+          dateAdded: dateAdded || new Date().toISOString().split("T")[0], expiryDate: expiryDate || existingData.expiryDate || ""})
+        .then(() => {toast.success("Produto atualizado com sucesso!"); resetForm();
         }).catch((error) => toast.error("Erro ao atualizar: " + error.message));
-      } else {
-        const novoProduto = {
-          sku, name, marca, supplier, peso, unitmeasure, unit,
-          quantity: quantidadeAtual,
-          pesoTotal: pesoFloat * quantidadeAtual,
-          category, tipo,
-          unitPrice,
-          totalPrice: precoUnit * quantidadeAtual,
-          dateAdded: dateAdded || new Date().toISOString().split("T")[0],
-          expiryDate: expiryDate || ""
-        };
+      } 
+      else {const novoProduto = {
+          sku, name, marca, supplier, peso, unitmeasure, unit, quantity: quantidadeAtual,
+          pesoTotal: pesoFloat * quantidadeAtual, category, tipo, unitPrice, totalPrice: precoUnit * quantidadeAtual,
+          dateAdded: dateAdded || new Date().toISOString().split("T")[0], expiryDate: expiryDate || ""};
 
         set(estoqueRef, novoProduto)
-          .then(() => {
-            toast.success("Produto adicionado ao estoque!");
-            resetForm();
-          })
-          .catch((error) => toast.error("Erro ao salvar: " + error.message));
-      }
+          .then(() => {toast.success("Produto adicionado ao estoque!"); resetForm(); })
+          .catch((error) => toast.error("Erro ao salvar: " + error.message)); }
     }, { onlyOnce: true });
   };
 
@@ -199,10 +171,7 @@ export default function CadastroProdutos() {
     const q = e.target.value;
     setQuantity(q);
     if (peso && q) setPesoTotal(parseFloat(peso) * parseInt(q));
-    if (unitPrice && q) {
-      const parsed = parseFloat(unitPrice.replace(/\D/g, "")) / 100;
-      setTotalPrice(parsed * parseInt(q));
-    }
+    if (unitPrice && q) {const parsed = parseFloat(unitPrice.replace(/\D/g, "")) / 100; setTotalPrice(parsed * parseInt(q));}
   };
 
   const handleUnitPriceChange = (e) => {
@@ -264,6 +233,7 @@ export default function CadastroProdutos() {
 }
 
 
+// CODIGO PARA SUBIR PLANILHAS AO FIREBASE 
 // import { useState } from "react";
 // import * as XLSX from "xlsx";
 // import { getDatabase, ref, set } from "firebase/database";
@@ -295,10 +265,8 @@ export default function CadastroProdutos() {
 //           const sku = item.sku?.toString();
 //           if (!sku) continue;
 
-//           const estoqueRef = ref(db, `Estoque/${sku}`);
-//           const quantity = parseInt(item.quantity) || 0;
+//           const estoqueRef = ref(db, `EntradaProdutos/${sku}`);
 //           const peso = parseFloat(item.peso) || 0;
-//           const precoUnit = parseFloat(item.unitPrice) || 0;
 
 //           const novoProduto = {
 //             sku,
@@ -306,16 +274,10 @@ export default function CadastroProdutos() {
 //             marca: item.marca || "",
 //             supplier: item.supplier || "",
 //             peso: peso,
-//             unitmeasure: item.unitmeasure || "",
-//             unit: item.unit || "",
-//             quantity: quantity,
-//             pesoTotal: peso * quantity,
+//             unitMeasure: item.unitMeasure || "",
 //             category: item.category || "",
 //             tipo: item.tipo || "",
-//             unitPrice: precoUnit.toFixed(2),
-//             totalPrice: (precoUnit * quantity).toFixed(2),
-//             dateAdded: item.dateAdded || new Date().toISOString().split("T")[0],
-//             expiryDate: item.expiryDate || "",
+
 //           };
 
 //           await set(estoqueRef, novoProduto);

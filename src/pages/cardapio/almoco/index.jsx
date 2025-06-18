@@ -271,7 +271,7 @@ const CadastroCardapioAlmoco = () => {
     };
 
     for (let i = 0; i < 5; i++) {
-      dados.composicoes[`semana${i + 1}`] = {
+      dados.composicoes[`Semana ${i + 1}`] = {
         nutricionista: {
           nome: dadosNutri[i].nomeNutri,
           crn3: dadosNutri[i].crn3
