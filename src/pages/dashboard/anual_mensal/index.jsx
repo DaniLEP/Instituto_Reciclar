@@ -1,168 +1,223 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import * as XLSX from 'xlsx';
-import Chart from 'chart.js/auto';
+// import React, { useState } from "react";
+// import * as XLSX from "xlsx";
+// import { initializeApp } from "firebase/app";
+// import { getDatabase, ref, set } from "firebase/database";
 
-export default function RelatorioAnual() {
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
-  const [tipoProduto, setTipoProduto] = useState('');
-  const [dadosTabela, setDadosTabela] = useState([]);
-  const [chart, setChart] = useState(null);
-  const navigate = useNavigate();
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+//   authDomain: "bancoestoquecozinha.firebaseapp.com",
+//   databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+//   projectId: "bancoestoquecozinha",
+//   storageBucket: "bancoestoquecozinha.appspot.com",
+//   messagingSenderId: "71775149511",
+//   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+// };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulação de dados
-    const dadosExemplo = [
-      { sku: 'P001', tipo: 'Proteína', quantidade: 100, quantidadeConsumida: 30, valorUnitario: 20, valorTotal: 2000, valorGasto: 2000 },
-      { sku: 'M002', tipo: 'Mantimento', quantidade: 200, quantidadeConsumida: 50, valorUnitario: 10, valorTotal: 2000, valorGasto: 2000 },
-    ];
-    setDadosTabela(dadosExemplo);
-    gerarGrafico(dadosExemplo);
-  };
+// const app = initializeApp(firebaseConfig);
+// const database = getDatabase(app);
+//  export default function AutoExcelUploader() {
+//   const [uploadProgress, setUploadProgress] = useState(0);
+//   const [status, setStatus] = useState("");
+//   const handleFile = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     setStatus("Lendo planilha...");
+//     const data = await file.arrayBuffer();
+//     const workbook = XLSX.read(data);
+//     const sheetNames = workbook.SheetNames;
+//     const totalSheets = sheetNames.length;
+//     let uploaded = 0;
+// for (const sheetName of sheetNames) {
+//   const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+//   const sanitizedSheetName = sanitizePath(sheetName); // <- aqui
+//   if (jsonData.length === 0) {
+//     uploaded++;
+//     setUploadProgress(Math.round((uploaded / totalSheets) * 100));
+//     continue;
+//   }
+//   try {
+//     const sheetRef = ref(database, `RelatoriosPeriodico/${sanitizedSheetName}`);
+//     await set(sheetRef, jsonData);
+//     uploaded++;
+//     setUploadProgress(Math.round((uploaded / totalSheets) * 100));
+//   } catch (error) {
+//     console.error(`Erro ao subir ${sheetName}`, error);
+//   }
+// }
+//     setStatus("Upload finalizado!");
+//   };
+// // Função para limpar o nome da aba e gerar um path válido
+// const sanitizePath = (sheetName) => {
+//   return sheetName
+//     .replace(/[.#$[\]]/g, "")   // remove caracteres proibidos
+//     .replace(/\s+/g, "_")       // troca espaços por underscore
+//     .trim();                    // remove espaços no final/início
+// };
+//   return (
+//     <div className="p-6 space-y-4 max-w-xl mx-auto">
+//       <h2 className="text-xl font-bold">Upload Automático de Excel</h2>
+//       <input
+//         type="file"
+//         accept=".xlsx, .xls"
+//         onChange={handleFile}
+//         className="p-2 border rounded w-full"
+//       />
+//       <div className="w-full h-4 bg-gray-200 rounded overflow-hidden">
+//         <div
+//           className="h-full bg-blue-600 transition-all duration-300"
+//           style={{ width: `${uploadProgress}%` }}
+//         />
+//       </div>
+//       <p className="text-sm text-gray-700">
+//         {status} {uploadProgress > 0 && `${uploadProgress}%`}
+//       </p>
+//     </div>
+//   );
+// }
 
-  const handleExportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(dadosTabela);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
-    XLSX.writeFile(wb, 'relatorio_Periodico.xlsx');
-  };
 
-  const voltar = () => {
-    navigate('/Dashboard');
-  };
 
-  const gerarGrafico = (dados) => {
-    const ctx = document.getElementById('chartProdutos').getContext('2d');
-    
-    if (chart) {
-      chart.destroy(); // Destroi gráfico anterior ao gerar um novo
-    }
 
-    const tipos = [...new Set(dados.map(dado => dado.tipo))];
-    const valores = tipos.map(tipo => 
-      dados
-        .filter(dado => dado.tipo === tipo)
-        .reduce((acc, dado) => acc + dado.quantidade, 0)
-    );
+import React, { useEffect, useState } from "react";
+import { db } from "../../../../firebase";
+import { ref, get } from "firebase/database";
+import { Bar } from "react-chartjs-2";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  Title,
+} from "chart.js";
 
-    const novoGrafico = new Chart(ctx, {
-      type: 'bar', // Alterado para gráfico de barras
-      data: {
-        labels: tipos,
-        datasets: [{
-          label: 'Quantidade Total',
-          data: valores,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
+
+export default function Anual() {
+  const [relatorios, setRelatorios] = useState({});
+  const [selected, setSelected] = useState("");
+  const [dados, setDados] = useState([]);
+  const [filtros, setFiltros] = useState({ ano: "", mes: "", min: "", max: "" });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const snapshot = await get(ref(db, "RelatoriosPeriodico"));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setRelatorios(data);
+        const firstKey = Object.keys(data)[0];
+        setSelected(firstKey);
+        setDados(data[firstKey]);
       }
-    });
-    
-    setChart(novoGrafico);
+    };
+    fetchData();
+  }, []);
+
+  const handleSelect = (key) => {
+    setSelected(key);
+    setDados(relatorios[key]);
+  };
+
+  const anos = [...new Set(dados.map(d => d.Ano))].filter(Boolean);
+  const meses = [...new Set(dados.map(d => d.Mês))].filter(Boolean);
+
+  const dadosFiltrados = dados.filter((d) => {
+    const dentroAno = filtros.ano ? d.Ano == filtros.ano : true;
+    const dentroMes = filtros.mes ? d.Mês === filtros.mes : true;
+    const dentroMin = filtros.min ? Object.values(d).some(v => typeof v === "number" && v >= filtros.min) : true;
+    const dentroMax = filtros.max ? Object.values(d).some(v => typeof v === "number" && v <= filtros.max) : true;
+    return dentroAno && dentroMes && dentroMin && dentroMax;
+  });
+
+  const chartKeys = dadosFiltrados.length
+    ? Object.keys(dadosFiltrados[0]).filter(k => typeof dadosFiltrados[0][k] === "number")
+    : [];
+
+  const exportarParaExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, selected);
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), `${selected}-filtrado.xlsx`);
   };
 
   return (
-    <div style={{ background: "#00009c", display: "flex", flexDirection: "column", alignItems: "center", margin: "0", padding: "40px", minHeight: "100vh", overflow: "hidden" }}>
-      <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)", width: "94%", maxWidth: "1200px", margin: "20px 0", boxSizing: "border-box" }}>
-        <h1 className='text-center text-black text-[35px]'>Relatório Periódico</h1>
-        
-        <form id="consultaForm" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
-            <label htmlFor="dataInicio" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Data Início:</label>
-            <input
-              type="date"
-              id="dataInicio"
-              name="dataInicio"
-              value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
-              required
-              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
-            />
-            <label htmlFor="dataFim" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Data Fim:</label>
-            <input
-              type="date"
-              id="dataFim"
-              name="dataFim"
-              value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-              required
-              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
-            />
-          </div>
-          
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "20px" }}>
-            <label htmlFor="tipoProduto" style={{ fontWeight: "bold", margin: "8px 18px", color: "#333" }}>Tipo de Produto:</label>
-            <select
-              id="tipoProduto"
-              name="tipoProduto"
-              value={tipoProduto}
-              onChange={(e) => setTipoProduto(e.target.value)}
-              required
-              style={{ padding: "10px", marginRight: "20px", border: "1px solid #ccc", borderRadius: "8px", fontSize: "16px" }}
-            >
-              <option value="">Selecione</option>
-              <option value="Proteína">Proteína</option>
-              <option value="Mantimento">Mantimento</option>
-              <option value="Hortaliças">Hortaliças</option>
-              <option value="Doações">Doações</option>
-              <option value="Retiradas">Retiradas</option>
-            </select>
-          </div>
-          
-          <button type="submit" style={{ padding: "12px 30px", border: "none", backgroundColor: "#6200ea", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>Consultar</button>
-        </form>
+    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold">📊 Relatórios com Filtros</h1>
 
-        <div className="chart-container" style={{ margin: "30px auto", textAlign: "center", width: "90%", maxWidth: "700px", height: "400px" }}>
-          <canvas id="chartProdutos"></canvas>
-        </div>
-
-        <div className="button-container" style={{ margin: "30px 0" }}>
-          <button id="downloadExcel" onClick={handleExportExcel} style={{ padding: "12px 30px", border: "none", backgroundColor: "#8E44AD", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>
-            Exportar em Excel
+      <div className="flex flex-wrap gap-2">
+        {Object.keys(relatorios).map((key) => (
+          <button
+            key={key}
+            onClick={() => handleSelect(key)}
+            className={`px-4 py-2 rounded ${selected === key ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          >
+            {key.replace(/_/g, " ")}
           </button>
-        </div>
+        ))}
+      </div>
 
-        <div style={{ overflowX: "auto", margin: "30px 0" }}>
-          <table id="tabelaResultados" style={{ width: "100%", borderCollapse: "collapse", fontSize: "16px" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#6200ea", color: "#fff", textAlign: "center" }}>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>SKU</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Tipo</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Quantidade</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Quantidade Consumida</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Unitário</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Total</th>
-                <th style={{ padding: "12px 10px", borderBottom: "1px solid #ddd" }}>Valor Gasto no Período</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dadosTabela.map((item, index) => (
-                <tr key={index} style={{ textAlign: "center", backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.sku}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.tipo}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantidade}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.quantidadeConsumida}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorUnitario}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorTotal}</td>
-                  <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>{item.valorGasto}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex flex-wrap gap-4">
+        <select onChange={(e) => setFiltros({ ...filtros, ano: e.target.value })} value={filtros.ano} className="border rounded p-2">
+          <option value="">Ano</option>
+          {anos.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
 
-        <button onClick={voltar} style={{ padding: "12px 30px", border: "none", backgroundColor: "#f20de7", color: "#fff", borderRadius: "8px", cursor: "pointer", fontSize: "18px", transition: "background-color 0.3s ease" }}>Voltar</button>
+        <select onChange={(e) => setFiltros({ ...filtros, mes: e.target.value })} value={filtros.mes} className="border rounded p-2">
+          <option value="">Mês</option>
+          {meses.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
+
+        <input type="number" placeholder="Mínimo" className="border rounded p-2" value={filtros.min} onChange={(e) => setFiltros({ ...filtros, min: e.target.value })} />
+        <input type="number" placeholder="Máximo" className="border rounded p-2" value={filtros.max} onChange={(e) => setFiltros({ ...filtros, max: e.target.value })} />
+      </div>
+
+      <button
+        onClick={exportarParaExcel}
+        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+      >
+        ⬇️ Exportar dados visíveis
+      </button>
+
+      <div className="space-y-10">
+        {chartKeys.map((campo, index) => {
+          const chartData = {
+            labels: dadosFiltrados.map((_, i) => `Item ${i + 1}`),
+            datasets: [
+              {
+                label: campo,
+                data: dadosFiltrados.map((item) => item[campo]),
+                backgroundColor: `rgba(${100 + index * 40}, 99, 255, 0.6)`
+              }
+            ]
+          };
+
+          const options = {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: campo }
+            },
+            animation: {
+              duration: 800,
+              easing: "easeOutQuart"
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          };
+
+          return (
+            <div key={campo}>
+              <Bar data={chartData} options={options} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

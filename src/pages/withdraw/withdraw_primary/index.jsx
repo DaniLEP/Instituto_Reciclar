@@ -303,26 +303,6 @@ export default function Retirada() {
     return diffDays;
   };
 
-  // useEffect(() => {
-  //   const fetchProdutos = async () => {
-  //     const produtosRef = ref(db, "Estoque");
-  //     const snapshot = await get(produtosRef);
-  //     if (snapshot.exists()) {
-  //       const data = snapshot.val();
-  //       const produtosList = Object.entries(data).map(([id, produto]) => ({
-  //         id,
-  //         ...produto,
-  //         validadeStatus: calcularDiasParaValidade(produto.expiryDate),
-  //       }));
-  //       setProdutos(produtosList);
-  //       setFilteredProdutos(produtosList);
-  //     } else {
-  //       setProdutos([]);
-  //       setFilteredProdutos([]);
-  //     }
-  //   };
-  //   fetchProdutos();
-  // }, []);
 
   useEffect(() => {
   const fetchProdutos = async () => {
@@ -441,15 +421,20 @@ const handleRetirada = async () => {
     setIsModalOpen(false);
   };
 
-  const formatDate = (date) => {
-    if (!date) return "--";
+const formatDate = (date) => {
+  if (!date || typeof date !== "string") return "--";
+
+  try {
     const [y, m, d] = date.slice(0, 10).split("-");
     const dt = new Date(Date.UTC(+y, +m - 1, +d));
     const dd = String(dt.getUTCDate()).padStart(2, "0");
     const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
     const yyyy = dt.getUTCFullYear();
     return `${dd}/${mm}/${yyyy}`;
-  };
+  } catch (e) {
+    return "--";
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 flex items-center justify-center p-4">
@@ -494,9 +479,9 @@ const handleRetirada = async () => {
               <Table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 text-sm md:text-base text-center">
+                    <th className="p-2">SKU</th>
                     <th className="p-2">Nome</th>
                     <th className="p-2">Marca</th>
-                    <th className="p-2">SKU</th>
                     <th className="p-2">Categoria</th>
                     <th className="p-2">Tipo</th>
                     <th className="p-2">Quantidade</th>
@@ -511,9 +496,9 @@ const handleRetirada = async () => {
                     const isValidNearExpiry = validadeStatus <= 7;
                     return (
                      <tr key={produto.id} className={`border-b hover:bg-gray-50 ${produto.validadeStatus <= 7 ? 'bg-red-100 border border-red-500' : ''}`}>
+                        <td className="p-2">{produto.sku}</td>
                         <td className="p-2">{produto.name}</td>
                         <td className="p-2">{produto.marca}</td>
-                        <td className="p-2">{produto.sku}</td>
                         <td className="p-2">{produto.category}</td>
                         <td className="p-2">{produto.tipo}</td>
                         <td className="p-2">{produto.quantity}</td>
