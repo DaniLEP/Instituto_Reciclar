@@ -64,7 +64,7 @@ const EntradaProdutos = React.lazy(() => import('@/pages/register/prohibited'));
 const CadastroRefeicoes = React.lazy(() => import('@/pages/cardapio/revenue_register'));
 const RelatorioRef = React.lazy(() => import('@/pages/dashboard/revenue'));
 const HistoricoRetiradas = React.lazy(() => import('@/pages/withdraw/withdral-history'));
-const NovoPedido = React.lazy(() => import('@/pages/order/register_order'));
+const NovoPedido = React.lazy(() => import('@/pages/order/register_order/index.jsx'));
 const Gerenciador = React.lazy(() => import('@/pages/register/product_manager'));
 const CadastroFornecedores = React.lazy(() => import('@/pages/register/Supplier'));
 const ExibirRefeicoes = React.lazy(() => import('@/pages/cardapio/revenue_list'));

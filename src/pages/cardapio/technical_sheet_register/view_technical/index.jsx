@@ -1,452 +1,428 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { ref as dbRef, onValue } from "firebase/database";
-import { db } from "../../../../../firebase";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useMemo } from "react"
+import { ref as dbRef, onValue } from "firebase/database"
+import { db } from "../../../../../firebase"
+import { Button } from "@/components/ui/button/button"
+import { Input } from "@/components/ui/input/index"
+import { Label } from "@/components/ui/label/index"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table"
+import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Search,
+  Filter,
+  Eye,
+  ChefHat,
+  Clock,
+  User,
+  Scale,
+  BookOpen,
+  Printer,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  ImageIcon,
+  Utensils,
+  Timer,
+  Refrigerator,
+  Loader2,
+} from "lucide-react"
 
-const RECEITAS_POR_PAGINA = 5;
+const RECEITAS_POR_PAGINA = 5
 
 const ConsultaReceitas = () => {
-  const [receitas, setReceitas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [receitaSelecionada, setReceitaSelecionada] = useState(null);
-
+  const [receitas, setReceitas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [receitaSelecionada, setReceitaSelecionada] = useState(null)
   // Filtros
-  const [filtroNome, setFiltroNome] = useState("");
-  const [filtroClassificacao, setFiltroClassificacao] = useState("");
-
+  const [filtroNome, setFiltroNome] = useState("")
+  const [filtroClassificacao, setFiltroClassificacao] = useState("all") // Updated default value
   // Paginação
-  const [paginaAtual, setPaginaAtual] = useState(1);
-
+  const [paginaAtual, setPaginaAtual] = useState(1)
   // Quantidade de pessoas para o modal
-  const [qtdPessoas, setQtdPessoas] = useState(1);
-
+  const [qtdPessoas, setQtdPessoas] = useState(1)
   // Ingredientes editáveis no modal
-  const [ingredientesEditaveis, setIngredientesEditaveis] = useState([]);
+  const [ingredientesEditaveis, setIngredientesEditaveis] = useState([])
 
   useEffect(() => {
-    const receitasRef = dbRef(db, "receitas");
+    const receitasRef = dbRef(db, "receitas")
 
     onValue(receitasRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const listaReceitas = Object.entries(data).map(([id, receita]) => ({
-          id,
-          ...receita,
-        }));
-        setReceitas(listaReceitas);
-      } else {
-        setReceitas([]);
-      }
-      setLoading(false);
-    });
-  }, []);
+      const data = snapshot.val()
+      if (data) {const listaReceitas = Object.entries(data).map(([id, receita]) => ({id, ...receita,}))
+        setReceitas(listaReceitas)
+      } else {setReceitas([])}
+      setLoading(false)
+    })
+  }, [])
 
   useEffect(() => {
     if (receitaSelecionada) {
-      const ingredientesArray = receitaSelecionada.ingredientes
-        ? Array.isArray(receitaSelecionada.ingredientes)
-          ? receitaSelecionada.ingredientes
-          : Object.values(receitaSelecionada.ingredientes)
-        : [];
-
-      const ingredientesComQuantidade = ingredientesArray.map((ing) => ({
-        nome: ing.nome,
-        peso: Number((ing.peso * qtdPessoas).toFixed(2)),
-      }));
-      setIngredientesEditaveis(ingredientesComQuantidade);
-    } else {
-      setIngredientesEditaveis([]);
-      setQtdPessoas(1);
-    }
-  }, [receitaSelecionada, qtdPessoas]);
+      const ingredientesArray = receitaSelecionada.ingredientes ? Array.isArray(receitaSelecionada.ingredientes) ? receitaSelecionada.ingredientes : Object.values(receitaSelecionada.ingredientes) : []
+      const ingredientesComQuantidade = ingredientesArray.map((ing) => ({nome: ing.nome, peso: Number((ing.peso * qtdPessoas).toFixed(2)),}))
+      setIngredientesEditaveis(ingredientesComQuantidade)
+    } 
+    else {setIngredientesEditaveis([]);setQtdPessoas(1);}
+  }, [receitaSelecionada, qtdPessoas])
 
   const alterarPesoIngrediente = (index, novoPeso) => {
     setIngredientesEditaveis((ingredientes) => {
-      const novaLista = [...ingredientes];
-      novaLista[index].peso = novoPeso === "" ? "" : Number(novoPeso);
-      return novaLista;
-    });
-  };
+      const novaLista = [...ingredientes]; novaLista[index].peso = novoPeso === "" ? "" : Number(novoPeso)
+      return novaLista;})
+  }
 
   const receitasFiltradas = useMemo(() => {
     return receitas.filter((r) => {
-      const nomeMatch = (r.nome || "")
-        .toLowerCase()
-        .includes(filtroNome.toLowerCase());
-      const classificacaoMatch = filtroClassificacao
-        ? (r.classificacao || "").toLowerCase() === filtroClassificacao.toLowerCase()
-        : true;
-      return nomeMatch && classificacaoMatch;
-    });
-  }, [receitas, filtroNome, filtroClassificacao]);
+      const nomeMatch = (r.nome || "").toLowerCase().includes(filtroNome.toLowerCase())
+      const classificacaoMatch =
+        filtroClassificacao !== "all" ? (r.classificacao || "").toLowerCase() === filtroClassificacao.toLowerCase() : true
+      return nomeMatch && classificacaoMatch
+    })
+  }, [receitas, filtroNome, filtroClassificacao])
+  const totalPaginas = Math.ceil(receitasFiltradas.length / RECEITAS_POR_PAGINA)
+  const receitasPaginaAtual = receitasFiltradas.slice((paginaAtual - 1) * RECEITAS_POR_PAGINA, paginaAtual * RECEITAS_POR_PAGINA,)
 
-  const totalPaginas = Math.ceil(receitasFiltradas.length / RECEITAS_POR_PAGINA);
-  const receitasPaginaAtual = receitasFiltradas.slice(
-    (paginaAtual - 1) * RECEITAS_POR_PAGINA,
-    paginaAtual * RECEITAS_POR_PAGINA
-  );
-
-  const irParaPagina = (num) => {
-    if (num < 1 || num > totalPaginas) return;
-    setPaginaAtual(num);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const irParaPagina = (num) => {if (num < 1 || num > totalPaginas) return; setPaginaAtual(num); window.scrollTo({ top: 0, behavior: "smooth" })}
+  const classificacoesUnicas = [...new Set(receitas.map((r) => r.classificacao))].filter(Boolean)
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-green-700 font-semibold text-xl">
-        Carregando receitas...
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <Card className="p-8">
+          <CardContent className="flex items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+            <p className="text-lg font-medium">Carregando receitas...</p>
+          </CardContent>
+        </Card>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-4xl font-extrabold mb-10 text-center text-green-800 tracking-wide">
-        Consulta de Receitas
-      </h1>
-
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-6 justify-center mb-8">
-        <input
-          type="text"
-          placeholder="Filtrar por nome"
-          aria-label="Filtrar por nome"
-          className="border border-green-400 rounded-lg px-5 py-3 w-72 shadow-sm transition focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          value={filtroNome}
-          onChange={(e) => {
-            setFiltroNome(e.target.value);
-            setPaginaAtual(1);
-          }}
-        />
-
-        <select
-          className="border border-green-400 rounded-lg px-5 py-3 w-72 shadow-sm transition focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          value={filtroClassificacao}
-          aria-label="Filtrar por classificação"
-          onChange={(e) => {
-            setFiltroClassificacao(e.target.value);
-            setPaginaAtual(1);
-          }}
-        >
-          <option value="">Todas as Classificações</option>
-          {[...new Set(receitas.map((r) => r.classificacao))].map((classif) => (
-            <option key={classif} value={classif}>
-              {classif}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Tabela */}
-      {receitasFiltradas.length === 0 ? (
-        <p className="text-center text-gray-500 text-lg">Nenhuma receita encontrada.</p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg shadow-lg border border-green-300">
-          <table className="w-full table-auto border-collapse">
-            <thead className="bg-green-200 text-green-900 font-semibold select-none">
-              <tr>
-                <th className="border border-green-300 px-6 py-3">Foto</th>
-                <th className="border border-green-300 px-6 py-3 text-left">Nome</th>
-                <th className="border border-green-300 px-6 py-3 text-left">Classificação</th>
-                <th className="border border-green-300 px-6 py-3 text-center">Prazo Refrigerado</th>
-                <th className="border border-green-300 px-6 py-3 text-center">Prazo Congelado</th>
-                <th className="border border-green-300 px-6 py-3 text-left">Nutricionista</th>
-                <th className="border border-green-300 px-6 py-3 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receitasPaginaAtual.map((r) => (
-                <tr
-                  key={r.id}
-                  className="hover:bg-green-50 cursor-pointer transition-colors"
-                  onClick={() => setReceitaSelecionada(r)}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") setReceitaSelecionada(r);
-                  }}
-                  aria-label={`Visualizar detalhes da receita ${r.nome}`}
-                >
-                  <td className="border border-green-300 p-2 text-center">
-                    {r.imagemBase64 ? (
-                      <img
-                        src={r.imagemBase64}
-                        alt={`Foto de ${r.nome}`}
-                        className="w-16 h-16 object-cover rounded-lg mx-auto"
-                      />
-                    ) : (
-                      <span className="text-gray-400 italic">Sem foto</span>
-                    )}
-                  </td>
-                  <td className="border border-green-300 px-6 py-3">{r.nome}</td>
-                  <td className="border border-green-300 px-6 py-3">{r.classificacao}</td>
-                  <td className="border border-green-300 px-6 py-3 text-center">
-                    {r.prazoValidade?.refrigerado || "-"}
-                  </td>
-                  <td className="border border-green-300 px-6 py-3 text-center">
-                    {r.prazoValidade?.congelado || "-"}
-                  </td>
-                  <td className="border border-green-300 px-6 py-3">
-                    {`Nutri: ${r.nutricionista?.nome || "-"}, CRN: ${r.nutricionista?.crn3 || "-"}`}
-                  </td>
-                  <td className="border border-green-300 px-6 py-3 text-center">
-                    <button
-                      className="text-green-700 hover:underline font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReceitaSelecionada(r);
-                      }}
-                      aria-label={`Ver detalhes da receita ${r.nome}`}
-                    >
-                      Ver detalhes
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4"><BookOpen className="w-8 h-8 text-orange-600" /></div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Consulta de Receitas</h1>
+          <p className="text-gray-600">Explore e gerencie todas as receitas cadastradas</p>
         </div>
-      )}
 
-      {/* Paginação */}
-      {totalPaginas > 1 && (
-        <nav
-          className="mt-6 flex justify-center items-center gap-3 select-none"
-          aria-label="Navegação de páginas"
-        >
-          <button
-            className="px-4 py-2 rounded-lg bg-green-200 text-green-700 hover:bg-green-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            onClick={() => irParaPagina(paginaAtual - 1)}
-            disabled={paginaAtual === 1}
-            aria-label="Página anterior"
-          >
-            &lt;
-          </button>
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <ChefHat className="w-8 h-8 text-orange-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Total de Receitas</p>
+                  <p className="text-2xl font-bold text-orange-600">{receitas.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Filter className="w-8 h-8 text-blue-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Classificações</p>
+                  <p className="text-2xl font-bold text-blue-600">{classificacoesUnicas.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Search className="w-8 h-8 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Resultados</p>
+                  <p className="text-2xl font-bold text-green-600">{receitasFiltradas.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {[...Array(totalPaginas)].map((_, i) => {
-            const numero = i + 1;
-            return (
-              <button
-                key={numero}
-                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                  numero === paginaAtual
-                    ? "bg-green-700 text-white shadow-lg"
-                    : "bg-green-200 text-green-700 hover:bg-green-300"
-                }`}
-                onClick={() => irParaPagina(numero)}
-                aria-current={numero === paginaAtual ? "page" : undefined}
-              >
-                {numero}
-              </button>
-            );
-          })}
-
-          <button
-            className="px-4 py-2 rounded-lg bg-green-200 text-green-700 hover:bg-green-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            onClick={() => irParaPagina(paginaAtual + 1)}
-            disabled={paginaAtual === totalPaginas}
-            aria-label="Próxima página"
-          >
-            &gt;
-          </button>
-        </nav>
-      )}
-
-      {/* Modal Detalhes */}
-      <AnimatePresence>
-        {receitaSelecionada && (
-          <motion.div
-            key="modal"
-            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-6 z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setReceitaSelecionada(null)}
-            aria-modal="true"
-            role="dialog"
-            aria-labelledby="modal-title"
-          >
-            <motion.div
-              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 relative"
-              initial={{ scale: 0.85 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.85 }}
-              onClick={(e) => e.stopPropagation()}
-              tabIndex={-1}
-            >
-              <button
-                className="absolute top-5 right-5 text-gray-600 hover:text-gray-900 text-4xl font-extrabold focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
-                onClick={() => setReceitaSelecionada(null)}
-                aria-label="Fechar modal de detalhes da receita"
-              >
-                &times;
-              </button>
-
-              <h2
-                id="modal-title"
-                className="text-4xl font-extrabold mb-6 text-green-800 tracking-tight"
-              >
-                {receitaSelecionada.nome}
-              </h2>
-
-              {receitaSelecionada.imagemBase64 && (
-                <img
-                  src={receitaSelecionada.imagemBase64}
-                  alt={`Foto de ${receitaSelecionada.nome}`}
-                  className="w-full max-h-72 object-cover rounded-lg mb-8 shadow-md"
-                />
-              )}
-
-              {/* Quantidade de Pessoas */}
-              <div className="mb-8 max-w-xs">
-                <label
-                  htmlFor="qtdPessoas"
-                  className="block mb-2 font-semibold text-green-700 text-lg"
-                >
-                  Quantidade de Pessoas:
-                </label>
-                <input
-                  type="number"
-                  id="qtdPessoas"
-                  min={1}
-                  className="border border-green-400 rounded-lg px-4 py-3 w-full shadow-sm focus:outline-green-600 focus:ring-2 focus:ring-green-500 transition"
-                  value={qtdPessoas}
+        {/* Filters */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filtros de Busca
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="filtroNome" className="flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Buscar por nome
+                </Label>
+                <Input
+                  id="filtroNome"
+                  placeholder="Digite o nome da receita..."
+                  value={filtroNome}
                   onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (!isNaN(val) && val > 0) setQtdPessoas(val);
+                    setFiltroNome(e.target.value)
+                    setPaginaAtual(1)
                   }}
-                  aria-describedby="qtdPessoasHelp"
+                  className="h-12"
                 />
-                <small
-                  id="qtdPessoasHelp"
-                  className="text-gray-500 text-sm mt-1 block"
-                >
-                  Ajuste para recalcular as quantidades dos ingredientes.
-                </small>
               </div>
 
-              {/* Ingredientes */}
-              <section className="mb-10">
-                <h3 className="text-3xl font-semibold mb-4 text-green-700 border-b border-green-300 pb-2">
-                  Ingredientes
-                </h3>
-
-                {ingredientesEditaveis.length === 0 ? (
-                  <p className="text-gray-500 italic text-lg">
-                    Nenhum ingrediente listado.
-                  </p>
-                ) : (
-                  <table className="w-full border-collapse border border-green-300 rounded-lg overflow-hidden shadow-sm">
-                    <thead className="bg-green-100 text-green-900 font-semibold select-none">
-                      <tr>
-                        <th className="border border-green-300 px-4 py-3 text-left">
-                          Nome
-                        </th>
-                        <th className="border border-green-300 px-4 py-3 text-left">
-                          Peso (g/ml)
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ingredientesEditaveis.map((ing, idx) => (
-                        <tr
-                          key={idx}
-                          className="border border-green-300 hover:bg-green-50 transition-colors"
-                        >
-                          <td className="border border-green-300 px-4 py-3">
-                            {ing.nome}
-                          </td>
-                          <td className="border border-green-300 px-4 py-3">
-                            <input
-                              type="number"
-                              min={0}
-                              step="0.01"
-                              className="w-28 border border-green-400 rounded px-3 py-2 focus:outline-green-600 focus:ring-2 focus:ring-green-500 transition"
-                              value={ing.peso}
-                              onChange={(e) =>
-                                alterarPesoIngrediente(idx, e.target.value)
-                              }
-                              aria-label={`Editar peso do ingrediente ${ing.nome}`}
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </section>
-
-              {/* Modos e informações adicionais */}
-              <section className="mb-8">
-                <h3 className="text-3xl font-semibold mb-3 text-green-700 border-b border-green-300 pb-1">
-                  Modo de Preparo
-                </h3>
-                <p className="whitespace-pre-line text-gray-700 leading-relaxed">
-                  {receitaSelecionada.modoPreparo || "Não informado."}
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h3 className="text-3xl font-semibold mb-3 text-green-700 border-b border-green-300 pb-1">
-                  Modo de Servir
-                </h3>
-                <p className="whitespace-pre-line text-gray-700 leading-relaxed">
-                  {receitaSelecionada.modoServir || "Não informado."}
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h3 className="text-3xl font-semibold mb-3 text-green-700 border-b border-green-300 pb-1">
-                  Armazenamento
-                </h3>
-                <p className="whitespace-pre-line text-gray-700 leading-relaxed">
-                  {receitaSelecionada.armazenamento || "Não informado."}
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h3 className="text-3xl font-semibold mb-3 text-green-700 border-b border-green-300 pb-1">
-                  Prazo de Validade
-                </h3>
-                <p>
-                  <strong>Refrigerado:</strong>{" "}
-                  {receitaSelecionada.prazoValidade?.refrigerado || "-"}
-                </p>
-                <p>
-                  <strong>Congelado:</strong>{" "}
-                  {receitaSelecionada.prazoValidade?.congelado || "-"}
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h3 className="text-3xl font-semibold mb-3 text-green-700 border-b border-green-300 pb-1">
-                  Dados do Nutricionista
-                </h3>
-                <p>
-                  <strong>Nome:</strong>{" "}
-                  {receitaSelecionada.nutricionista?.nome || "-"}
-                </p>
-                <p>
-                  <strong>CRN3:</strong>{" "}
-                  {receitaSelecionada.nutricionista?.crn3 || "-"}
-                </p>
-              </section>
-
-              {/* Botão Imprimir */}
-              <div className="flex justify-center mt-4 print:hidden">
-                <button
-                  onClick={() => window.print()}
-                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition focus:outline-none focus:ring-4 focus:ring-green-400"
-                >
-                  Imprimir Receita
-                </button>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Filter className="w-4 h-4" />
+                  Filtrar por classificação
+                </Label>
+                <Select value={filtroClassificacao} onValueChange={(value) => {setFiltroClassificacao(value); setPaginaAtual(1)}}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Todas as classificações" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as classificações</SelectItem> {/* Updated value prop */}
+                    {classificacoesUnicas.map((classif) => (<SelectItem key={classif} value={classif}>{classif}</SelectItem>))}
+                  </SelectContent>
+                </Select>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results */}
+        {receitasFiltradas.length === 0 ? (
+          <Alert>
+            <Search className="h-4 w-4" />
+            <AlertDescription> Nenhuma receita encontrada com os filtros aplicados. Tente ajustar os critérios de busca.</AlertDescription>
+          </Alert>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <Card className="hidden md:block mb-8">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20">Foto</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Classificação</TableHead>
+                      <TableHead className="text-center">Refrigerado</TableHead>
+                      <TableHead className="text-center">Congelado</TableHead>
+                      <TableHead>Nutricionista</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {receitasPaginaAtual.map((receita) => (
+                      <TableRow key={receita.id} className="hover:bg-muted/50 cursor-pointer"onClick={() => setReceitaSelecionada(receita)}>
+                        <TableCell>
+                          {receita.imagemBase64 ? (
+                            <img src={receita.imagemBase64 || "/placeholder.svg"} alt={`Foto de ${receita.nome}`} className="w-12 h-12 object-cover rounded-lg" />
+                          ) : (<div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center"><ImageIcon className="w-6 h-6 text-gray-400" /></div>)}
+                        </TableCell>
+                        <TableCell className="font-medium">{receita.nome}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{receita.classificacao}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Refrigerator className="w-4 h-4 text-blue-500" />
+                            <span>{receita.prazoValidade?.refrigerado || "-"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Timer className="w-4 h-4 text-purple-500" />
+                            <span>{receita.prazoValidade?.congelado || "-"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div className="font-medium">{receita.nutricionista?.nome || "-"}</div>
+                            <div className="text-gray-500">CRN: {receita.nutricionista?.crn3 || "-"}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center"><Button size="sm" variant="outline" onClick={(e) => {e.stopPropagation(); setReceitaSelecionada(receita)}}><Eye className="w-4 h-4 mr-2" />Ver</Button></TableCell></TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-4 mb-8">
+              {receitasPaginaAtual.map((receita) => (
+                <Card key={receita.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardContent className="p-4" onClick={() => setReceitaSelecionada(receita)}>
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        {receita.imagemBase64 ? (<img src={receita.imagemBase64 || "/placeholder.svg"} alt={`Foto de ${receita.nome}`} className="w-16 h-16 object-cover rounded-lg" />
+                        ) : (<div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"><ImageIcon className="w-8 h-8 text-gray-400" /></div>)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-lg mb-2 truncate">{receita.nome}</h3>
+                        <div className="space-y-2">
+                          <Badge variant="secondary" className="text-xs">{receita.classificacao}</Badge>
+                          <div className="text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              <span>{receita.nutricionista?.nome || "Não informado"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setReceitaSelecionada(receita)}><Eye className="w-4 h-4" /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPaginas > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => irParaPagina(paginaAtual - 1)} disabled={paginaAtual === 1}>
+                  <ChevronLeft className="w-4 h-4" />Anterior</Button>
+                <div className="flex gap-1">
+                  {[...Array(totalPaginas)].map((_, i) => {
+                    const numero = i + 1
+                    return (<Button key={numero} variant={numero === paginaAtual ? "default" : "outline"} size="sm" onClick={() => irParaPagina(numero)} className="w-10">{numero}</Button>)})}
+                </div>
+
+                <Button variant="outline" size="sm" onClick={() => irParaPagina(paginaAtual + 1)} disabled={paginaAtual === totalPaginas}>Próxima<ChevronRight className="w-4 h-4" /></Button>
+              </div>
+            )}
+          </>
         )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
-export default ConsultaReceitas;
+        {/* Modal de Detalhes */}
+        <Dialog open={!!receitaSelecionada} onOpenChange={() => setReceitaSelecionada(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-2xl"><ChefHat className="w-6 h-6" />{receitaSelecionada?.nome}</DialogTitle>
+            </DialogHeader>
+
+            {receitaSelecionada && (
+              <div className="space-y-6">
+                {/* Imagem */}
+                {receitaSelecionada.imagemBase64 && (<div className="w-full"><img src={receitaSelecionada.imagemBase64 || "/placeholder.svg"} alt={`Foto de ${receitaSelecionada.nome}`} className="w-full max-h-64 object-cover rounded-lg shadow-md"/></div>)}
+                {/* Quantidade de Pessoas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg"><Users className="w-5 h-5" />Ajustar Porções</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <Label htmlFor="qtdPessoas">Quantidade de pessoas:</Label>
+                      <Input id="qtdPessoas" type="number" min={1} value={qtdPessoas} onChange={(e) => {const val = Number.parseInt(e.target.value, 10); if (!isNaN(val) && val > 0) setQtdPessoas(val)}} className="w-24" />
+                      <span className="text-sm text-gray-500">Os ingredientes serão recalculados automaticamente</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Ingredientes */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Scale className="w-5 h-5" />Ingredientes
+                      <Badge variant="secondary">{ingredientesEditaveis.length} itens</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {ingredientesEditaveis.length === 0 ? (<p className="text-gray-500 italic">Nenhum ingrediente listado.</p>) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Ingrediente</TableHead>
+                            <TableHead className="text-right">Peso (g/ml)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ingredientesEditaveis.map((ing, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{ing.nome}</TableCell>
+                              <TableCell className="text-right">
+                                <Input type="number" min={0} step="0.01" value={ing.peso} onChange={(e) => alterarPesoIngrediente(idx, e.target.value)} className="w-24 ml-auto" />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Instruções */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg"><BookOpen className="w-5 h-5" />Modo de Preparo</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="whitespace-pre-line text-sm leading-relaxed">{receitaSelecionada.modoPreparo || "Não informado."}</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg"><Utensils className="w-5 h-5" />Modo de Servir</CardTitle>
+                    </CardHeader>
+                    <CardContent><p className="whitespace-pre-line text-sm leading-relaxed">{receitaSelecionada.modoServir || "Não informado."}</p></CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Refrigerator className="w-5 h-5" />Armazenamento</CardTitle></CardHeader>
+                    <CardContent>
+                      <p className="whitespace-pre-line text-sm leading-relaxed"> {receitaSelecionada.armazenamento || "Não informado."}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                {/* Informações Adicionais */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Clock className="w-5 h-5" />Prazo de Validade</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Refrigerator className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium">Refrigerado:</span>
+                        <span>{receitaSelecionada.prazoValidade?.refrigerado || "-"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Timer className="w-4 h-4 text-purple-500" />
+                        <span className="font-medium">Congelado:</span>
+                        <span>{receitaSelecionada.prazoValidade?.congelado || "-"}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><User className="w-5 h-5" /> Nutricionista Responsável</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      <div>
+                        <span className="font-medium">Nome:</span>{" "}
+                        <span>{receitaSelecionada.nutricionista?.nome || "-"}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">CRN3:</span>{" "}
+                        <span>{receitaSelecionada.nutricionista?.crn3 || "-"}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <Separator />
+                {/* Botão Imprimir */}
+                <div className="flex justify-center print:hidden"><Button onClick={() => window.print()} size="lg" className="px-8"><Printer className="w-4 h-4 mr-2" /> Imprimir Receita</Button></div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  )
+}
+
+export default ConsultaReceitas

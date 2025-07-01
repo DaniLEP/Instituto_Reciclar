@@ -1,242 +1,46 @@
-// import { useState, useEffect } from "react";
-// import { ref, child, get, db } from "../../../../firebase";
-// import { Link, useNavigate } from "react-router-dom";
-// import { Table } from "../../../components/ui/table/table";
-// import { Button } from "../../../components/ui/Button/button";
-
-// export default function HistoricoRetiradas() {
-//   const navigate = useNavigate();
-//   const [retiradas, setRetiradas] = useState([]);
-//   const [category, setCategory] = useState("");
-//   const [retirante, setRetirante] = useState("");
-//   const [produto, setProduto] = useState(""); // Novo estado para o filtro de produto
-//   const [retiradasFiltradas, setRetiradasFiltradas] = useState([]);
-
-//   // Função para buscar os dados no Firebase
-//   const fetchRetiradas = async () => {
-//     const dbRef = ref(db);
-//     try {
-//       const snapshot = await get(child(dbRef, "Retiradas"));
-//       if (snapshot.exists()) {
-//         setRetiradas(Object.values(snapshot.val())); 
-//         setRetiradasFiltradas(Object.values(snapshot.val()))
-//       } else {
-//         console.log("Não há dados disponíveis");
-//       }
-//     } catch (error) {
-//       console.error("Erro ao ler dados:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchRetiradas();
-//   }, []); {/*Chama a função ao carregar o componente*/}
-
-//   const filtrarRetiradas = () => {
-//     let filtradas = retiradas;
-
-//     // Filtro por categoria
-//     if (category) {
-//       filtradas = filtradas.filter(
-//         (retirada) => retirada.category === category
-//       );
-//     }
-
-//     // Filtro por retirante
-//     if (retirante) {
-//       filtradas = filtradas.filter(
-//         (retirada) => retirada.retirante === retirante
-//       );
-//     }
-
-//     // Filtro por produto
-//     if (produto) {
-//       filtradas = filtradas.filter(
-//         (retirada) => retirada.name.toLowerCase().includes(produto.toLowerCase())
-//       );
-//     }
-
-//     setRetiradasFiltradas(filtradas);
-//   };
-
-//   const limparFiltros = () => {
-//     setCategory("");
-//     setRetirante("");
-//     setProduto(""); // Limpar filtro de produto
-//     setRetiradasFiltradas(retiradas); 
-//   };
-
-//   // // Função para formatar a data e hora
-//   // const formatarDataHora = (timestamp) => {
-//   //   if (!timestamp) return "Data inválida"; 
-//   //   const data =
-//   //     typeof timestamp === "string" ? new Date(timestamp) : new Date(Number(timestamp));
-//   //   if (isNaN(data.getTime())) return "Data inválida";
-//   //   return data.toLocaleString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-//   // };
-
-//   // ✅ Função corrigida para exibir apenas a data (sem hora)
-//   const formatDate = (timestamp) => {
-//     if (!timestamp) return "Data inválida";
-//     let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
-//     if (isNaN(date.getTime())) return "Data inválida";
-//     const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-//     const day = String(localDate.getDate()).padStart(2, "0");
-//     const month = String(localDate.getMonth() + 1).padStart(2, "0");
-//     const year = localDate.getFullYear();
-//     return `${day}/${month}/${year}`;
-//   };
-
-//   return (
-//     <div className="max-w-full mx-auto p-8 bg-gradient-to-r from-teal-400 to-indigo-500  shadow-lg">
-//       <Link to={"/home-retirada"}>
-//         <Button onClick={() => navigate(-1)} className="bg-pink-500 text-white rounded-md p-7 mb-6 transition-all hover:bg-pink-600" > Voltar</Button>
-//       </Link>
-//       <h1 className="text-center text-4xl text-white font-semibold mb-8">Histórico de Retiradas</h1>
-//       <div className="flex flex-wrap justify-center gap-6 mb-8">
-//         <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-//           <label className="block text-white mb-2 font-medium">Categoria</label>
-//           <select value={category} onChange={(e) => setCategory(e.target.value)}
-//             className="w-full p-3 rounded-lg border bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500" >
-//             <option value="">Selecione a categoria</option>
-//             <option value="Proteína">Proteína</option>
-//             <option value="Mantimento">Mantimento</option>
-//             <option value="Hortaliças">Hortaliças</option>
-//             <option value="Doações">Doações</option>
-//           </select>
-//         </div>
-
-//         <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-//           <label className="block text-white mb-2 font-medium">Responsável</label>
-//           <select value={retirante} onChange={(e) => setRetirante(e.target.value)}
-//             className="w-full p-3 rounded-lg border bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-//             <option value="">Selecione o responsável</option>
-//             <option value="Camila">Camila</option>
-//             <option value="Mislene">Mislene</option>
-//             <option value="Maria Jose">Maria Jose</option>
-//             <option value="Rose">Rose</option>
-//           </select>
-//         </div>
-
-//         {/* Filtro por Produto */}
-//         <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-//           <label className="block text-white mb-2 font-medium">Produto</label>
-//           <input
-//             type="text"
-//             value={produto}
-//             onChange={(e) => setProduto(e.target.value)}
-//             className="w-full p-3 rounded-lg border bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-//             placeholder="Filtrar por produto"
-//           />
-//         </div>
-
-//         <div className="flex items-end space-x-4">
-//           <Button className="bg-green-500 text-white rounded-md py-2 p-6 w-full sm:w-auto hover:bg-green-600 transition-all"
-//             onClick={filtrarRetiradas}> Consultar </Button>
-//           <Button className="bg-gray-500 text-white rounded-md py-2 p-6 w-full sm:w-auto hover:bg-gray-600 transition-all" onClick={limparFiltros} >Limpar Consulta</Button>
-//         </div>
-//       </div>
-
-//       <Table className="w-full border-collapse mt-8 bg-white rounded-lg shadow-md">
-//         <thead className="bg-indigo-600 text-white text-lg">
-//           <tr>
-//             <th className="p-4">SKU</th>
-//             <th className="p-4">Produto</th>
-//             <th className="p-4">Marca</th>
-//             <th className="p-4">Categoria</th>
-//             <th className="p-4">Quantidade</th>
-//             <th className="p-4">Peso(KG)</th>
-//             <th className="p-4">Data de Retirada</th>
-//             <th className="p-4">Responsável</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {retiradasFiltradas.length === 0 ? (
-//             <tr>
-//               <td colSpan="7" className="text-center py-4 text-gray-500">Nenhuma retirada encontrada para os filtros aplicados.</td>
-//             </tr> ) : (
-//             retiradasFiltradas.map((retirada, index) => (
-//               <tr key={index} className="text-center border-t hover:bg-gray-100 transition-colors">
-//                 <td className="p-4">{retirada.sku}</td>
-//                 <td className="p-4">{retirada.name}</td>
-//                 <td className="p-4">{retirada.marca}</td>
-//                 <td className="p-4">{retirada.category}</td>
-//                 <td className="p-4">{retirada.quantity}</td>
-//                 <td className="p-4">{retirada.peso}</td>
-//                 {/* <td className="p-4">{formatarDataHora(retirada.data)}</td> DATA AUTOMATICA */}
-//                 <td className="p-4">{formatDate(retirada.dataPedido)}</td> {/* ✅ Apenas data */}
-//                 <td className="p-4">{retirada.retirante}</td>
-//               </tr>
-//             ))
-//           )}
-//         </tbody>
-//       </Table>
-//     </div>
-//   );
-// }
-
-
-
-import { useState, useEffect } from "react";
-import { ref, child, get, db } from "../../../../firebase";
-import { Link, useNavigate } from "react-router-dom";
-import { Table } from "../../../components/ui/table/table";
-import { Button } from "../../../components/ui/Button/button";
+import { useEffect, useState } from "react";
+import { Search, Calendar, User, Package, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/Button/button";
+import { Input } from "@/components/ui/input/index";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index";
+import { Label } from "@/components/ui/label/index";
+import { useNavigate } from "react-router-dom";
+import { getDatabase, ref, get, child } from "firebase/database";
 
 export default function HistoricoRetiradas() {
   const navigate = useNavigate();
   const [retiradas, setRetiradas] = useState([]);
-  const [category, setCategory] = useState("");
-  const [retirante, setRetirante] = useState("");
-  const [produto, setProduto] = useState("");
   const [retiradasFiltradas, setRetiradasFiltradas] = useState([]);
+  const [search, setSearch] = useState("");
+  const [responsavel, setResponsavel] = useState("all");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [loading, setLoading] = useState(true);
+  const db = getDatabase();
 
-  // Carrega dados do Firebase
+  // retiradas do Firebase
   const fetchRetiradas = async () => {
-    const dbRef = ref(db);
+    setLoading(true);
     try {
+      const dbRef = ref(db);
       const snapshot = await get(child(dbRef, "Retiradas"));
       if (snapshot.exists()) {
-        const data = Object.values(snapshot.val());
+        const dataObj = snapshot.val();
+        // Como os dados vêm como objeto, converte para array com id
+        const data = Object.entries(dataObj).map(([id, value]) => ({id, ...value,}));
         setRetiradas(data);
         setRetiradasFiltradas(data);
-      } else {
-        console.log("Não há dados disponíveis");
+      } else {console.log("Não há dados disponíveis");
+        setRetiradas([]);
+        setRetiradasFiltradas([]);
       }
-    } catch (error) {
-      console.error("Erro ao ler dados:", error);
-    }
+    } catch (error) {console.error("Erro ao ler dados:", error); setRetiradas([]); setRetiradasFiltradas([]);}
+    finally {setLoading(false);}
   };
-
-  useEffect(() => {
-    fetchRetiradas();
-  }, []);
-
-  // Filtros automáticos ao digitar ou selecionar
-  useEffect(() => {
-    let filtradas = [...retiradas];
-
-    if (category) {
-      filtradas = filtradas.filter(r => r.category === category);
-    }
-    if (retirante) {
-      filtradas = filtradas.filter(r => r.retirante === retirante);
-    }
-    if (produto) {
-      filtradas = filtradas.filter(r =>
-        r.name?.toLowerCase().includes(produto.toLowerCase())
-      );
-    }
-
-    setRetiradasFiltradas(filtradas);
-  }, [category, retirante, produto, retiradas]);
-
-  const limparFiltros = () => {
-    setCategory("");
-    setRetirante("");
-    setProduto("");
-  };
-
+  useEffect(() => {fetchRetiradas();}, []);
+  // Função para formatar datas (ajustando fuso horário)
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida";
     let date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp);
@@ -245,96 +49,147 @@ export default function HistoricoRetiradas() {
     return localDate.toLocaleDateString("pt-BR");
   };
 
+  useEffect(() => {
+    let filtradas = [...retiradas];
+    if (search.trim() !== "") {
+      const term = search.trim().toLowerCase();
+      filtradas = filtradas.filter((r) => r.name?.toLowerCase().includes(term) ||  r.sku?.toLowerCase().includes(term));
+    }
+    if (responsavel !== "all") {
+      filtradas = filtradas.filter((retirada) => retirada.retirante === responsavel);
+    }
+    if (dataInicio) {
+      const dtInicio = new Date(dataInicio);
+      filtradas = filtradas.filter((r) => {const dtRetirada = new Date(r.dataRetirada);
+        return dtRetirada >= dtInicio;
+      });
+    }
+    if (dataFim) {
+      const dtFim = new Date(dataFim);
+      filtradas = filtradas.filter((r) => {const dtRetirada = new Date(r.dataRetirada);
+        return dtRetirada <= dtFim;
+      });
+    }
+    setRetiradasFiltradas(filtradas);
+  }, [search, responsavel, dataInicio, dataFim, retiradas]);
+
+  const limparFiltros = () => { setSearch(""); setResponsavel("all"); setDataInicio(""); setDataFim(""); };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+                <span className="ml-2 text-slate-600">Carregando histórico...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-r from-teal-400 to-indigo-500 min-h-screen shadow-inner ">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-white">Histórico de Retiradas</h1>
-        <Button onClick={() => navigate(-1)} className="bg-white text-indigo-600 font-medium hover:bg-indigo-100 transition px-4 py-2 rounded-md shadow">
-          Voltar
-        </Button>
-      </div>
-
-      {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label className="block text-gray-700 mb-1 font-medium">Categoria</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="">Todas</option>
-            <option value="Proteína">Proteína</option>
-            <option value="Mantimento">Mantimento</option>
-            <option value="Hortaliças">Hortaliças</option>
-            <option value="Doações">Doações</option>
-          </select>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => navigate("/Home")} className="bg-white"><ArrowLeft className="h-4 w-4 mr-2" />Voltar</Button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Histórico de Retiradas</h1>
+            <p className="text-slate-600 mt-1">Visualize e filtre todas as retiradas registradas</p>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1 font-medium">Responsável</label>
-          <select value={retirante} onChange={(e) => setRetirante(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="">Todos</option>
-            <option value="Camila">Camila</option>
-            <option value="Mislene">Mislene</option>
-            <option value="Maria Jose">Maria Jose</option>
-            <option value="Rose">Rose</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-gray-700 mb-1 font-medium">Produto</label>
-          <input
-            type="text"
-            value={produto}
-            onChange={(e) => setProduto(e.target.value)}
-            placeholder="Ex: Arroz"
-            className="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-          />
-        </div>
-
-        <div className="flex items-end gap-2">
-          <Button onClick={limparFiltros}
-            className="bg-gray-200 text-gray-700 hover:bg-gray-300 transition px-4 py-2 rounded-md w-full shadow-sm">
-            Limpar Filtros
-          </Button>
-        </div>
-      </div>
-
-      {/* Tabela */}
-      <div className="overflow-auto bg-white rounded-lg shadow-md">
-        <Table className="min-w-full text-sm text-center">
-          <thead className="bg-indigo-600 text-white">
-            <tr>
-              <th className="p-3">SKU</th>
-              <th className="p-3">Produto</th>
-              <th className="p-3">Marca</th>
-              <th className="p-3">Categoria</th>
-              <th className="p-3">Quantidade</th>
-              <th className="p-3">Peso (KG)</th>
-              <th className="p-3">Data</th>
-              <th className="p-3">Responsável</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Search className="h-5 w-5" /> Filtros de Busca</CardTitle></CardHeader><CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="lg:col-span-2 space-y-2"><Label htmlFor="search">Buscar produto ou SKU</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input id="search" type="text" placeholder="Digite o produto ou SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Responsável</Label>
+                <Select value={responsavel} onValueChange={setResponsavel}>
+                  <SelectTrigger><User className="h-4 w-4 mr-2" /><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os responsáveis</SelectItem>
+                    <SelectItem value="Camila">Camila</SelectItem>
+                    <SelectItem value="Mislene">Mislene</SelectItem>
+                    <SelectItem value="Maria Jose">Maria Jose</SelectItem>
+                    <SelectItem value="Rose">Rose</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dataInicio">Data Início</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input id="dataInicio" type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="pl-10" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dataFim">Data Fim</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input id="dataFim" type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="pl-10"/>
+                </div>
+              </div>
+              <div className="flex items-end"><Button variant="outline" onClick={limparFiltros} className="w-full"> Limpar filtros</Button></div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Resultados</CardTitle>
+              <div className="text-sm text-slate-600">{retiradasFiltradas.length}{" "}{retiradasFiltradas.length === 1 ? "retirada encontrada" : "retiradas encontradas"}</div>
+            </div>
+          </CardHeader>
+          <CardContent>
             {retiradasFiltradas.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="py-6 text-gray-500">Nenhuma retirada encontrada com os filtros aplicados.</td>
-              </tr>
-            ) : (
-              retiradasFiltradas.map((retirada, index) => (
-                <tr key={index} className="border-t hover:bg-indigo-50 transition-colors">
-                  <td className="p-3">{retirada.sku}</td>
-                  <td className="p-3">{retirada.name}</td>
-                  <td className="p-3">{retirada.marca}</td>
-                  <td className="p-3">{retirada.category}</td>
-                  <td className="p-3">{retirada.quantity}</td>
-                  <td className="p-3">{retirada.peso}</td>
-                  <td className="p-3">{formatDate(retirada.dataPedido)}</td>
-                  <td className="p-3">{retirada.retirante}</td>
-                </tr>
-              ))
+              <div className="text-center py-12">
+                <Package className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 mb-2"> Nenhuma retirada encontrada</h3>
+                <p className="text-slate-600">Tente ajustar os filtros para encontrar o que procura.</p>
+              </div>) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Marca</TableHead>
+                      <TableHead className="text-center">Quantidade</TableHead>
+                      <TableHead>Responsável</TableHead>
+                      <TableHead>Data</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {retiradasFiltradas.map((retirada) => (
+                      <TableRow key={retirada.id} className="hover:bg-slate-50">
+                        <TableCell className="font-medium">{retirada.name}</TableCell>
+                        <TableCell className="font-mono text-sm">{retirada.sku}</TableCell>
+                        <TableCell>{retirada.marca}</TableCell>
+                        <TableCell className="text-center"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">{retirada.quantity}</span></TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium">{retirada.retirante?.charAt(0)}</div>{" "} {retirada.retirante}
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatDate(retirada.dataPedido)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
-          </tbody>
-        </Table>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

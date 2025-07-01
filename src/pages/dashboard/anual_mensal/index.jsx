@@ -84,16 +84,7 @@ import { ref, get } from "firebase/database";
 import { Bar } from "react-chartjs-2";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  Title,
-} from "chart.js";
-
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title } from "chart.js";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
 
 export default function Anual() {
@@ -106,24 +97,16 @@ export default function Anual() {
     const fetchData = async () => {
       const snapshot = await get(ref(db, "RelatoriosPeriodico"));
       if (snapshot.exists()) {
-        const data = snapshot.val();
-        setRelatorios(data);
-        const firstKey = Object.keys(data)[0];
-        setSelected(firstKey);
-        setDados(data[firstKey]);
+        const data = snapshot.val(); setRelatorios(data);
+        const firstKey = Object.keys(data)[0]; setSelected(firstKey); setDados(data[firstKey]);
       }
     };
     fetchData();
   }, []);
 
-  const handleSelect = (key) => {
-    setSelected(key);
-    setDados(relatorios[key]);
-  };
-
+  const handleSelect = (key) => { setSelected(key); setDados(relatorios[key]);};
   const anos = [...new Set(dados.map(d => d.Ano))].filter(Boolean);
   const meses = [...new Set(dados.map(d => d.Mês))].filter(Boolean);
-
   const dadosFiltrados = dados.filter((d) => {
     const dentroAno = filtros.ano ? d.Ano == filtros.ano : true;
     const dentroMes = filtros.mes ? d.Mês === filtros.mes : true;
@@ -132,10 +115,7 @@ export default function Anual() {
     return dentroAno && dentroMes && dentroMin && dentroMax;
   });
 
-  const chartKeys = dadosFiltrados.length
-    ? Object.keys(dadosFiltrados[0]).filter(k => typeof dadosFiltrados[0][k] === "number")
-    : [];
-
+  const chartKeys = dadosFiltrados.length ? Object.keys(dadosFiltrados[0]).filter(k => typeof dadosFiltrados[0][k] === "number") : [];
   const exportarParaExcel = () => {
     const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
     const wb = XLSX.utils.book_new();
@@ -147,76 +127,37 @@ export default function Anual() {
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold">📊 Relatórios com Filtros</h1>
-
       <div className="flex flex-wrap gap-2">
-        {Object.keys(relatorios).map((key) => (
-          <button
-            key={key}
-            onClick={() => handleSelect(key)}
-            className={`px-4 py-2 rounded ${selected === key ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-          >
-            {key.replace(/_/g, " ")}
-          </button>
-        ))}
+        {Object.keys(relatorios).map((key) => (<button key={key} onClick={() => handleSelect(key)} className={`px-4 py-2 rounded ${selected === key ? "bg-blue-600 text-white" : "bg-gray-200"}`}>{key.replace(/_/g, " ")}</button>))}
       </div>
-
       <div className="flex flex-wrap gap-4">
         <select onChange={(e) => setFiltros({ ...filtros, ano: e.target.value })} value={filtros.ano} className="border rounded p-2">
-          <option value="">Ano</option>
-          {anos.map((a) => <option key={a} value={a}>{a}</option>)}
+          <option value="">Ano</option>{anos.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-
         <select onChange={(e) => setFiltros({ ...filtros, mes: e.target.value })} value={filtros.mes} className="border rounded p-2">
-          <option value="">Mês</option>
-          {meses.map((m) => <option key={m} value={m}>{m}</option>)}
+          <option value="">Mês</option>{meses.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
-
         <input type="number" placeholder="Mínimo" className="border rounded p-2" value={filtros.min} onChange={(e) => setFiltros({ ...filtros, min: e.target.value })} />
         <input type="number" placeholder="Máximo" className="border rounded p-2" value={filtros.max} onChange={(e) => setFiltros({ ...filtros, max: e.target.value })} />
       </div>
-
-      <button
-        onClick={exportarParaExcel}
-        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-      >
-        ⬇️ Exportar dados visíveis
+      <button onClick={exportarParaExcel} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">⬇️ Exportar dados visíveis
       </button>
 
       <div className="space-y-10">
         {chartKeys.map((campo, index) => {
           const chartData = {
             labels: dadosFiltrados.map((_, i) => `Item ${i + 1}`),
-            datasets: [
-              {
-                label: campo,
-                data: dadosFiltrados.map((item) => item[campo]),
-                backgroundColor: `rgba(${100 + index * 40}, 99, 255, 0.6)`
-              }
+            datasets: [{ label: campo, data: dadosFiltrados.map((item) => item[campo]), backgroundColor: `rgba(${100 + index * 40}, 99, 255, 0.6)`}
             ]
           };
-
           const options = {
             responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: { display: true, text: campo }
-            },
-            animation: {
-              duration: 800,
-              easing: "easeOutQuart"
-            },
-            scales: {
-              y: {
-                beginAtZero: true
-              }
+            plugins: { legend: { display: false }, title: { display: true, text: campo }},
+            animation: { duration: 800, easing: "easeOutQuart"},
+            scales: { y: {beginAtZero: true}
             }
           };
-
-          return (
-            <div key={campo}>
-              <Bar data={chartData} options={options} />
-            </div>
-          );
+          return (<div key={campo}><Bar data={chartData} options={options} /></div>);
         })}
       </div>
     </div>

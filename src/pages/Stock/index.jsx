@@ -1,15 +1,21 @@
-import { useState, useEffect } from "react";
-import {  ref, onValue, update, db } from "../../../firebase";
-import { useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx";
-import { Button } from "@/components/ui/Button/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Table } from "@/components/ui/table/table";
-const dbProdutos = ref(db, "Estoque");
+import { useState, useEffect } from "react"
+import { ref, onValue, update, db } from "../../../firebase"
+import { useNavigate } from "react-router-dom"
+import * as XLSX from "xlsx"
+import { Button } from "@/components/ui/Button/button"
+import { Input } from "@/components/ui/input/index"
+import { Label } from "@/components/ui/label/index"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Search, Download, ArrowLeft, Filter, Calendar, Package, TrendingUp, Weight, DollarSign, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Eye, Edit3,
+Clock, Building2, Tag, Layers, Hash, Scale, Calculator, CalendarDays, Truck, FolderOpen, Zap, 
+ClipboardEdit} from "lucide-react"
+import { Textarea } from "@headlessui/react"
+const dbProdutos = ref(db, "Estoque")
 
-export default function Estoque() {
-  const [searchTerm, setSearchTerm] = useState("");
+export default function Stock() {
+   const [searchTerm, setSearchTerm] = useState("");
   const [productsData, setProductsData] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -20,41 +26,56 @@ export default function Estoque() {
   const [valorEditado, setValorEditado] = useState("");
   const [editando, setEditando] = useState(null);
   const [statusFiltro, setStatusFiltro] = useState("");
-
+  const [showInventario, setShowInventario] = useState(false);
+  const [observacoes, setObservacoes] = useState({});
+  const [historicoMes, setHistoricoMes] = useState("");
+  const [dadosHistorico, setDadosHistorico] = useState(null);
+  const [inventarioData, setInventarioData] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const unsubscribe = onValue(dbProdutos, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const products = Object.keys(data).map((key) => ({sku: key, ...data[key],}));
-         setProductsData(products); setFilteredProducts(products); calculateTotals(products);}
-    }); return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {calculateTotals(filteredProducts);}, [filteredProducts]);
-
-  // Calcular totais
+  // Função para calcular totais (quantidade, peso, preço)
   const calculateTotals = (products) => {
-    const qty = products.reduce((acc, i) => acc + parseInt(i.quantity, 10), 0);
-    const peso = products.reduce((acc, i) => acc + parseFloat(i.peso || 0), 0);
-    const price = products.reduce((acc, i) => acc + (parseFloat(i.totalPrice) || 0), 0);
+    const qty = products.reduce((acc, i) => acc + Number.parseInt(i.quantity, 10), 0);
+    const peso = products.reduce((acc, i) => acc + Number.parseFloat(i.peso || 0), 0);
+    const price = products.reduce((acc, i) => acc + (Number.parseFloat(i.totalPrice) || 0), 0);
     setTotalQuantity(qty);
     setTotalPeso(peso);
     setTotalPrice(price);
   };
 
-  // Busca por termo
+  // Carregar dados do Firebase uma vez e setar estados
+  useEffect(() => {
+    const unsubscribe = onValue(dbProdutos, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const products = Object.keys(data).map((key) => ({ sku: key, ...data[key] }));
+        setProductsData(products);
+        setFilteredProducts(products);
+        calculateTotals(products);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Recalcula totais sempre que produtos filtrados mudarem
+  useEffect(() => {
+    calculateTotals(filteredProducts);
+  }, [filteredProducts]);
+
+  // Função para filtro por termo de busca
   const handleSearch = () => {
     const term = searchTerm.trim().toLowerCase();
     const filtered = productsData.filter((item) => {
       if (!term) return true;
       if (!isNaN(searchTerm)) return String(item.sku) === searchTerm.trim();
-      return [item.name, item.supplier, item.marca, item.category, item.tipo, item.status].some((field) => field?.toLowerCase().includes(term));
-      });setFilteredProducts(filtered);
+      return [item.name, item.supplier, item.marca, item.category, item.tipo, item.status].some((field) =>
+        field?.toLowerCase().includes(term)
+      );
+    });
+    setFilteredProducts(filtered);
   };
 
-  // Filtro por data
+  // Função para filtro por intervalo de datas
   const handleDateFilter = () => {
     if (!filtroInicio && !filtroFim) {
       setFilteredProducts(productsData);
@@ -62,15 +83,25 @@ export default function Estoque() {
     }
     const inicio = filtroInicio ? new Date(filtroInicio) : null;
     const fim = filtroFim ? new Date(filtroFim) : null;
+
     const filtered = productsData.filter((item) => {
-    const cad = item.dateAdded ? new Date(item.dateAdded.slice(0, 10)) : null; 
-      if (!cad) return false; return (!inicio || cad >= inicio) && (!fim || cad <= fim);});
-      setFilteredProducts(filtered);
+      const cad = item.dateAdded ? new Date(item.dateAdded.slice(0, 10)) : null;
+      if (!cad) return false;
+      return (!inicio || cad >= inicio) && (!fim || cad <= fim);
+    });
+    setFilteredProducts(filtered);
   };
-  const clearDateFilter = () => {setFiltroInicio(""); setFiltroFim(""); setFilteredProducts(productsData);};
+
+  const clearDateFilter = () => {
+    setFiltroInicio("");
+    setFiltroFim("");
+    setFilteredProducts(productsData);
+  };
+
+  // Navegação para home
   const voltar = () => navigate("/Home");
 
-  // Dias para consumo
+  // Calcular dias para consumo
   const calculateConsumptionDays = (dateAdded, expiryDate) => {
     const today = new Date();
     const exp = new Date(expiryDate);
@@ -78,38 +109,7 @@ export default function Estoque() {
     return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   };
 
-const getStatus = (item) => {
-  if (parseInt(item.quantity, 10) < 5) return "Estoque Baixo";
-  if (isExpired(item.expiryDate)) return "Produto Vencido";
-  return "Estoque Abastecido";
-};
-
-
-const handleStatusFilter = (status) => {
-  setStatusFiltro(status);
-  if (!status) {
-    setFilteredProducts(productsData);
-    return;
-  }
-  const filtered = productsData.filter((item) => getStatus(item) === status);
-  setFilteredProducts(filtered);
-};
-
-  // Formatar data sem shift de fuso
-const formatDate = (date) => {
-  if (!date) return "--";
-  try {
-    const d = new Date(date);
-    const day = String(d.getUTCDate()).padStart(2, "0");
-    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-    const year = d.getUTCFullYear();
-    return `${day}/${month}/${year}`;
-  } catch {
-    return "--";
-  }
-};
-
-
+  // Verifica status do produto (estoque baixo, vencido, abastecido)
   const isExpired = (expiryDate) => {
     if (!expiryDate) return false;
     const today = new Date();
@@ -119,8 +119,36 @@ const formatDate = (date) => {
     return exp < today;
   };
 
-  // Edição inline
-  const handleDoubleClick = (sku, value) => {setEditando(sku); setValorEditado(value?.slice(0, 10) || "");};
+  const getStatus = (item) => {
+    if (Number.parseInt(item.quantity, 10) < 5) return "Estoque Baixo";
+    if (isExpired(item.expiryDate)) return "Produto Vencido";
+    return "Estoque Abastecido";
+  };
+
+  // Filtra produtos pelo status
+  const handleStatusFilter = (status) => {
+    setStatusFiltro(status);
+    if (!status) {setFilteredProducts(productsData); return;}
+    const filtered = productsData.filter((item) => getStatus(item) === status);
+    setFilteredProducts(filtered);
+  };
+
+  // Formata data para dd/mm/yyyy sem shift de fuso
+  const formatDate = (date) => {
+    if (!date) return "--";
+    try {
+      const d = new Date(date);
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const year = d.getUTCFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {return "--";}
+  };
+  // Edição inline da data de validade
+  const handleDoubleClick = (sku, value) => {
+    setEditando(sku);
+    setValorEditado(value?.slice(0, 10) || "");
+  };
   const handleChange = (e) => setValorEditado(e.target.value);
   const handleSave = (sku) => {
     if (!valorEditado) return;
@@ -128,148 +156,389 @@ const formatDate = (date) => {
     const produtoRef = ref(db, `Estoque/${sku}`);
     update(produtoRef, { expiryDate: formatted })
       .then(() => {
-        setProductsData((prev) => prev.map((i) => i.sku === sku ? { ...i, expiryDate: formatted } : i));
-        setFilteredProducts((prev) => prev.map((i) => i.sku === sku ? { ...i, expiryDate: formatted } : i));
-          setEditando(null);
-      }).catch(console.error);
+        setProductsData((prev) => prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i)));
+        setFilteredProducts((prev) => prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i)));
+        setEditando(null);
+      })
+      .catch(console.error);
   };
 
-  // Exportar Excel
+  // Exporta os produtos para Excel
   const exportToExcel = (products) => {
     const ws = XLSX.utils.json_to_sheet(
       products.map((item) => ({
-      Status: parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
-      SKU: item.sku, Nome: item.name, Marca: item.marca, Peso: item.peso, Quantidade: item.quantity, "Unidade de Medida": item.unitmeasure,
-      "Valor Unitário": item.unitPrice, "Valor Total": item.totalPrice, "Data de Vencimento": item.expiryDate || "--", "Dias para Consumo": calculateConsumptionDays( item.dateAdded,item.expiryDate), "Data de Cadastro": formatDate(item.dateAdded), Fornecedor: item.supplier, Categoria: item.category || "N/A", Tipo: item.tipo || "N/A",})));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Estoque");
-      XLSX.writeFile(wb, "Estoque.xlsx");
+        Status: Number.parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
+            SKU: item.sku, Nome: item.name, Marca: item.marca,Peso: item.peso,    Quantidade: item.quantity,
+        // Adicione mais campos se desejar
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+    XLSX.writeFile(wb, "Estoque.xlsx");
+  };
+  // Badges de status para UI
+  const getStatusBadge = (item) => {
+    const low = Number.parseInt(item.quantity, 10) < 5;
+    const expired = isExpired(item.expiryDate);
+    if (expired) {return (<Badge variant="destructive" className="flex items-center gap-1.5 px-3 py-1 font-medium shadow-sm"><XCircle className="w-3.5 h-3.5" /> Vencido</Badge>);}
+    if (low) {return (<Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-amber-100 text-amber-800 border-amber-200 shadow-sm hover:bg-amber-200"><AlertTriangle className="w-3.5 h-3.5" /> Baixo</Badge>);}
+    return (<Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-emerald-100 text-emerald-800 border-emerald-200 shadow-sm hover:bg-emerald-200"> <CheckCircle className="w-3.5 h-3.5" /> Normal </Badge>);
   };
 
-  return (
-    <div className="bg-gradient-to-br from-[#0a192f] to-[#1e3a8a] min-h-screen py-9">
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 lg:p-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl text-black font-semibold text-blackc mb-4 sm:mb-0">Controle de Estoque</h1>
-          <Button onClick={voltar} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Voltar</Button>
-        </div>
-        {/* Busca */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Input type="text" placeholder="Buscar SKU, nome, fornecedor, categorias..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="col-span-2 w-full"/>
-          <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white w-full">Pesquisar</Button>
-        </div>
-        {/* Busca por status */}
-        <div className="mb-6">
-        <Label className="block text-gray-700 mb-1">Filtrar por Status</Label>
-        <select value={statusFiltro} onChange={(e) => handleStatusFilter(e.target.value)} className="w-full p-2 border rounded bg-white text-gray-700">
-          <option value="">Todos</option>
-          <option value="Estoque Abastecido">Estoque Abastecido</option>
-          <option value="Estoque Baixo">Estoque Baixo</option>
-          <option value="Produto Vencido">Produto Vencido</option>
-        </select>
-      </div>
+  // Estatísticas do estoque por status
+  const getStockStats = () => {
+    const normal = filteredProducts.filter((item) => getStatus(item) === "Estoque Abastecido").length;
+    const low = filteredProducts.filter((item) => getStatus(item) === "Estoque Baixo").length;
+    const expired = filteredProducts.filter((item) => getStatus(item) === "Produto Vencido").length;
+    return { normal, low, expired };
+  };
 
-        {/* Filtro de Datas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-          <div>
-            <Label className="block text-gray-700 mb-1">Início</Label>
-            <Input type="date" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)} className="w-full"/>
+  const stats = getStockStats();
+
+  // Abre modal de inventário com cópia dos dados para edição
+  const handleInventario = () => {const dados = productsData.map((p) => ({ ...p, novaQuantidade: p.quantity })); setInventarioData(dados); setShowInventario(true);};
+  // Salva inventário atualizado no Firebase e gera log
+  const salvarInventario = async () => {
+    const agora = new Date();
+    const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
+    const inventarioRef = ref(db, `Inventarios/${mesAtual}`);
+    const log = {};
+    for (const item of inventarioData) {
+      const { sku, name, quantity, novaQuantidade } = item;
+      const novaQtd = Number(novaQuantidade || 0);
+      if (novaQtd !== Number(quantity)) {
+        await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });}
+      log[sku] = {nome: name, anterior: Number(quantity), atual: novaQtd, observacao: observacoes[sku] || "",};
+    }
+
+    await set(inventarioRef, log);
+    setShowInventario(false);
+    alert("Inventário salvo com sucesso!");
+  };
+
+  // Busca histórico do inventário por mês selecionado
+  const buscarHistorico = () => {
+    if (!historicoMes) return;
+    const refHist = ref(db, `Inventarios/${historicoMes}`);
+    onValue(refHist,(snap) => {setDadosHistorico(snap.val());},{ onlyOnce: true });
+  };
+
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <Card className="border-0 shadow-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white overflow-hidden relative">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/20"><Package className="w-8 h-8 text-white" /></div>
+                <div>
+                  <CardTitle className="text-3xl font-bold text-white mb-1">Controle de Estoque</CardTitle>
+                  <p className="text-blue-100 text-sm font-medium">Sistema inteligente de gestão de inventário</p>
+                </div>
+              </div>
+              <Button onClick={voltar} variant="secondary"
+                className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border-white/20 text-white hover:bg-white/30 transition-all duration-200"><ArrowLeft className="w-4 h-4" />Voltar</Button>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-emerald-700">Valor Total</p>
+                  <p className="text-2xl font-bold text-emerald-900">R$ {totalPrice.toFixed(2).replace(".", ",")}</p>
+                  <p className="text-xs text-emerald-600">Inventário completo</p>
+                </div>
+                <div className="p-3 bg-emerald-500 rounded-xl shadow-lg"><DollarSign className="w-6 h-6 text-white" /></div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-blue-700">Peso Total</p>
+                  <p className="text-2xl font-bold text-blue-900">{totalPeso.toFixed(2)} KG</p>
+                  <p className="text-xs text-blue-600">Massa do estoque</p>
+                </div>
+                <div className="p-3 bg-blue-500 rounded-xl shadow-lg"> <Weight className="w-6 h-6 text-white" /></div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-purple-700">Quantidade Total</p>
+                  <p className="text-2xl font-bold text-purple-900">{totalQuantity}</p>
+                  <p className="text-xs text-purple-600">Unidades em estoque</p>
+                </div>
+                <div className="p-3 bg-purple-500 rounded-xl shadow-lg"><TrendingUp className="w-6 h-6 text-white" /></div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-orange-700">Produtos Ativos</p>
+                  <p className="text-2xl font-bold text-orange-900">{filteredProducts.length}</p>
+                  <p className="text-xs text-orange-600">Itens filtrados</p>
+                </div>
+                <div className="p-3 bg-orange-500 rounded-xl shadow-lg"><BarChart3 className="w-6 h-6 text-white" /></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Status Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-emerald-100 text-sm font-medium">Estoque Normal</p>
+                  <p className="text-2xl font-bold">{stats.normal}</p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-emerald-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-100 text-sm font-medium">Estoque Baixo</p>
+                  <p className="text-2xl font-bold">{stats.low}</p>
+                </div><AlertTriangle className="w-8 h-8 text-amber-200" /></div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-red-500 to-red-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-red-100 text-sm font-medium">Produtos Vencidos</p>
+                  <p className="text-2xl font-bold">{stats.expired}</p>
+                </div>
+                <XCircle className="w-8 h-8 text-red-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-0 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+            <CardTitle className="flex items-center gap-3 text-xl"><div className="p-2 bg-blue-100 rounded-lg"><Filter className="w-5 h-5 text-blue-600" /></div>Filtros e Pesquisa Avançada</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-8">
+            {/* Enhanced Search */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Search className="w-4 h-4" />Pesquisa Inteligente</Label>
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Input type="text" placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-12 text-base border-2 border-slate-200 focus:border-blue-500 rounded-xl shadow-sm" />
+                </div>
+                <Button onClick={handleSearch} className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg rounded-xl"><Search className="w-4 h-4 mr-2" />Pesquisar</Button>
+              </div>
+            </div>
+            <Separator className="my-6" />
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Eye className="w-4 h-4" /> Filtrar por Status do Estoque </Label>
+              <select value={statusFiltro} onChange={(e) => handleStatusFilter(e.target.value)}
+                className="w-full h-12 p-4border-2 border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-base">
+                <option value="all">🔍 Visualizar todos os status</option>
+                <option value="Estoque Abastecido">✅ Estoque Abastecido ({stats.normal} itens)</option>
+                <option value="Estoque Baixo">⚠️ Estoque Baixo ({stats.low} itens)</option>
+                <option value="Produto Vencido">❌ Produto Vencido ({stats.expired} itens)</option>
+              </select>
+            </div>
+            <Separator className="my-6" />
+            <div className="space-y-4">
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Calendar className="w-4 h-4" /> Filtro por Período de Cadastro </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1"><CalendarDays className="w-3 h-3" />Data Início</Label>
+                  <Input type="date" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)}
+                    className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1"><CalendarDays className="w-3 h-3" /> Data Fim</Label>
+                  <Input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg" />
+                </div>
+                <Button onClick={handleDateFilter} className="h-11 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg rounded-lg mt-6"><Filter className="w-4 h-4 mr-2" />Aplicar Filtro</Button>
+                <Button onClick={clearDateFilter} variant="outline" className="h-11 border-2 border-slate-200 hover:bg-slate-50 rounded-lg mt-6"><RefreshCw className="w-4 h-4 mr-2" />Limpar Filtros</Button>
+              </div>
+            </div>
+            <Separator className="my-6" />
+            <div className="my-6">
+            <Label className="text-sm font-medium">Consultar Inventário de um Mês:</Label>
+              <div className="flex items-center gap-4 mt-2">
+                <Input type="month" value={historicoMes} onChange={(e) => setHistoricoMes(e.target.value)} className="w-48" />
+                <Button onClick={buscarHistorico}>Buscar</Button>
+              </div>
+            {dadosHistorico && (
+              <div className="mt-6 bg-white rounded-lg shadow p-4">
+                <h3 className="font-semibold text-lg mb-2">Inventário de {historicoMes}</h3>
+                <div className="space-y-2">
+                  {Object.entries(dadosHistorico).map(([sku, info]) => (
+                    <div key={sku} className="border p-2 rounded">
+                      <p><strong>{info.nome}</strong> (SKU: {sku})</p>
+                      <p>Anterior: {info.anterior} → Atual: {info.atual}</p>
+                      <p>Observação: {info.observacao || "--"}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {showInventario && (
+              <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-start pt-10 overflow-auto">
+                <div className="bg-white rounded-lg w-full max-w-4xl p-6">
+                  <h2 className="text-xl font-semibold mb-4">Inventário Mensal</h2>
+                  <div className="max-h-[60vh] overflow-y-auto divide-y">
+                    {inventarioData.map((item, idx) => (
+                      <div key={idx} className="flex flex-col md:flex-row gap-4 py-3">
+                        <div className="flex-1">{item.name} <span className="text-sm text-slate-500">(Atual: {item.quantity})</span></div>
+                        <Input type="number" min="0" className="w-24" value={item.novaQuantidade} onChange={(e) => {
+                          const valor = e.target.value; setInventarioData((prev) => prev.map((p) => p.sku === item.sku ? { ...p, novaQuantidade: valor } : p))}} />
+                        <Textarea placeholder="Observações" className="flex-1" value={observacoes[item.sku] || ""} onChange={(e) => setObservacoes((prev) => ({ ...prev, [item.sku]: e.target.value }))} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setShowInventario(false)}>Cancelar</Button>
+                    <Button onClick={salvarInventario}>Salvar Inventário</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end my-4">
+            <Button onClick={handleInventario} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center gap-2"><ClipboardEdit className="w-4 h-4" /> Realizar Inventário</Button></div>
           </div>
-          <div>
-            <Label className="block text-gray-700 mb-1">Fim</Label>
-            <Input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} className="w-full"/>
-          </div>
-          <Button onClick={handleDateFilter} className="bg-green-600 hover:bg-green-700 text-white w-full">Filtrar</Button>
-          <Button onClick={clearDateFilter} className="bg-red-600 hover:bg-red-700 text-white w-full">Limpar</Button>
-        </div>
-        {/* Totais */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
-          <div className="bg-blue-50 p-4 rounded">
-            <p className="text-gray-500">Valor Total</p>
-            <p className="text-xl font-semibold">R$ {totalPrice.toFixed(2).replace(".", ",")}</p>
-          </div>
-          <div className="bg-blue-50 p-4 rounded">
-            <p className="text-gray-500">Peso Total</p>
-            <p className="text-xl font-semibold">{totalPeso.toFixed(2)} KG</p>
-          </div>
-          <div className="bg-blue-50 p-4 rounded">
-            <p className="text-gray-500">Qtd. Total</p>
-            <p className="text-xl font-semibold">{totalQuantity}</p>
-          </div>
-        </div>
-        {/* Legenda dos Status */}
-      <div className="grid grid-line-1 sm:grid-cols-3 gap-3 text-center mb-4">
-        <div className="flex items-center  gap-2">
-          <span className="text-green-600 text-xl">✅</span>
-          <span>Estoque normal</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-yellow-500 text-xl">⚠️</span>
-          <span>Estoque baixo (menos de 5 unidades)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-red-600 text-xl">❌</span>
-          <span>Próximos do vencimento / vencidos</span>
-        </div>
-      </div>
-        {/* Tabela */}
-        <div className="w-full max-h-[70vh] overflow-x-auto overflow-y-auto border rounded-lg shadow-sm bg-white">
-          <Table className="min-w-[1200px] table-auto border-collapse">
-            <thead className="bg-gray-200 sticky top-0 z-10">
-              <tr>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Status</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">SKU</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Nome</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Marca</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Peso</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Unid. Medida</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Qtd.</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Unit.</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Valor Total</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Vencimento</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Dias Rest.</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Cadastro</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Fornecedor</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Categoria</th>
-                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider">Tipo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((item, idx) => {
-                const days = calculateConsumptionDays(item.dateAdded, item.expiryDate);
-                const low = parseInt(item.quantity, 10) < 5;
-                const expired = isExpired(item.expiryDate);
-                return (
-                  <tr key={idx} className="hover:bg-gray-50 even:bg-white odd:bg-gray-100">
-                    <td className="p-2 text-center">{low ? "⚠️" : expired ? "❌" : "✅"}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.sku}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.name}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.marca}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.peso}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.unit}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.unitPrice}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{item.totalPrice}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center cursor-pointer" onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)}>
-                      {editando === item.sku ? (<Input type="date" value={valorEditado} onChange={handleChange} onBlur={() => handleSave(item.sku)} className="border rounded w-full text-sm" autoFocus/>) : (formatDate(item.expiryDate))}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{days}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm text-center">{formatDate(item.dateAdded)}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.supplier}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.category || "N/A"}</td>
-                    <td className="px-3 text-center py-2 whitespace-nowrap text-sm">{item.tipo || "N/A"}</td>
-                  </tr>
-                );
-              })}
-              {filteredProducts.length === 0 && (<tr><td colSpan="15" className="p-4 text-center text-gray-500 italic">Nenhum registro encontrado.</td></tr>)}
-            </tbody>
-          </Table>
-        </div>
-        {/* Exportar */}
-        <div className="text-right">
-          <Button onClick={() => exportToExcel(filteredProducts)} className="bg-indigo-600 mt-4 hover:bg-indigo-700 text-white px-4 py-2 rounded">Exportar Excel</Button>
-        </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-slate-50 to-slate-100">
+          <CardContent className="p-6">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
+              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                <span className="font-medium text-slate-700">Estoque Normal</span>
+              </div>
+              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <span className="font-medium text-slate-700">Estoque Baixo de 5 unidades</span>
+              </div>
+              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
+                <XCircle className="w-5 h-5 text-red-600" />
+                <span className="font-medium text-slate-700">Produto Vencido</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 rounded-lg"><Package className="w-5 h-5 text-indigo-600" /></div>
+                <div>
+                  <CardTitle className="text-xl">Inventário Detalhado</CardTitle>
+                  <p className="text-sm text-slate-600 mt-1"> {filteredProducts.length}{" "} {filteredProducts.length === 1 ? "produto encontrado" : "produtos encontrados"}</p>
+                </div>
+              </div>
+              <Button onClick={() => exportToExcel(filteredProducts)} className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg"><Download className="w-4 h-4 mr-2" />Exportar Excel</Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <div className="max-h-[700px] overflow-y-auto">
+                <table className="w-full min-w-[1600px]">
+                  <thead className="bg-gradient-to-r from-slate-100 to-slate-200 sticky top-0 z-10 border-b-2 border-slate-300">
+                    <tr>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Zap className="w-4 h-4" />Status</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Hash className="w-4 h-4" />SKU</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Tag className="w-4 h-4" />Nome</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Building2 className="w-4 h-4" />Marca</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Scale className="w-4 h-4" />Peso</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Layers className="w-4 h-4" />Un. Medida</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Package className="w-4 h-4" />Qtd.</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><DollarSign className="w-4 h-4" />Valor Unit.</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Calculator className="w-4 h-4" />Valor Total</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Calendar className="w-4 h-4" />Vencimento</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Clock className="w-4 h-4" />Dias Rest.</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><CalendarDays className="w-4 h-4" />Cadastro</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Truck className="w-4 h-4" />Fornecedor</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><FolderOpen className="w-4 h-4" />Categoria</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Layers className="w-4 h-4" />Tipo</div></th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-100">
+                    {filteredProducts.map((item, idx) => {
+                      const days = calculateConsumptionDays(item.dateAdded, item.expiryDate)
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50/80 transition-all duration-200 group">
+                          <td className="px-4 py-4">{getStatusBadge(item)}</td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">{item.sku}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm font-medium text-slate-800">{item.name}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.marca}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700 font-medium">{item.peso}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.unit}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm font-semibold text-slate-900">{item.quantity}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.unitPrice}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm font-semibold text-slate-900">{item.totalPrice}</span></td>
+                          <td className="px-4 py-4 text-center cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group-hover:bg-blue-100/50"
+                            onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)} title="Clique duplo para editar a data de vencimento">
+                            {editando === item.sku ? (
+                              <Input type="date" value={valorEditado} onChange={handleChange} onBlur={() => handleSave(item.sku)}
+                                className="w-full text-sm border-2 border-blue-300 focus:border-blue-500"  autoFocus/>) : (<div className="flex items-center gap-2">
+                                <span className="text-sm text-slate-700">{formatDate(item.expiryDate)}</span>
+                                <Edit3 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>)}</td>
+                          <td className="px-4 py-4 text-center"><span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${days <= 7 ? "bg-red-100 text-red-800 border border-red-200" : 
+                          days <= 30 ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"}`}>{days} dias</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{formatDate(item.dateAdded)}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.supplier}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.category || "N/A"}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.tipo || "N/A"}</span></td>
+                        </tr>
+                      )
+                    })}
+                    {filteredProducts.length === 0 && (
+                      <tr>
+                        <td colSpan="15" className="px-4 py-16 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="p-4 bg-slate-100 rounded-full">
+                              <Package className="w-12 h-12 text-slate-400" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-lg font-medium text-slate-600">Nenhum produto encontrado</p>
+                              <p className="text-sm text-slate-500">
+                                Tente ajustar os filtros de pesquisa ou verificar os critérios aplicados
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  );
+  )
 }

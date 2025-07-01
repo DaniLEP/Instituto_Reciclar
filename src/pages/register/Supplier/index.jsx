@@ -1,251 +1,228 @@
-import { useState } from "react";
-import { getDatabase, ref, push } from "firebase/database";
-import { initializeApp, getApps } from "firebase/app";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
-import { Label } from "@radix-ui/react-label";
-import { Input } from "../../../components/ui/input/index";
+import { useState } from "react"
+import { getDatabase, ref, push } from "firebase/database"
+import { initializeApp, getApps } from "firebase/app"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useNavigate } from "react-router-dom"
+import { Input } from "@/components/ui/input/index"
+import { Button } from "@/components/ui/button/button"
+import { Label } from "@/components/ui/label/index"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index"
+import { Building2, MapPin, Phone, Mail, User, CreditCard, Settings, ArrowLeft, Save, Search,Home, Hash, MessageSquare } from "lucide-react"
 
 // Configuração do Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
-    authDomain: "bancoestoquecozinha.firebaseapp.com",
-    databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
-    projectId: "bancoestoquecozinha",
-    storageBucket: "bancoestoquecozinha.appspot.com",
-    messagingSenderId: "71775149511",
-    appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
+  authDomain: "bancoestoquecozinha.firebaseapp.com",
+  databaseURL: "https://bancoestoquecozinha-default-rtdb.firebaseio.com",
+  projectId: "bancoestoquecozinha",
+  storageBucket: "bancoestoquecozinha.appspot.com",
+  messagingSenderId: "71775149511",
+  appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
+}
 
-  if (!getApps().length) {initializeApp(firebaseConfig);}
+if (!getApps().length) { initializeApp(firebaseConfig)}
+const db = getDatabase()
+export default function CadastroFornecedores() {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({cnpj: "", formasPag: "", observacoes: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",})
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    // Valida o CEP para garantir que é um número com 8 dígitos
+    if (name === "cep" && /^[0-9]{0,8}$/.test(value)) {setFormData((prevData) => ({...prevData,[name]: value,}))
+      // Se o CEP tiver 8 dígitos, tenta buscar o endereço
+    if (value.length === 8) {fetchAddress(value)}} 
+    else if (name !== "cep") {setFormData((prevData) => ({...prevData, [name]: value,}))}
+  }
 
-    const db = getDatabase();
-    
-    export default function CadastroFornecedores () {
-    const navigate = useNavigate(); // Instância do navigate
 
-    const [formData, setFormData] = useState({cnpj: "", formasPag: "", observacoes: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", grupo: "Mantimentos", status: "Ativo",  });// Status inicial como "Ativo"
-  
+const fetchCNPJData = async (cnpj) => {
+  const sanitizedCNPJ = cnpj.replace(/[^\d]/g, "")
+  if (sanitizedCNPJ.length !== 14) return
 
-    const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  try {
+    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${sanitizedCNPJ}`)
+    if (!response.ok) {
+      toast.error("CNPJ não encontrado ou inválido.", { theme: "colored" }); return;}
+    const data = await response.json()
+    setFormData((prev) => ({...prev, razaoSocial: data.razao_social || "",
+      endereco: data.descricao_tipo_de_logradouro + " " + data.logradouro || "", numero: data.numero || "", bairro: data.bairro || "", municipio: data.municipio || "", uf: data.uf || "", cep: data.cep?.replace(/\D/g, "") || "",}))
+    toast.success("Dados preenchidos automaticamente!", { theme: "colored" })
+  } 
+  catch (error) {toast.error("Erro ao consultar CNPJ.", { theme: "colored" })}
+}
 
-      // Valida o CEP para garantir que é um número com 8 dígitos
-    if (name === "cep" && /^[0-9]{0,8}$/.test(value)) {
-        setFormData((prevData) => ({...prevData,
-          [name]: value,
-    }));
 
-        // Se o CEP tiver 8 dígitos, tenta buscar o endereço
-    if (value.length === 8) {
-          fetchAddress(value);
-    }
-    } else if (name !== "cep") {
-        setFormData((prevData) => ({...prevData,
-          [name]: value,
-        }));
-      }
-    };
-
-    const fetchAddress = async (cep) => {
+  const fetchAddress = async (cep) => {
     try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
-
-    if (data.erro) { toast.error("CEP não encontrado.", {
-          position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",
-    });
-    return;
-    }
-    setFormData((prevData) => ({
-      ...prevData, endereco: data.logradouro || "", bairro: data.bairro || "", municipio: data.localidade || "", uf: data.uf || "",
-    })); toast.success("Endereço preenchido automaticamente!", {
-          position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",
-        });
-      } catch (error) {toast.error("Erro ao buscar o CEP.", {
-          position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",
-        });
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data = await response.json()
+      if (data.erro) {toast.error("CEP não encontrado.", {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored", })
+        return;
       }
-        };
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      console.log("Dados enviados:", formData);
+      setFormData((prevData) => ({...prevData, endereco: data.logradouro || "", bairro: data.bairro || "", municipio: data.localidade || "", uf: data.uf || "",}))
+      toast.success("Endereço preenchido automaticamente!", {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored"})
+    } catch (error) {toast.error("Erro ao buscar o CEP.", {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored", })}
+  }
 
-      const fornecedoresRef = ref(db, "CadastroFornecedores");
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log("Dados enviados:", formData)
+    const fornecedoresRef = ref(db, "CadastroFornecedores")
+    push(fornecedoresRef, formData)
+      .then(() => {
+        toast.success("Fornecedor cadastrado com sucesso!", {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",})
+        // Limpa os campos
+        setFormData({cnpj: "", razaoSocial: "", endereco: "", numero: "", bairro: "", cep: "", municipio: "", uf: "", pais: "Brasil", complemento: "", contato: "", telefone: "", email: "", observacoes: "", formasPag: "", grupo: "Mantimentos", status: "Ativo",})})
+      .catch((error) => {toast.error("Erro ao cadastrar fornecedor: " + error.message, {position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, theme: "colored",})})
+  }
 
-      push(fornecedoresRef, formData)
-        .then(() => {
-          toast.success("Fornecedor cadastrado com sucesso!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-
-          // Limpa os campos
-          setFormData({
-            cnpj: "",
-            razaoSocial: "",
-            endereco: "",
-            numero: "",
-            bairro: "",
-            cep: "",
-            municipio: "",
-            uf: "",
-            pais: "Brasil",
-            complemento: "",
-            contato: "",
-            telefone: "",
-            email: "",
-            observacoes: "",
-            formasPag: "",
-            grupo: "Mantimentos",
-            status: "Ativo",
-          });
-        })
-        .catch((error) => {
-          toast.error("Erro ao cadastrar fornecedor: " + error.message, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-        });
-    };
-
-
-    const handleBack = () => {navigate(-1);}; // Navega para a página anterior
-    
-    const handleStatusChange = (e) => {setFormData({ ...formData, status: e.target.value,});};
+  const handleBack = () => {navigate(-1)}
+  const handleStatusChange = (value) => {setFormData({ ...formData, status: value })}
+  const handleGrupoChange = (value) => {setFormData({ ...formData, grupo: value })}
 
   return (
-      <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#0a192f] to-[#1e3a8a] min-h-screen text-white">
-        <h2 className="text-3xl sm:text-4xl font-semibold mb-6 text-center animate-fadeIn">Cadastro de Fornecedores</h2>
-          <form id="supplier-form" onSubmit={handleSubmit} className="bg-white text-gray-800 p-8 rounded-xl w-full max-w-4xl flex flex-col gap-6 shadow-xl animate-slideIn">
-          
-            {/* Grupo 1: CNPJ, Razão Social */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="cnpj" className="text-sm font-semibold text-gray-700">CNPJ:</Label>
-                <Input required type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="razaoSocial" className="text-sm font-semibold text-gray-700">Razão Social:</Label>
-                <Input required type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+      <div className="max-w-5xl mx-auto">
+        <ToastContainer position="top-right"autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
+        <Card className="shadow-xl border-0">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+            <CardTitle className="text-2xl md:text-3xl font-bold text-center flex items-center justify-center gap-3"><Building2 className="w-8 h-8" />Cadastro de Fornecedores</CardTitle>
+          </CardHeader>
 
-            {/* Grupo 2: CEP, Endereço, Número */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="cep" className="text-sm font-semibold text-gray-700">CEP:</Label>
-<Input
-  type="text"
-  id="cep"
-  name="cep"
-  value={formData.cep}
-  onChange={handleInputChange}
-  className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-/>
+          <CardContent className="p-6 md:p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Informações da Empresa */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2"><Building2 className="w-5 h-5 text-blue-600" />Informações da Empresa</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-2"><Hash className="w-4 h-4" />CNPJ *</Label>
+                    <Input className="h-11" required type="text" id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} onBlur={() => fetchCNPJData(formData.cnpj)} placeholder="00.000.000/0000-00" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="razaoSocial" className="text-sm font-medium text-gray-700 flex items-center gap-2"><Building2 className="w-4 h-4" /> Razão Social * </Label>
+                    <Input required type="text" id="razaoSocial" name="razaoSocial" value={formData.razaoSocial} onChange={handleInputChange} placeholder="Nome da empresa" className="h-11" />
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <Label htmlFor="endereco" className="text-sm font-semibold text-gray-700">Endereço:</Label>
-                <Input required type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="numero" className="text-sm font-semibold text-gray-700">Número:</Label>
-                <Input required type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
-              </div>
-            </div>
 
-            {/* Grupo 3: Bairro, Município, UF */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="bairro" className="text-sm font-semibold text-gray-700">Bairro:</Label>
-                <Input required type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="municipio" className="text-sm font-semibold text-gray-700">Município:</Label>
-                <Input required type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="uf" className="text-sm font-semibold text-gray-700">UF:</Label>
-                <Input required type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled className="p-5 bg-gray-200 rounded-lg border border-gray-300"/>
-              </div>
-            </div>
+              {/* Endereço */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2"><MapPin className="w-5 h-5 text-blue-600" />Endereço</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cep" className="text-sm font-medium text-gray-700 flex items-center gap-2"> <Search className="w-4 h-4" /> CEP </Label>
+                    <div className="relative">
+                      <Input type="text" id="cep" name="cep" value={formData.cep} onChange={handleInputChange} placeholder="00000-000" className="h-11" maxLength={8} />
+                      {formData.cep.length === 8 && (<Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />)}
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="endereco" className="text-sm font-medium text-gray-700 flex items-center gap-2"><Home className="w-4 h-4" /> Endereço * </Label>
+                    <Input required type="text" id="endereco" name="endereco" value={formData.endereco} onChange={handleInputChange} disabled placeholder="Endereço será preenchido automaticamente" className="h-11 bg-gray-50" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="numero" className="text-sm font-medium text-gray-700"> Número * </Label>
+                    <Input required type="text" id="numero" name="numero" value={formData.numero} onChange={handleInputChange}  placeholder="123" className="h-11" />
+                  </div>
 
-            {/* Grupo 4: Contato, Telefone, E-mail */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="contato" className="text-sm font-semibold text-gray-700">Contato:</Label>
-                <Input required type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+                  <div className="space-y-2">
+                    <Label htmlFor="bairro" className="text-sm font-medium text-gray-700"> Bairro * </Label>
+                    <Input required type="text" id="bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} disabled placeholder="Bairro" className="h-11 bg-gray-50" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="municipio" className="text-sm font-medium text-gray-700">Município * </Label>
+                    <Input required type="text" id="municipio" name="municipio" value={formData.municipio} onChange={handleInputChange} disabled placeholder="Cidade" className="h-11 bg-gray-50" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="uf" className="text-sm font-medium text-gray-700">UF * </Label>
+                    <Input required type="text" id="uf" name="uf" value={formData.uf} onChange={handleInputChange} disabled placeholder="SP" className="h-11 bg-gray-50" maxLength={2} />
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <Label htmlFor="telefone" className="text-sm font-semibold text-gray-700">Telefone:</Label>
-                <Input required type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">E-mail:</Label>
-                <Input required type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
-              </div>
-            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="formasPag" className="text-sm font-semibold text-gray-700">Formas de Pagamentos:</Label>
-                <Input  type="text" id="formasPag" name="formasPag" value={formData.formasPag} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+              {/* Contato */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2"> <User className="w-5 h-5 text-blue-600" />Informações de Contato </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contato" className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" /> Nome do Contato * </Label>
+                    <Input required type="text" id="contato" name="contato" value={formData.contato} onChange={handleInputChange} placeholder="Nome do responsável" className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="telefone" className="text-sm font-medium text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4" />Telefone * </Label>
+                    <Input required type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange} placeholder="(11) 99999-9999"className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-2"><Mail className="w-4 h-4" />E-mail *</Label>
+                    <Input required type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="contato@empresa.com" className="h-11" />
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <Label htmlFor="observacoes" className="text-sm font-semibold text-gray-700">Observações:</Label>
-                <Input  type="text" id="observacoes" name="observacoes" value={formData.observacoes} onChange={handleInputChange} className="p-5 bg-gray-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+
+              {/* Informações Comerciais */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2"><CreditCard className="w-5 h-5 text-blue-600" />Informações Comerciais</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="formasPag" className="text-sm font-medium text-gray-700 flex items-center gap-2"><CreditCard className="w-4 h-4" />Formas de Pagamento</Label>
+                    <Input type="text" id="formasPag" name="formasPag" value={formData.formasPag} onChange={handleInputChange} placeholder="Ex: À vista, 30/60 dias, cartão" className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="observacoes" className="text-sm font-medium text-gray-700 flex items-center gap-2"><MessageSquare className="w-4 h-4" /> Observações </Label>
+                    <Input type="text" id="observacoes" name="observacoes" value={formData.observacoes} onChange={handleInputChange} placeholder="Observações gerais" className="h-11" />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Grupo 5: Grupo, Status */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col">
-                <Label htmlFor="grupo" className="text-sm font-semibold text-gray-700">Categoria:</Label>
-                <select id="grupo" name="grupo" value={formData.grupo} onChange={handleInputChange} className="p-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                  <option value="Selecionar Catergoria">Selecionar Catergoria do Fornecedor</option>
-                  <option value="Proteina">Proteina</option>
-                  <option value="Mantimento">Mantimento</option>
-                  <option value="Hortifrut">Hortifrut</option>
-                  <option value="Doações">Doações</option>
-                  <option value="Produtos de Limpeza">Produtos de Limpeza</option>
-                </select>
+              {/* Configurações */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2"><Settings className="w-5 h-5 text-blue-600" />Configurações</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="grupo" className="text-sm font-medium text-gray-700">Categoria do Fornecedor</Label>
+                    <Select value={formData.grupo} onValueChange={handleGrupoChange}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Selecionar categoria" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Proteina">Proteína</SelectItem>
+                        <SelectItem value="Mantimento">Mantimento</SelectItem>
+                        <SelectItem value="Hortifrut">Hortifrut</SelectItem>
+                        <SelectItem value="Doações">Doações</SelectItem>
+                        <SelectItem value="Produtos de Limpeza">Produtos de Limpeza</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+                    <Select value={formData.status} onValueChange={handleStatusChange}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Selecionar status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Ativo">Ativo</SelectItem>
+                        <SelectItem value="Inativo">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <Label htmlFor="status" className="text-sm font-semibold text-gray-700">Status:</Label>
-                <select id="status" name="status" value={formData.status} onChange={handleStatusChange} className="p-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                  <option value="Ativo">Ativo</option>
-                  <option value="Inativo">Inativo</option>
-                </select>
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
+                <Button type="submit" className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"><Save className="w-4 h-4 mr-2" />Cadastrar Fornecedor</Button>
+                <Button type="button" onClick={handleBack} variant="outline" className="flex-1 h-12 border-gray-300 hover:bg-gray-50"><ArrowLeft className="w-4 h-4 mr-2" />Voltar</Button>
               </div>
-            </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
 
-            {/* Botões */}
-            <div className="flex justify-end gap-4 mt-6">
-              <button type="submit"
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md">
-                Cadastrar</button>
 
-              <button type="button" onClick={handleBack} className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md">
-                Voltar
-              </button>
-            </div>
-          </form>
-
-    <ToastContainer />
-  </div>
-  );
-};
 
 // import * as XLSX from "xlsx";
 // import { getDatabase, ref, push } from "firebase/database";
