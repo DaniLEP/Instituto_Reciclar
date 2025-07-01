@@ -4,7 +4,7 @@ import { Eye, EyeOff, Upload, User, Mail, Lock, Shield, Camera, ArrowLeft, UserP
 import { auth, createUserWithEmailAndPassword, dbRealtime } from "../../../../firebase"
 import { ref, set } from "firebase/database"
 import { Input } from "@/components/ui/input/index"
-import { Button } from "@/components/ui/button/button.jsx"
+import { Button } from "@/components/ui/Button/button" 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index"
 import { Label } from "@/components/ui/label/index"

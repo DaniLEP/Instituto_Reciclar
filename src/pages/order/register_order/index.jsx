@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogHeader, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog/dialog";
-import { Button } from "@/components/ui/button/button.jsx"
+import { Button } from "@/components/ui/Button/button" 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { getDatabase, ref, get, push, set } from "firebase/database";

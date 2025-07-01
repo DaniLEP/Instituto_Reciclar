@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getDatabase, ref, update, push, get, remove } from "firebase/database";
 import { app } from "../../../../firebase";
-import { Button } from "@/components/ui/button/button.jsx"
+import { Button } from "@/components/ui/Button/button" 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label/index";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index";
