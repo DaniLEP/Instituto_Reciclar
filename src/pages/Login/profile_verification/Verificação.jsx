@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { getDatabase, ref, onValue, remove, update } from "firebase/database"
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button/button"
+import { Button } from "@/components/ui/button/button.jsx"
 import { Input } from "@/components/ui/input/index"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

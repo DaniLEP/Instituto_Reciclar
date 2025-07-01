@@ -4,7 +4,7 @@ import { signOut } from "firebase/auth"
 import { ref, get } from "firebase/database"
 import { auth, db } from "../../../firebase" // Ajuste conforme seu arquivo firebase
 
-import { Button } from "@/components/ui/button/button"
+import { Button } from "@/components/ui/button/button.jsx"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ref, get, set, remove } from "firebase/database"
 import { db, auth } from "../../../../firebase"
-import { Button } from "@/components/ui/button/button"
+import { Button } from "@/components/ui/button/button.jsx"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card/index"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog/dialog"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, Calendar, User, Package, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/Button/button";
+import { Button } from "@/components/ui/button/button.jsx"
 import { Input } from "@/components/ui/input/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table";

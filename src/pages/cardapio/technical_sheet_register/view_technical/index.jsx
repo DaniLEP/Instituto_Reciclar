@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react"
 import { ref as dbRef, onValue } from "firebase/database"
 import { db } from "../../../../../firebase"
-import { Button } from "@/components/ui/button/button"
+import { Button } from "@/components/ui/button/button.jsx"
 import { Input } from "@/components/ui/input/index"
 import { Label } from "@/components/ui/label/index"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
