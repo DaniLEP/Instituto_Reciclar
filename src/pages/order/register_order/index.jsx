@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogHeader, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog/dialog";
-import { Button } from "@/components/ui/Button/button" 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { getDatabase, ref, get, push, set } from "firebase/database";
@@ -15,7 +14,7 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { Badge } from "@/components/ui/badge";
 import { getAuth } from "firebase/auth";
 import { remove } from "firebase/database";
-
+import { Button } from "@/components/ui/button";
 
 // CONFIGURAÇÃO DO FIREBASE
 const firebaseConfig = {
@@ -88,7 +87,31 @@ export default function NovoPedido() {
     setDataSelecionada(dadosRascunho.dataSelecionada || ""); setPeriodoInicio(dadosRascunho.periodoInicio || ""); setPeriodoFim(dadosRascunho.periodoFim || ""); setCategory(dadosRascunho.category || ""); setProjeto(dadosRascunho.projeto || "");
     setFornecedorSelecionado(dadosRascunho.fornecedorSelecionado || null); setDadosFornecedor(dadosRascunho.dadosFornecedor || {}); setItensPedido(dadosRascunho.itensPedido || []); setRascunhoDisponivel(false); toast.success("Rascunho carregado com sucesso!");
   };
-  const handleQuantidadeChange = (index, newQuantidade) => {setItensPedido(prev => prev.map((item, i) => i === index ? { ...item, quantidade: Number(newQuantidade) } : item));};
+const handleQuantidadeChange = async (index, newQuantidade) => {
+  const novaLista = itensPedido.map((item, i) =>
+    i === index ? { ...item, quantidade: Number(newQuantidade) } : item
+  );
+  setItensPedido(novaLista);
+
+  // opcional: atualizar rascunho automaticamente
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (user) {
+    const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
+    await set(rascunhoRef, {
+      numeroPedido,
+      dataSelecionada,
+      periodoInicio,
+      periodoFim,
+      category,
+      projeto,
+      fornecedorSelecionado,
+      dadosFornecedor,
+      itensPedido: novaLista,
+    });
+  }
+};
+
   const handleProductSelect = (p) => {
     setProductSelecionado(p);
     setDadosProduct({ ...p, quantidade: 1, observacao: "" });
@@ -134,19 +157,64 @@ export default function NovoPedido() {
     return (p.name?.toLowerCase().includes(termo) || p.tipo?.toLowerCase().includes(termo) || p.category?.toLowerCase().includes(termo));
   });
 
-  const salvarRascunhoManual = async () => {
+const salvarRascunhoManual = async () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  if (!user) { toast.error("Usuário não autenticado."); return;}
-  const rascunho = {numeroPedido, dataSelecionada, periodoInicio, periodoFim, category, projeto, fornecedorSelecionado, dadosFornecedor, itensPedido,};
+
+  if (!user) {
+    toast.error("❌ Usuário não autenticado.");
+    return;
+  }
+
+  const rascunho = {
+    numeroPedido,
+    dataSelecionada,
+    periodoInicio,
+    periodoFim,
+    category,
+    projeto,
+    fornecedorSelecionado,
+    dadosFornecedor,
+    itensPedido,
+  };
+
   try {
     const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
     await set(rascunhoRef, rascunho);
-    toast.success("Rascunho salvo com sucesso!");
+
+    toast.success("✅ Rascunho salvo com sucesso!", {
+      description: "Você pode continuar o preenchimento depois.",
+      duration: 5000,
+    });
+
+    // Limpa campos
+    setDataSelecionada("");
+    setPeriodoInicio("");
+    setPeriodoFim("");
+    setCategory("");
+    setProjeto("");
+    setFornecedorSelecionado(null);
+    setDadosFornecedor({});
+    setItensPedido([]);
+    setProductSelecionado(null);
+    setDadosProduct({ quantidade: 1, observacao: "" });
+
   } catch (error) {
-    toast.error("Erro ao salvar o rascunho: " + error.message);
+    toast.error("❌ Erro ao salvar rascunho: " + error.message);
   }
 };
+
+
+
+const handleObservacaoChange = (index, novaObs) => {
+  setItensPedido(prev =>
+    prev.map((item, i) =>
+      i === index ? { ...item, observacao: novaObs } : item
+    )
+  );
+};
+
+
 
 
   return (
@@ -387,7 +455,15 @@ export default function NovoPedido() {
                       <TableCell><Badge variant="secondary">{item.category}</Badge></TableCell>
                       <TableCell>{item.peso} {item.unitMeasure}</TableCell>
                       <TableCell><Input type="number" min="0" className="w-20 border rounded px-2 py-1 text-sm text-center" value={item.quantidade} onChange={(e) => handleQuantidadeChange(idx, e.target.value)} /></TableCell>
-                      <TableCell className="max-w-32 truncate" title={item.observacao}> {item.observacao || "-"}</TableCell>
+<TableCell>
+  <Textarea
+    className="w-full min-w-[200px] text-sm"
+    rows={2}
+    value={item.observacao || ""}
+    onChange={(e) => handleObservacaoChange(idx, e.target.value)}
+    placeholder="Digite a observação..."
+  />
+</TableCell>
                       <TableCell><Button size="sm" variant="destructive" onClick={() => handleDelete(idx)} ><Trash2 className="h-4 w-4" /></Button></TableCell>
                     </TableRow>
                   ))}

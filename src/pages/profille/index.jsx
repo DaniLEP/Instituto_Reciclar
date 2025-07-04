@@ -160,7 +160,7 @@ export default function Perfil() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
-            <img src="/Reciclar_LOGO.png" alt="Logo da Reciclar" className="w-8 h-8" />
+            <img src="/Reciclar_LOGO.png" alt="Logo da Reciclar" className="w-20 h-15" />
             <span className="font-bold text-xl bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
               Reciclar
             </span>
