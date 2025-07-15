@@ -1,7 +1,7 @@
 # Kitchen Management System  
 **Instituto Reciclar**
 
-[![Tech Stack](https://img.shields.io/badge/tech-Firebase%2C_React%2C_TailwindCSS-blue)](https://firebase.google.com/)  
+[![Tech Stack](https://img.shields.io/badge/tech-Firebase%2C_React%2C_TailwindCSS-blue)](https://firebase.google.com/)  <br> </br>
 [![Status](https://img.shields.io/badge/status-Production-green)](https://your-project-link)  
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)  
 
