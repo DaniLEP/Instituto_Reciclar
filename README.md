@@ -1,128 +1,100 @@
-# Documentação do Projeto: Sistema de Controle de Entrada e Saída de Alimentos
+# Kitchen Management System  
+**Instituto Reciclar**
 
-## Objetivo do Projeto
-
-O projeto foi desenvolvido para facilitar a gestão de entrada e saída de alimentos da cozinha do Instituto Reciclar, automatizando processos e otimizando o trabalho de controle e estoque. Este sistema foi criado para uso interno, permitindo maior organização, economia de tempo e precisão nas operações.
-
----
-
-## Funcionalidades
-
-### Pedidos
-
-Página destinada à criação e gerenciamento de pedidos.
-
-#### Subfuncionalidades
-
-- **Novo Pedido**  
-  Permite realizar pedidos para fornecedores. O usuário pode consultar os produtos disponíveis, selecionar os itens necessários e adicioná-los à solicitação. É possível incluir diversos itens em um único pedido.
-
-- **Status do Pedido**  
-  Exibe os pedidos criados e permite a edição dos itens por meio de um botão, que abre uma página específica para ajustes nos produtos adicionados.
+[![Tech Stack](https://img.shields.io/badge/tech-Firebase%2C_React%2C_TailwindCSS-blue)](https://firebase.google.com/)  
+[![Status](https://img.shields.io/badge/status-Production-green)](https://your-project-link)  
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)  
 
 ---
 
-### Cadastro
+## 1. Introduction
 
-Página dedicada ao gerenciamento de cadastros de produtos e fornecedores.
+### 1.1 Overview  
+This system was developed to streamline and automate the control of food inflow and outflow in the kitchen of *Instituto Reciclar*. It provides a modern, secure, and user-friendly interface designed for internal staff, promoting operational efficiency, time savings, and accuracy in day-to-day food management.
 
-#### Subfuncionalidades
+### 1.2 Target Users  
+The platform is intended for internal use by authorized staff, with access levels defined by user roles:
 
-- **Cadastro de Produtos**  
-  Permite adicionar novos produtos ao estoque. Ideal para casos em que um item não está cadastrado no sistema e precisa ser incluído, seja em pequenas unidades ou em grandes volumes.
+- **Administrator**  
+- **Nutritionist**  
+- **Kitchen Staff**
 
-- **Entrada de Produtos**  
-  Gerencia a entrada de produtos no banco de dados. Possui:  
-  - **Botão Adicionar**  
-    Abre um formulário para registro do produto, enviando os dados ao banco de dados.  
-  - **Botão Remover**  
-    Exclui o produto do banco de dados.
-
-- **Cadastro de Refeição Servida**  
-  Registra os ingredientes utilizados e organiza a contagem de refeições servidas por período, categorizando quem foi atendido.
-
-- **Cadastro de Fornecedor**  
-  Permite o registro de novos fornecedores para atender às necessidades do sistema.
+Access to system features is restricted and managed according to these user roles.
 
 ---
 
-### Relatórios
+## 2. Technologies Used
 
-Página para geração de relatórios detalhados com opções de consulta personalizada.
-
-#### Subfuncionalidades
-
-- **Estoque**  
-  Permite ao usuário consultar os produtos disponíveis no sistema e acessar informações sobre o estoque.
-
-- **Relatório de Refeições Servidas**  
-  Mostra os dados das refeições servidas em um período selecionado.
-
-- **Relatório Periódico**  
-  Exibe dados de produtos removidos ou atualizados durante um período específico.
-
-- **Relatório de Retiradas**  
-  Detalha os produtos retirados do estoque em um período escolhido pelo usuário.
+| Technology       | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| **React**        | Frontend framework used for building interactive user interfaces.          |
+| **Vite**         | Lightning-fast development and build tool for modern web projects.         |
+| **TailwindCSS**  | Utility-first CSS framework for responsive, customizable styling.          |
+| **ShadCN UI**    | Accessible and elegant UI components library.                              |
+| **Firebase**     | Backend infrastructure used for Authentication, Firestore, and Storage.    |
+| **Node.js**      | Runtime environment used for server-side logic and APIs.                   |
+| **GitHub**       | Version control and collaborative source code hosting.                     |
+| **Google Drive** | Used for storing documentation in PDF format, restricted to internal users. |
 
 ---
 
-### Retirada
+## 3. System Architecture & Functional Modules
 
-Gerencia a retirada de produtos do estoque.
+### 3.1 Authentication Module
 
-#### Funcionalidades
+- **Login**: Email/password or Google login restricted to *@reciclar.org.br* domain users.  
+- **Password Recovery**: Password reset via email link.  
 
-- Consulta por nome ou SKU do produto.  
-- Seleção de data e categoria do produto (Proteína, Mantimento ou Hortaliça).  
-- Registro detalhado das retiradas para controle preciso do estoque.  
-- **Histórico de Retiradas**  
-  Página que registra todas as retiradas realizadas, oferecendo um histórico detalhado para manter o controle do estoque.
+### 3.2 Home Dashboard  
+Role-based dashboard with access to authorized functionalities.
+
+### 3.3 Nutrition Module
+
+- **Technical Sheet**: Recipe creation with image upload, viewing, and scaling for servings.  
+- **Menus**: Create (Breakfast, Lunch, Afternoon Snack), approval workflow, editing, and export.  
+- **Meals**: Daily meal registrations with real-time calculation and data export.  
+
+### 3.4 Product & Inventory Management
+
+- **Product Registration**: SKU generation and supplier linking.  
+- **Product Entry**: Logging stock inflows with batch and expiry data.  
+- **Suppliers**: Create and manage supplier data with auto-address filling.
+
+### 3.5 Inventory Control
+
+- Real-time stock status: Normal, Low, Expired.  
+- Filters, quick expiry editing, inventory input, and export.
+
+### 3.6 Product Withdrawal
+
+- Withdrawal interface with alerts and product search.  
+- Complete withdrawal history with detailed logs and export.
+
+### 3.7 Dashboards & Analytics
+
+- Interactive real-time statistics on consumption, inventory, and operations.
+
+### 3.8 Additional Features
+
+- Documentation access via Google Drive restricted to institutional domain.  
+- User management with role assignment and activity monitoring.  
+- User profile page.  
+- Maintenance checklists for kitchen operational standards.
 
 ---
 
-## Tecnologias Utilizadas
+## 4. Getting Started
 
-### Frontend
+### Prerequisites
 
-- **React**  
-  Biblioteca para construção de interfaces e componentes do projeto.
+- Node.js (v14 or higher)  
+- Firebase account with configured project  
+- Access credentials for institutional Google domain  
 
-- **Chart.js**  
-  Biblioteca para criação de gráficos interativos.
-
-- **CSS Inline e Tailwind CSS**  
-  Ferramentas para estilização da interface.
-
-### Backend
-
-- **Node.js**  
-  Ambiente de execução para JavaScript no servidor.
-
-### API
-
-- Conexão com o Firebase para interação entre frontend e banco de dados.
-
-### Banco de Dados
-
-- **Firebase**  
-  Banco de dados em nuvem para armazenamento seguro e eficiente.
-
----
-
-## Como Executar o Projeto
-
-### Instalação das Dependências
-
-Execute o seguinte comando no terminal para instalar as dependências do Node.js:
+### Installation
 
 ```bash
+git clone https://github.com/your-username/kitchen-management-system.git
+cd kitchen-management-system
 npm install
-```
----
-
-### Execução em Ambiente Local
-Para iniciar o projeto no ambiente local, utilize o comando:
-
-```bash
 npm run dev
-```
