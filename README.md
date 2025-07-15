@@ -2,8 +2,7 @@
 **Instituto Reciclar**
 
 [![Tech Stack](https://img.shields.io/badge/tech-Firebase%2C_React%2C_TailwindCSS-blue)](https://firebase.google.com/)  <br> </br>
-[![Status](https://img.shields.io/badge/status-Production-green)](https://your-project-link)   <br> </br>
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)  
+[![Status](https://img.shields.io/badge/status-Production-green)](plataforma-reciclar.vercel.app/)   <br> </br>
 
 ---
 
