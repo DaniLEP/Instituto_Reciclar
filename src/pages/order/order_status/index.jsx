@@ -5,7 +5,7 @@ import { ref, get, update, push, set } from "firebase/database"
 import * as XLSX from "xlsx"
 import { Link, useNavigate } from "react-router-dom"
 import { Input } from "@/components/ui/input/index"
-import { Button } from "@/components/ui/Button/button" 
+import { Button } from "@/components/ui/button" 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -267,108 +267,134 @@ export default function StatusPedidos() {
   const headerImgSrc = "./Reciclar_30anos_Horizontal_Positivo.png";
   const segundaHeaderImgSrc = "./seloAtualizado.png";
   const footerImgSrc = "./selo.png";
+const loadImage = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+  });
+};
 
-  const exportToPDF = ({
-    headerSrc = headerImgSrc,
-    segundaHeaderSrc = segundaHeaderImgSrc,
-    footerSrc = footerImgSrc, 
-    headerWidth = 45, headerHeight = 9, headerX = 10, headerY = 6, 
-    segundaHeaderWidth = 45, segundaHeaderHeight = 9, segundaHeaderX = 150, segundaHeaderY = 6,
-    footerWidth = 90, footerHeight = 25, footerX = 10, footerY = null,
-  } = {}) => {
-    const headerImg = new Image();
-    const segundaHeaderImg = new Image();
-    const footerImg = new Image();
-    headerImg.src = headerSrc;
-    segundaHeaderImg.src = segundaHeaderSrc;
-    footerImg.src = footerSrc;
-    headerImg.onload = () => {
-      segundaHeaderImg.onload = () => {
-        footerImg.onload = () => {
-          if (!pedidoSelecionado) {console.error("Pedido não selecionado.");
-            return;
-          }
-          const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4",});
-          const pageWidth = doc.internal.pageSize.width;
-          const pageHeight = doc.internal.pageSize.height;
-          if (footerY === null) footerY = pageHeight - footerHeight;
-          const contentTop = headerY + headerHeight + 10;
-          const contentBottom = footerY - 20;
-          const marginLeft = 20;
-          const addHeader = () => {
-            doc.addImage(headerImg, "PNG", headerX, headerY, headerWidth, headerHeight);
-            doc.addImage(segundaHeaderImg, "PNG", segundaHeaderX, segundaHeaderY, segundaHeaderWidth, segundaHeaderHeight);};
-          const addFooter = () => {doc.addImage(footerImg, "PNG", footerX, footerY, footerWidth, footerHeight);};
-          doc.setFont("Helvetica");
-          doc.setFontSize(10);
-          addHeader();
-          addFooter();
-          let y = contentTop;
-          doc.text("Número do Pedido: " + (pedidoSelecionado.numeroPedido || ""), marginLeft, y); y += 8;
-          doc.text("Projeto Custeador: " + (pedidoSelecionado.projeto || ""), marginLeft, y); y += 8;
-          doc.text("Fornecedor: " + (pedidoSelecionado.fornecedor?.razaoSocial || ""), marginLeft, y); y += 8;
-          doc.text("Data do Pedido: " + formatDate(pedidoSelecionado.dataPedido || ""), marginLeft, y); y += 8;
-          const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
-          doc.text(periodo, marginLeft, y); y += 22;
-          const addTableHeader = (y) => {
-            doc.setFontSize(9);
-            doc.text("Produto", 20, y);
-            doc.text("Peso", 60, y);
-            doc.text("Unidade", 80, y);
-            doc.text("Marca", 100, y); 
-            doc.text("Quantidade", 135, y);
-            doc.text("Observação", 160, y);
-            doc.line(20, y + 2, 190, y + 2);
-          };
-          addTableHeader(y);
-          y += 10;
-          doc.setFontSize(9);
-          const lineHeight = 5;
-          (pedidoSelecionado.produtos || []).forEach((produto) => {
-            const nomeLines = doc.splitTextToSize(String(produto.name || ""), 35);
-            const pesoLines = doc.splitTextToSize(String(produto.peso || ""), 15);
-            const unidadeLines = doc.splitTextToSize(String(produto.unitMeasure || ""), 15);
-            const marcaLines = doc.splitTextToSize(String(produto.marca || ""), 30);
-            const quantidadeLines = doc.splitTextToSize(String(produto.quantidade || "0"), 15);
-            const observacaoLines = doc.splitTextToSize(produto.observacao || "Sem observação", 40);
-            const maxLines = Math.max(
-              nomeLines.length,
-              pesoLines.length,
-              unidadeLines.length,
-              marcaLines.length,
-              quantidadeLines.length,
-              observacaoLines.length
-            );
-            const rowHeight = Math.max(maxLines * lineHeight, 14);
-            if (y + rowHeight > contentBottom) {
-              doc.addPage();
-              addHeader();
-              addFooter();
-              y = contentTop;
-              addTableHeader(y);
-              y += 10;
-            }
 
-            const baseY = y;
-            for (let i = 0; i < maxLines; i++) {
-              const offsetY = baseY + i * lineHeight;
-              if (nomeLines[i]) doc.text(nomeLines[i], 20, offsetY);
-              if (pesoLines[i]) doc.text(pesoLines[i], 60, offsetY);
-              if (unidadeLines[i]) doc.text(unidadeLines[i], 80, offsetY);
-              if (marcaLines[i]) doc.text(marcaLines[i], 100, offsetY);
-              if (quantidadeLines[i]) doc.text(quantidadeLines[i], 135, offsetY);
-              if (observacaoLines[i]) doc.text(observacaoLines[i], 160, offsetY);
-            }
-            y += rowHeight;
-            doc.line(20, y, 190, y);
-            y += 5;
-          });
-          addFooter();
-          doc.save(`pedido_${pedidoSelecionado.numeroPedido || "sem_numero"}.pdf`);
-        };
-      };
+
+const exportToPDF = async () => {
+  if (!pedidoSelecionado) {
+    console.error("Pedido não selecionado.");
+    return;
+  }
+
+  try {
+    const [headerImg, segundaHeaderImg, footerImg] = await Promise.all([
+      loadImage(headerImgSrc),
+      loadImage(segundaHeaderImgSrc),
+      loadImage(footerImgSrc),
+    ]);
+
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    const headerX = 10, headerY = 6, headerWidth = 45, headerHeight = 9;
+    const segundaHeaderX = 150, segundaHeaderY = 6, segundaHeaderWidth = 45, segundaHeaderHeight = 9;
+    const footerX = 10, footerWidth = 90, footerHeight = 25;
+    const footerY = pageHeight - footerHeight;
+
+    const contentTop = headerY + headerHeight + 10;
+    const contentBottom = footerY - 20;
+    const marginLeft = 20;
+
+    const addHeader = () => {
+      doc.addImage(headerImg, "PNG", headerX, headerY, headerWidth, headerHeight);
+      doc.addImage(segundaHeaderImg, "PNG", segundaHeaderX, segundaHeaderY, segundaHeaderWidth, segundaHeaderHeight);
     };
-  };
+
+    const addFooter = () => {
+      doc.addImage(footerImg, "PNG", footerX, footerY, footerWidth, footerHeight);
+    };
+
+    doc.setFont("Helvetica");
+    doc.setFontSize(10);
+    addHeader();
+    addFooter();
+
+    let y = contentTop;
+
+    doc.text("Número do Pedido: " + (pedidoSelecionado.numeroPedido || ""), marginLeft, y); y += 8;
+    doc.text("Projeto Custeador: " + (pedidoSelecionado.projeto || ""), marginLeft, y); y += 8;
+    doc.text("Fornecedor: " + (pedidoSelecionado.fornecedor?.razaoSocial || ""), marginLeft, y); y += 8;
+    doc.text("Data do Pedido: " + formatDate(pedidoSelecionado.dataPedido || ""), marginLeft, y); y += 8;
+    const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
+    doc.text(periodo, marginLeft, y); y += 22;
+
+    const addTableHeader = (y) => {
+      doc.setFontSize(9);
+      doc.text("Produto", 20, y);
+      doc.text("Peso", 60, y);
+      doc.text("Unidade", 80, y);
+      doc.text("Marca", 100, y);
+      doc.text("Quantidade", 135, y);
+      doc.text("Observação", 160, y);
+      doc.line(20, y + 2, 190, y + 2);
+    };
+
+    addTableHeader(y);
+    y += 10;
+
+    doc.setFontSize(9);
+    const lineHeight = 5;
+
+    (pedidoSelecionado.produtos || []).forEach((produto) => {
+      const nomeLines = doc.splitTextToSize(String(produto.name || ""), 35);
+      const pesoLines = doc.splitTextToSize(String(produto.peso || ""), 15);
+      const unidadeLines = doc.splitTextToSize(String(produto.unitMeasure || ""), 15);
+      const marcaLines = doc.splitTextToSize(String(produto.marca || ""), 30);
+      const quantidadeLines = doc.splitTextToSize(String(produto.quantidade || "0"), 15);
+      const observacaoLines = doc.splitTextToSize(produto.observacao || "Sem observação", 40);
+
+      const maxLines = Math.max(
+        nomeLines.length,
+        pesoLines.length,
+        unidadeLines.length,
+        marcaLines.length,
+        quantidadeLines.length,
+        observacaoLines.length
+      );
+
+      const rowHeight = Math.max(maxLines * lineHeight, 14);
+
+      if (y + rowHeight > contentBottom) {
+        doc.addPage();
+        addHeader();
+        addFooter();
+        y = contentTop;
+        addTableHeader(y);
+        y += 10;
+      }
+
+      const baseY = y;
+      for (let i = 0; i < maxLines; i++) {
+        const offsetY = baseY + i * lineHeight;
+        if (nomeLines[i]) doc.text(nomeLines[i], 20, offsetY);
+        if (pesoLines[i]) doc.text(pesoLines[i], 60, offsetY);
+        if (unidadeLines[i]) doc.text(unidadeLines[i], 80, offsetY);
+        if (marcaLines[i]) doc.text(marcaLines[i], 100, offsetY);
+        if (quantidadeLines[i]) doc.text(quantidadeLines[i], 135, offsetY);
+        if (observacaoLines[i]) doc.text(observacaoLines[i], 160, offsetY);
+      }
+
+      y += rowHeight;
+      doc.line(20, y, 190, y);
+      y += 5;
+    });
+
+    addFooter();
+    doc.save(`pedido_${pedidoSelecionado.numeroPedido || "sem_numero"}.pdf`);
+
+  } catch (error) {
+    console.error("Erro ao gerar PDF:", error);
+  }
+};
 
   const salvarDescontoNoPedido = async () => {
     if (!pedidoSelecionado?.id) return
