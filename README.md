@@ -94,6 +94,9 @@ Role-based dashboard with access to authorized functionalities.
 
 ```bash
 git clone https://github.com/DaniLEP/Instituto_Reciclar.git
+
 cd kitchen-management-system
+
 npm install
+
 npm run dev
