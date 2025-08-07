@@ -74,7 +74,7 @@ const Modal = ({ products, onSelectProduct, onClose }) => {
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.marca}</TableCell>
                       <TableCell>{product.supplier}</TableCell>
-                      <TableCell><span className="font-medium">{product.peso}</span><span className="text-gray-500 ml-1">{product.unitMeasure}</span></TableCell>
+                      <TableCell><span className="font-medium">{product.peso}</span></TableCell>
                       <TableCell><Badge variant="outline">{product.unitMeasure}</Badge></TableCell>
                       <TableCell><Badge className={getCategoryColor(product.category)} variant="secondary">{product.category}</Badge></TableCell>
                       <TableCell className="text-center"><Button onClick={() => onSelectProduct(product)} size="sm" className="bg-blue-600 hover:bg-blue-700">Selecionar</Button></TableCell>
@@ -375,3 +375,4 @@ export default function CadastroProdutos() {
 //     </div>
 //   );
 // }
+

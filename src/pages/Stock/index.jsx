@@ -542,3 +542,101 @@ export default function Stock() {
     </div>
   )
 }
+
+
+
+
+// import { useState } from "react";
+// import * as XLSX from "xlsx";
+// import { getDatabase, ref, set } from "firebase/database";
+// import { toast } from "react-toastify";
+// import { Input } from "@/components/ui/input";
+
+// const db = getDatabase();
+
+// export default function ImportarEstoqueViaPlanilha() {
+//   const [loading, setLoading] = useState(false);
+
+//   const safeParseInt = (value) => {
+//     const parsed = parseInt(value, 10);
+//     return isNaN(parsed) ? 0 : parsed;
+//   };
+
+//   const safeParseFloat = (value) => {
+//     if (typeof value === "string") value = value.replace(",", ".");
+//     const parsed = parseFloat(value);
+//     return isNaN(parsed) ? 0 : parsed;
+//   };
+
+//   const handleFileUpload = async (e) => {
+//     const file = e.target.files?.[0];
+//     if (!file) return;
+
+//     setLoading(true);
+//     const reader = new FileReader();
+
+//     reader.onload = async (evt) => {
+//       try {
+//         const binaryStr = evt.target?.result;
+//         const workbook = XLSX.read(binaryStr, { type: "binary" });
+//         const firstSheet = workbook.SheetNames[0];
+//         const worksheet = workbook.Sheets[firstSheet];
+//         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+//         for (const item of jsonData) {
+//           const sku = item.sku?.toString().trim();
+//           if (!sku) continue;
+
+//           const produto = {
+//             sku,
+//             name: item.name?.toString().trim() || "",
+//             marca: item.marca?.toString().trim() || "",
+//             peso: safeParseFloat(item.peso),
+//             unit: item.unit?.toString().trim() || "",
+//             quantity: safeParseInt(item.quantity),
+//             unitPrice: safeParseFloat(item.unitPrice),
+//             totalPrice: safeParseFloat(item.totalPrice),
+//             expiryDate: item.expiryDate || "",
+//             dateAdded: item.dateAdded || new Date().toISOString().split("T")[0],
+//             supplier: item.supplier?.toString().trim() || "",
+//             category: item.category?.toString().trim() || "",
+//             tipo: item.tipo?.toString().trim() || "",
+//           };
+
+//           if (isNaN(produto.quantity) || isNaN(produto.peso)) {
+//             console.warn("⚠️ Produto ignorado por conter valores inválidos:", produto);
+//             continue;
+//           }
+
+//           const estoqueRef = ref(db, `Estoque/${sku}`);
+//           await set(estoqueRef, produto);
+//         }
+
+//         toast.success("✅ Estoque importado com sucesso!");
+//       } catch (error) {
+//         console.error("❌ Erro ao importar:", error);
+//         toast.error("Erro ao importar planilha.");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     reader.readAsBinaryString(file);
+//   };
+
+//   return (
+//     <div className="my-6">
+//       <label className="font-medium mb-2 block">
+//         📥 Importar planilha de estoque (.xlsx ou .xls)
+//       </label>
+//       <Input
+//         type="file"
+//         accept=".xlsx,.xls"
+//         onChange={handleFileUpload}
+//         disabled={loading}
+//       />
+//       {loading && <p className="text-blue-700 mt-2">Importando dados para o estoque...</p>}
+//     </div>
+//   );
+// }
+
