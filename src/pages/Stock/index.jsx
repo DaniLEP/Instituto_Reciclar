@@ -168,7 +168,7 @@ export default function Stock() {
     const ws = XLSX.utils.json_to_sheet(
       products.map((item) => ({
         Status: Number.parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
-            SKU: item.sku, Nome: item.name, Marca: item.marca,Peso: item.peso,    Quantidade: item.quantity,
+            SKU: item.sku, Nome: item.name, Marca: item.marca,Peso: item.peso, Quantidade: item.quantity,
         // Adicione mais campos se desejar
       }))
     );
@@ -572,7 +572,7 @@ export default function Stock() {
 //     const file = e.target.files?.[0];
 //     if (!file) return;
 
-//     setLoading(true);
+//     setLoading(true);dateAdded
 //     const reader = new FileReader();
 
 //     reader.onload = async (evt) => {
