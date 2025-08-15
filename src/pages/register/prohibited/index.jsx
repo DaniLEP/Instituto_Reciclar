@@ -282,7 +282,7 @@ export default function CadastroProdutos() {
 }
 
 
-// // CODIGO PARA SUBIR PLANILHAS AO FIREBASE 
+
 // import { useState } from "react";
 // import * as XLSX from "xlsx";
 // import { getDatabase, ref, set } from "firebase/database";
@@ -293,11 +293,6 @@ export default function CadastroProdutos() {
 
 // export default function CadastroProdutos() {
 //   const [loading, setLoading] = useState(false);
-
-//   const safeParseInt = (value) => {
-//     const parsed = parseInt(value, 10);
-//     return isNaN(parsed) ? 0 : parsed;
-//   };
 
 //   const safeParseFloat = (value) => {
 //     if (typeof value === "string") {
@@ -320,7 +315,7 @@ export default function CadastroProdutos() {
 //         const workbook = XLSX.read(binaryStr, { type: "binary" });
 //         const firstSheet = workbook.SheetNames[0];
 //         const worksheet = workbook.Sheets[firstSheet];
-//         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" }); // mantém campos vazios
+//         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
 //         for (const item of jsonData) {
 //           const sku = item.sku?.toString().trim();
@@ -331,16 +326,15 @@ export default function CadastroProdutos() {
 //             name: item.name?.toString().trim() || "",
 //             marca: item.marca?.toString().trim() || "",
 //             supplier: item.supplier?.toString().trim() || "",
-//             quantity: safeParseInt(item.quantity),
 //             peso: safeParseFloat(item.peso),
 //             unitMeasure: item.unitMeasure?.toString().trim() || "",
 //             category: item.category?.toString().trim() || "",
 //             tipo: item.tipo?.toString().trim() || "",
 //           };
 
-//           // Verificação adicional (opcional) para prevenir erros
-//           if (isNaN(produto.quantity) || isNaN(produto.peso)) {
-//             console.warn("⚠️ Produto ignorado por conter valores inválidos:", produto);
+//           // Ignora apenas se peso não for numérico
+//           if (isNaN(produto.peso)) {
+//             console.warn("⚠️ Produto ignorado por peso inválido:", produto);
 //             continue;
 //           }
 
@@ -375,4 +369,3 @@ export default function CadastroProdutos() {
 //     </div>
 //   );
 // }
-

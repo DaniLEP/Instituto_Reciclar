@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { db } from "../../../../firebase"
 import { ref, set, get, query, orderByKey, limitToLast } from "firebase/database"
@@ -5,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
 import { Input } from "@/components/ui/input/index"
-import { Button } from "@/components/ui/Button/button" 
+import { Button } from "@/components/ui/button" 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select/index"
 import { Label } from "@/components/ui/label/index"
@@ -29,36 +31,34 @@ export default function CadProdutos() {
   const [searchTerm, setSearchTerm] = useState("")
   const navigate = useNavigate()
 
-  // Buscar último SKU e gerar o próximo automático no load do componente
-  useEffect(() => {
-const fetchNextSku = async () => {
-  try {
-    const produtosRef = query(ref(db, "EntradaProdutos"), orderByKey(), limitToLast(1))
-    const snapshot = await get(produtosRef)
-    if (snapshot.exists()) {
-      const lastKey = Object.keys(snapshot.val())[0] // ex: "C00144"
-      if (lastKey && lastKey.length > 1) {
-        const lastNumber = parseInt(lastKey.substring(1), 10)
-        if (!isNaN(lastNumber)) {
-          const nextNumber = lastNumber + 1
-          const nextSku = "C" + nextNumber.toString().padStart(5, "0")
-          setSku(nextSku)
-          return
-        }
-      }
-    }
-    // Caso não tenha produto ou algum erro no formato, inicializa no C00001
-    setSku("C0099")
-  } catch (error) {
-    console.error("Erro ao buscar último SKU:", error)
-    setSku("C0099")
+  // Prefixos por categoria
+  const categoryPrefix = {
+    Mantimento: "C",
+    Proteina: "P",
+    Hortifrut: "H",
+    Doações: "D",
+    "Produtos de Limpeza": "L",
   }
-}
 
-    fetchNextSku()
-  }, [])
+  // Últimos SKUs conhecidos
+  const lastSkus = {
+    Mantimento: "C00147",
+    Proteina: "P0023",
+    Hortifrut: "H00063",
+    Doações: "D00000",
+    "Produtos de Limpeza": "L00000",
+  }
 
-  // Buscar fornecedores para popular lista do modal (mesmo que você já tinha)
+  // Função para gerar próximo SKU da categoria
+  const getNextSku = (category) => {
+    const prefix = categoryPrefix[category] || "X"
+    const lastSku = lastSkus[category] || prefix + "00000"
+    const lastNumber = parseInt(lastSku.substring(1), 10)
+    const nextNumber = lastNumber + 1
+    return prefix + nextNumber.toString().padStart(5, "0")
+  }
+
+  // Buscar fornecedores
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
@@ -101,11 +101,8 @@ const fetchNextSku = async () => {
       await set(newProductRef, newProduct)
       toast.success("Produto salvo com sucesso!")
       handleClearFields()
-      // Atualiza o SKU para o próximo
-      const lastNumber = parseInt(sku.substring(1))
-      const nextNumber = lastNumber + 1
-      const nextSku = "C" + nextNumber.toString().padStart(5, "0")
-      setSku(nextSku)
+      // Atualiza SKU para o próximo da mesma categoria
+      setSku(getNextSku(category))
     } catch (err) {
       toast.error("Erro ao salvar o produto: " + err.message)
     } finally {
@@ -122,7 +119,7 @@ const fetchNextSku = async () => {
     setUnit("Selecionar")
     setCategory("Selecionar Categoria")
     setTipo("Selecionar Tipo")
-    // NÃO limpar o sku para continuar com o próximo SKU gerado
+    // NÃO limpar SKU para continuar sequência
   }
 
   return (
@@ -145,26 +142,45 @@ const fetchNextSku = async () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="sku"
-                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                    Categoria
+                  </Label>
+                  <Select
+                    value={category}
+                    onValueChange={(value) => {
+                      setCategory(value)
+                      setSku(getNextSku(value)) // Atualiza SKU automaticamente
+                    }}
                   >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Selecionar categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Proteina">Proteína</SelectItem>
+                      <SelectItem value="Mantimento">Mantimento</SelectItem>
+                      <SelectItem value="Hortifrut">Hortifrut</SelectItem>
+                      <SelectItem value="Doações">Doações</SelectItem>
+                      <SelectItem value="Produtos de Limpeza">Produtos de Limpeza</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sku" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Tag className="w-4 h-4" />
                     SKU *
                   </Label>
                   <Input
                     id="sku"
-                    placeholder="SKU gerado automaticamente"
+                    placeholder="Digite o SKU ou use automático"
                     value={sku}
-                    readOnly
-                    className="h-11 bg-gray-100 cursor-not-allowed"
+                    onChange={(e) => setSku(e.target.value)}
+                    className="h-11"
                   />
                 </div>
+
+                {/* Nome, Marca e Fornecedor */}
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
-                  >
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Package className="w-4 h-4" />
                     Nome do Produto *
                   </Label>
@@ -177,10 +193,7 @@ const fetchNextSku = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="marca"
-                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
-                  >
+                  <Label htmlFor="marca" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
                     Marca *
                   </Label>
@@ -193,10 +206,7 @@ const fetchNextSku = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="supplier"
-                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
-                  >
+                  <Label htmlFor="supplier" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Truck className="w-4 h-4" />
                     Fornecedor *
                   </Label>
@@ -264,51 +274,10 @@ const fetchNextSku = async () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                    Categoria
-                  </Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Selecionar categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Proteina">Proteína</SelectItem>
-                      <SelectItem value="Mantimento">Mantimento</SelectItem>
-                      <SelectItem value="Hortifrut">Hortifrut</SelectItem>
-                      <SelectItem value="Doações">Doações</SelectItem>
-                      <SelectItem value="Produtos de Limpeza">Produtos de Limpeza</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="tipo" className="text-sm font-medium text-gray-700">
-                  Tipo
-                </Label>
-                <Select value={tipo} onValueChange={setTipo}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Selecionar tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Aves">Aves</SelectItem>
-                    <SelectItem value="Suínos">Suínos</SelectItem>
-                    <SelectItem value="Bovinos">Bovinos</SelectItem>
-                    <SelectItem value="Pescados">Pescados</SelectItem>
-                    <SelectItem value="Frutas">Frutas</SelectItem>
-                    <SelectItem value="Legumes">Legumes</SelectItem>
-                    <SelectItem value="Verduras">Verduras</SelectItem>
-                    <SelectItem value="ProdutosConsumo">Produtos de Consumo</SelectItem>
-                    <SelectItem value="ProdutosLimpeza">Produtos de Limpeza</SelectItem>
-                    <SelectItem value="Diversos">Diversos</SelectItem>
-                    <SelectItem value="Embutidos">Embutidos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
             </div>
 
-            {/* Botões de Ação */}
+            {/* Botões */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
               <Button
                 onClick={handleSave}
@@ -373,13 +342,8 @@ const fetchNextSku = async () => {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {filteredSuppliers.map((sup) => (
-                        <tr
-                          key={sup.cnpj}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="p-4 font-mono text-sm">
-                            {formatCNPJ(sup.cnpj)}
-                          </td>
+                        <tr key={sup.cnpj} className="hover:bg-gray-50 transition-colors">
+                          <td className="p-4 font-mono text-sm">{formatCNPJ(sup.cnpj)}</td>
                           <td className="p-4 font-medium">{sup.razaoSocial}</td>
                           <td className="p-4">
                             <div className="space-y-1">
@@ -395,14 +359,8 @@ const fetchNextSku = async () => {
                           </td>
                           <td className="p-4">
                             <Badge
-                              variant={
-                                sup.status === "Ativo" ? "default" : "destructive"
-                              }
-                              className={
-                                sup.status === "Ativo"
-                                  ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                  : ""
-                              }
+                              variant={sup.status === "Ativo" ? "default" : "destructive"}
+                              className={sup.status === "Ativo" ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                             >
                               {sup.status}
                             </Badge>
