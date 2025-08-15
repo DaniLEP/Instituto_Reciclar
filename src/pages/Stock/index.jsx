@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ref, onValue, update, db } from "../../../firebase"
+import { ref, onValue, update, db, set } from "../../../firebase"
 import { useNavigate } from "react-router-dom"
 import * as XLSX from "xlsx"
 import { Button } from "@/components/ui/Button/button" 
@@ -12,6 +12,7 @@ import { Search, Download, ArrowLeft, Filter, Calendar, Package, TrendingUp, Wei
 Clock, Building2, Tag, Layers, Hash, Scale, Calculator, CalendarDays, Truck, FolderOpen, Zap, 
 ClipboardEdit} from "lucide-react"
 import { Textarea } from "@headlessui/react"
+import { toast } from "react-toastify"
 const dbProdutos = ref(db, "Estoque")
 
 export default function Stock() {
@@ -31,6 +32,8 @@ export default function Stock() {
   const [historicoMes, setHistoricoMes] = useState("");
   const [dadosHistorico, setDadosHistorico] = useState(null);
   const [inventarioData, setInventarioData] = useState([]);
+  const [buscaInventario, setBuscaInventario] = useState(""); // <- adicionado
+
   const navigate = useNavigate();
 
   // Função para calcular totais (quantidade, peso, preço)
@@ -198,23 +201,44 @@ export default function Stock() {
   // Abre modal de inventário com cópia dos dados para edição
   const handleInventario = () => {const dados = productsData.map((p) => ({ ...p, novaQuantidade: p.quantity })); setInventarioData(dados); setShowInventario(true);};
   // Salva inventário atualizado no Firebase e gera log
-  const salvarInventario = async () => {
-    const agora = new Date();
-    const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
-    const inventarioRef = ref(db, `Inventarios/${mesAtual}`);
-    const log = {};
-    for (const item of inventarioData) {
-      const { sku, name, quantity, novaQuantidade } = item;
-      const novaQtd = Number(novaQuantidade || 0);
-      if (novaQtd !== Number(quantity)) {
-        await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });}
-      log[sku] = {nome: name, anterior: Number(quantity), atual: novaQtd, observacao: observacoes[sku] || "",};
-    }
+const salvarInventario = async () => {
+  const agora = new Date();
+  const dataFormatada = agora.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    await set(inventarioRef, log);
-    setShowInventario(false);
-    alert("Inventário salvo com sucesso!");
-  };
+  const promessas = inventarioData.map(async (item) => {
+    const { sku, name, quantity, novaQuantidade, expiryDate } = item; // incluí expiryDate
+    const novaQtd = Number(novaQuantidade || 0);
+
+    // Atualiza estoque
+    await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });
+
+    // Atualiza ou cria registro no inventário do dia
+    await update(ref(db, `inventario/${dataFormatada}/${sku}`), {
+      sku,
+      nome: name,
+      anterior: Number(quantity),
+      atual: novaQtd,
+      observacao: observacoes[sku] || "",
+      data: agora.toISOString(),
+      expiryDate: expiryDate || null, // salva a data de validade
+    });
+  });
+
+  await Promise.all(promessas);
+
+  setShowInventario(false);
+  toast.success("Inventário salvo com sucesso!", {
+    position: "top-right",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+};
+
+
 
   // Busca histórico do inventário por mês selecionado
   const buscarHistorico = () => {
@@ -383,14 +407,14 @@ export default function Stock() {
             </div>
             <Separator className="my-6" />
             <div className="my-6">
-            <Label className="text-sm font-medium">Consultar Inventário de um Mês:</Label>
+            <Label className="text-sm font-medium">Consultar Estoque de um Mês:</Label>
               <div className="flex items-center gap-4 mt-2">
                 <Input type="month" value={historicoMes} onChange={(e) => setHistoricoMes(e.target.value)} className="w-48" />
                 <Button onClick={buscarHistorico}>Buscar</Button>
               </div>
             {dadosHistorico && (
               <div className="mt-6 bg-white rounded-lg shadow p-4">
-                <h3 className="font-semibold text-lg mb-2">Inventário de {historicoMes}</h3>
+                <h3 className="font-semibold text-lg mb-2">Estoque de {historicoMes}</h3>
                 <div className="space-y-2">
                   {Object.entries(dadosHistorico).map(([sku, info]) => (
                     <div key={sku} className="border p-2 rounded">
@@ -402,22 +426,42 @@ export default function Stock() {
                 </div>
               </div>
             )}
-            {showInventario && (
+           {showInventario && (
               <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-start pt-10 overflow-auto">
-                <div className="bg-white rounded-lg w-full max-w-4xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Inventário Mensal</h2>
-                  <div className="max-h-[60vh] overflow-y-auto divide-y">
-                    {inventarioData.map((item, idx) => (
-                      <div key={idx} className="flex flex-col md:flex-row gap-4 py-3">
-                        <div className="flex-1">{item.name} <span className="text-sm text-slate-500">(Atual: {item.quantity})</span></div>
-                        <Input type="number" min="0" className="w-24" value={item.novaQuantidade} onChange={(e) => {
-                          const valor = e.target.value; setInventarioData((prev) => prev.map((p) => p.sku === item.sku ? { ...p, novaQuantidade: valor } : p))}} />
-                        <Textarea placeholder="Observações" className="flex-1" value={observacoes[item.sku] || ""} onChange={(e) => setObservacoes((prev) => ({ ...prev, [item.sku]: e.target.value }))} />
-                      </div>
-                    ))}
+                <div className="bg-white rounded-lg w-full max-w-5xl p-6">
+                  <h2 className="text-xl font-semibold mb-4">Estoque Semanal</h2>
+                  {/* Barra de pesquisa */}
+                  <input type="text" placeholder="Pesquisar por SKU, nome ou marca..." value={buscaInventario} onChange={(e) => setBuscaInventario(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded mb-4" />
+                  {/* Lista de produtos com scroll */}
+                  <div className="max-h-[60vh] overflow-y-auto border rounded divide-y">
+                    {inventarioData.filter((item) => [item.sku, item.name, item.marca].some((campo) => campo?.toLowerCase().includes(buscaInventario.toLowerCase())))
+                      .map((item, idx) => (
+                        <div key={idx} className="flex flex-col md:flex-row gap-4 py-3 px-2 hover:bg-gray-50">
+                          {/* SKU */}
+                          <div className="w-28 font-mono text-sm text-gray-600">{item.sku || "-"}</div>
+                          {/* Nome */}
+                          <div className="flex-1">{item.name}{" "}<span className="text-sm text-slate-500">(Atual: {item.quantity})</span></div>
+                          {/* Marca */}
+                          <div className="w-32 text-gray-700">{item.marca || "-"}</div>
+                          {/* Validade */}
+                          <div className="w-28 text-gray-700">{formatDate(item.expiryDate || "-")}</div>
+                          {/* Nova quantidade */}
+                          <Input type="number" min="0" className="w-24" value={item.novaQuantidade} onChange={(e) => {
+                            const valor = e.target.value; setInventarioData((prev) => prev.map((p) => p.sku === item.sku ? { ...p, novaQuantidade: valor } : p))}}/>
+                          {/* Observações */}
+                          <Textarea placeholder="Observações" className="flex-1" value={observacoes[item.sku] || ""}
+                            onChange={(e) => setObservacoes((prev) => ({...prev, [item.sku]: e.target.value}))} />
+                        </div>
+                      ))}
+                    {inventarioData.length === 0 && (<div className="text-center p-4 text-gray-500">Nenhum item encontrado</div>)}
                   </div>
+
+                  {/* Botões */}
                   <div className="flex justify-end gap-3 mt-4">
-                    <Button variant="outline" onClick={() => setShowInventario(false)}>Cancelar</Button>
+                    <Button variant="outline" onClick={() => setShowInventario(false)}>
+                      Cancelar
+                    </Button>
                     <Button onClick={salvarInventario}>Salvar Inventário</Button>
                   </div>
                 </div>
@@ -425,6 +469,7 @@ export default function Stock() {
             )}
             <div className="flex justify-end my-4">
             <Button onClick={handleInventario} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center gap-2"><ClipboardEdit className="w-4 h-4" /> Realizar Inventário</Button></div>
+            <Button onClick={() => navigate('/visualizar-inventario')}>Visualizar Inventário</Button>
           </div>
           </CardContent>
         </Card>

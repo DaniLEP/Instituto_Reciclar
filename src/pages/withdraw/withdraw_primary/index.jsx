@@ -580,7 +580,7 @@ export default function Retirada() {
 
                     <div className="space-y-3">
                       <Label htmlFor="retirante" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <User className="w-4 h-4 text-purple-500" /> Nome do Retirante
+                        <User className="w-4 h-4 text-purple-500" /> Nome do Responsável pela Retirada
                       </Label>
                       <Input
                         id="retirante"

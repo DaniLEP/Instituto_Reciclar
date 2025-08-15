@@ -246,6 +246,7 @@ const fetchNextSku = async () => {
                       <SelectItem value="g">Gramas (g)</SelectItem>
                       <SelectItem value="kg">Quilos (kg)</SelectItem>
                       <SelectItem value="ml">Mililitros (ml)</SelectItem>
+                      <SelectItem value="und">Unidade</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -258,7 +259,7 @@ const fetchNextSku = async () => {
                       <SelectValue placeholder="Selecionar unidade" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="un">Unidade</SelectItem>
+                      <SelectItem value="und">Unidade</SelectItem>
                       <SelectItem value="fd">Fardo</SelectItem>
                     </SelectContent>
                   </Select>
@@ -299,6 +300,8 @@ const fetchNextSku = async () => {
                     <SelectItem value="Verduras">Verduras</SelectItem>
                     <SelectItem value="ProdutosConsumo">Produtos de Consumo</SelectItem>
                     <SelectItem value="ProdutosLimpeza">Produtos de Limpeza</SelectItem>
+                    <SelectItem value="Diversos">Diversos</SelectItem>
+                    <SelectItem value="Embutidos">Embutidos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

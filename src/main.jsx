@@ -48,6 +48,7 @@ import ViewCardapio from './pages/cardapio/view';
 import CadastroReceitas from './pages/cardapio/technical_sheet_register';
 import Anual from './pages/dashboard/anual_mensal';
 import Caixa from './pages/caixa/index.jsx';
+import VisualizarInventario from './pages/Stock/inventary/index.jsx';
 
 // Constantes para tipos de usuários
 const COZINHA_ONLY = [UserType.COZINHA];
@@ -128,8 +129,7 @@ const router = createBrowserRouter([
       { path: '/cadastro-de-cardapio', element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <CadastroCardapio /> </Suspense></ProtectedRoute>), },
       { path: '/consultar-cardapio',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <ViewCardapio /> </Suspense></ProtectedRoute>),},
       { path: '/sistema-caixa',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <Caixa /> </Suspense></ProtectedRoute>),},
-
- 
+      { path: '/visualizar-inventario',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <VisualizarInventario /> </Suspense></ProtectedRoute>),},
  
     ],
   },
