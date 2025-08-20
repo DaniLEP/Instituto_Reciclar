@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { getDatabase, ref, update, push, get, remove } from "firebase/database"
 import { app } from "../../../../firebase"
@@ -33,6 +31,7 @@ export default function Retirada() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const db = getDatabase(app)
+
   const [sku, setSku] = useState("")
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
@@ -58,6 +57,17 @@ export default function Retirada() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
+  const formatDate = (date) => {
+    if (!date) return "--"
+    try {
+      const d = new Date(date)
+      if (isNaN(d)) return "--"
+      return d.toLocaleDateString("pt-BR")
+    } catch {
+      return "--"
+    }
+  }
+
   useEffect(() => {
     const fetchProdutos = async () => {
       setIsLoading(true)
@@ -69,15 +79,18 @@ export default function Retirada() {
           const produtosList = Object.entries(data).map(([id, produto]) => ({
             id,
             ...produto,
+            dataValidade: produto.dataValidade || produto.expiryDate || null,
             validadeStatus: calcularDiasParaValidade(produto.dataValidade || produto.expiryDate),
           }))
           setProdutos(produtosList)
           setFilteredProdutos(produtosList)
+
           const temProximoVencimento = produtosList.some((p) => p.validadeStatus <= 7)
           if (temProximoVencimento) {
-            toast.warn("Atenção: Existem produtos próximos do vencimento!", {
-              position: "top-right",
-              duration: 7000,
+            toast({
+              title: "Atenção",
+              description: "Existem produtos próximos do vencimento!",
+              variant: "warning",
             })
           }
         } else {
@@ -86,7 +99,11 @@ export default function Retirada() {
         }
       } catch (error) {
         console.error("Erro ao buscar produtos:", error)
-        toast.error("Erro ao carregar produtos do estoque.")
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar produtos do estoque.",
+          variant: "error",
+        })
       } finally {
         setIsLoading(false)
       }
@@ -101,7 +118,7 @@ export default function Retirada() {
       const filtered = produtos.filter(
         (produto) =>
           (produto.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase()),
+          (produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase())
       )
       setFilteredProdutos(filtered)
     }
@@ -118,8 +135,9 @@ export default function Retirada() {
     setQuantity("")
     setIsModalOpen(false)
 
-    // Feedback visual de seleção
-    toast.success(`Produto "${produto.name}" selecionado!`, {
+    toast({
+      description: `Produto "${produto.name}" selecionado!`,
+      variant: "success",
       duration: 2000,
     })
   }
@@ -127,9 +145,8 @@ export default function Retirada() {
   const handleRetirada = async () => {
     if (!sku || !name || !marca || !category || !tipo || !quantity || !peso || !retirante) {
       toast({
-        variant: "destructive",
-        title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
+        variant: "error",
       })
       return
     }
@@ -137,9 +154,8 @@ export default function Retirada() {
     const retiradaNum = Number(quantity)
     if (isNaN(retiradaNum) || retiradaNum <= 0) {
       toast({
-        variant: "destructive",
-        title: "Quantidade inválida",
         description: "A quantidade deve ser um número maior que zero.",
+        variant: "error",
       })
       return
     }
@@ -149,43 +165,35 @@ export default function Retirada() {
     try {
       const estoqueRef = ref(db, "Estoque")
       const snapshot = await get(estoqueRef)
-
       if (!snapshot.exists()) {
         toast({
-          variant: "destructive",
-          title: "Estoque vazio",
           description: "Não foi possível encontrar produtos no estoque.",
+          variant: "error",
         })
         return
       }
 
       const estoqueData = snapshot.val()
       const produtoEncontrado = Object.entries(estoqueData).find(([_, produto]) => produto.sku === sku)
-
       if (!produtoEncontrado) {
         toast({
-          variant: "destructive",
-          title: "Produto não encontrado",
           description: "Este produto não existe no estoque.",
+          variant: "error",
         })
         return
       }
 
       const [produtoId, produto] = produtoEncontrado
       const estoqueAtual = Number(produto.quantity)
-
       if (retiradaNum > estoqueAtual) {
         toast({
-          variant: "destructive",
-          title: "Quantidade excedida",
-          description: `Solicitada: ${retiradaNum}, disponível: ${estoqueAtual}.`,
+          description: `Quantidade solicitada (${retiradaNum}) maior que disponível (${estoqueAtual}).`,
+          variant: "error",
         })
         return
       }
 
-      // Registrar retirada
-      const retiradaRef = ref(db, "Retiradas")
-      await push(retiradaRef, {
+      await push(ref(db, "Retiradas"), {
         sku,
         name,
         marca,
@@ -199,25 +207,22 @@ export default function Retirada() {
 
       const novaQuantidade = estoqueAtual - retiradaNum
       const produtoRef = ref(db, `Estoque/${produtoId}`)
-
       if (novaQuantidade <= 0) {
         await remove(produtoRef)
         toast({
-          title: "Estoque zerado",
           description: "Produto removido do estoque após retirada.",
+          variant: "success",
         })
         setProdutos((prev) => prev.filter((p) => p.sku !== sku))
       } else {
         await update(produtoRef, { quantity: novaQuantidade })
         toast({
-          title: "Retirada realizada com sucesso!",
           description: `${retiradaNum} unidades retiradas por ${retirante}.`,
-          duration: 4000,
+          variant: "success",
         })
         setProdutos((prev) => prev.map((p) => (p.sku === sku ? { ...p, quantity: novaQuantidade } : p)))
       }
 
-      // Limpa campos após retirada
       setSku("")
       setName("")
       setMarca("")
@@ -231,45 +236,33 @@ export default function Retirada() {
     } catch (error) {
       console.error(error)
       toast({
-        variant: "destructive",
-        title: "Erro inesperado",
-        description: "Não foi possível registrar a retirada",
+        description: "Não foi possível registrar a retirada.",
+        variant: "error",
       })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const formatDate = (date) => {
-    if (!date || typeof date !== "string") return "--"
-    try {
-      const [y, m, d] = date.slice(0, 10).split("-")
-      return `${d}/${m}/${y}`
-    } catch {
-      return "--"
-    }
-  }
-
   const getValidadeBadge = (dias) => {
-    if (dias <= 0) {
+    if (dias <= 0)
       return (
         <Badge variant="destructive" className="flex items-center gap-1 animate-pulse">
           <XCircle className="w-3 h-3" /> Vencido
         </Badge>
       )
-    } else if (dias <= 7) {
+    if (dias <= 7)
       return (
         <Badge variant="destructive" className="flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" /> Crítico
         </Badge>
       )
-    } else if (dias <= 30) {
+    if (dias <= 30)
       return (
         <Badge variant="secondary" className="flex items-center gap-1">
           <Clock className="w-3 h-3" /> Atenção
         </Badge>
       )
-    }
     return (
       <Badge variant="outline" className="flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" /> Normal
@@ -277,7 +270,8 @@ export default function Retirada() {
     )
   }
 
-  const isFormValid = sku && name && marca && category && tipo && quantity && peso && retirante && !isSubmitting
+  const isFormValid =
+    sku && name && marca && category && tipo && quantity && peso && retirante && !isSubmitting
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
@@ -438,7 +432,7 @@ export default function Retirada() {
                                           <div className="bg-purple-50 p-3 rounded-lg">
                                             <span className="text-gray-500 block mb-1">Validade</span>
                                             <span className="font-medium text-purple-700">
-                                              {formatDate(produto.dataValidade || produto.expiryDate)}
+                                              {formatDate(produto.expiryDate)}
                                             </span>
                                           </div>
                                         </div>

@@ -123,35 +123,70 @@ export default function CadastroProdutos() {
   const handleSelectProduct = (product) => {setSku(product.sku); setName(product.name); setMarca(product.marca); setSupplier(product.supplier); setPeso(product.peso); setUnit(product.unit); setUnitMeasure(product.unitMeasure); setCategory(product.category); setTipo(product.tipo); setUnitPrice(product.unitPrice); setTotalPrice(product.totalPrice); setQuantity(product.quantity); 
     setDateAdded(product.dateAdded); setExpiryDate(product.expiryDate); setShowModal(false);}
 
-  const handleSave = () => {
-    if (!sku || !quantity) {toast.error("Preencha SKU e Quantidade."); return}
-    const estoqueRef = ref(db, `Estoque/${sku}`)
-    onValue(
-      estoqueRef,
-      (snapshot) => {
-        const existingData = snapshot.val()
-        const quantidadeAtual = Number.parseInt(quantity)
-        const pesoFloat = Number.parseFloat(peso) || 0
-        const precoUnit = Number.parseFloat((unitPrice || "0").replace(/\D/g, "")) / 100
-
-        if (existingData) {
-          const novaQuantidade = (Number.parseInt(existingData.quantity) || 0) + quantidadeAtual
-          const novoPesoTotal = pesoFloat * novaQuantidade
-          const novoTotalPrice = precoUnit * novaQuantidade
-          set(estoqueRef, {...existingData, quantity: novaQuantidade, pesoTotal: novoPesoTotal, totalPrice: novoTotalPrice.toFixed(2),
-            dateAdded: dateAdded || new Date().toISOString().split("T")[0], expiryDate: expiryDate || existingData.expiryDate || "",})
-            .then(() => {toast.success("Produto atualizado com sucesso!"); resetForm();})
-            .catch((error) => toast.error("Erro ao atualizar: " + error.message))
-        } else {const novoProduto = {
-            sku,name, marca, supplier, peso, unitMeasure, unit, quantity: quantidadeAtual, 
-            pesoTotal: pesoFloat * quantidadeAtual, category, tipo, unitPrice, totalPrice: precoUnit * quantidadeAtual, 
-            dateAdded: dateAdded || new Date().toISOString().split("T")[0], expiryDate: expiryDate || "",}
-          set(estoqueRef, novoProduto)
-            .then(() => {toast.success("Produto adicionado ao estoque!"); resetForm();}).catch((error) => toast.error("Erro ao salvar: " + error.message))}
-      },
-      { onlyOnce: true },
-    )
+const handleSave = () => {
+  if (!sku || !quantity) {
+    toast.error("Preencha SKU e Quantidade.");
+    return;
   }
+
+  const estoqueRef = ref(db, `Estoque/${sku}`);
+  
+  onValue(
+    estoqueRef,
+    (snapshot) => {
+      const existingData = snapshot.val();
+      const quantidadeAtual = Number.parseInt(quantity);
+      const pesoFloat = Number.parseFloat(peso) || 0;
+      const precoUnit = Number.parseFloat((unitPrice || "0").replace(/\D/g, "")) / 100;
+
+      const safeValue = (val, fallback = "") => val !== undefined && val !== null ? val : fallback;
+
+      if (existingData) {
+        const novaQuantidade = (Number.parseInt(existingData.quantity) || 0) + quantidadeAtual;
+        const novoPesoTotal = pesoFloat * novaQuantidade;
+        const novoTotalPrice = precoUnit * novaQuantidade;
+
+        set(estoqueRef, {
+          ...existingData,
+          quantity: novaQuantidade,
+          pesoTotal: novoPesoTotal,
+          totalPrice: novoTotalPrice.toFixed(2),
+          dateAdded: safeValue(dateAdded, new Date().toISOString().split("T")[0]),
+          expiryDate: safeValue(expiryDate, existingData.expiryDate || ""),
+          unit: safeValue(unit),
+          unitMeasure: safeValue(unitMeasure),
+          peso: safeValue(peso, 0),
+          unitPrice: safeValue(unitPrice, "0"),
+        })
+        .then(() => { toast.success("Produto atualizado com sucesso!"); resetForm(); })
+        .catch((error) => toast.error("Erro ao atualizar: " + error.message));
+      } else {
+        const novoProduto = {
+          sku,
+          name: safeValue(name),
+          marca: safeValue(marca),
+          supplier: safeValue(supplier),
+          peso: pesoFloat,
+          unitMeasure: safeValue(unitMeasure),
+          unit: safeValue(unit),
+          quantity: quantidadeAtual,
+          pesoTotal: pesoFloat * quantidadeAtual,
+          category: safeValue(category),
+          tipo: safeValue(tipo),
+          unitPrice: safeValue(unitPrice, "0"),
+          totalPrice: (precoUnit * quantidadeAtual).toFixed(2),
+          dateAdded: safeValue(dateAdded, new Date().toISOString().split("T")[0]),
+          expiryDate: safeValue(expiryDate, ""),
+        };
+
+        set(estoqueRef, novoProduto)
+          .then(() => { toast.success("Produto adicionado ao estoque!"); resetForm(); })
+          .catch((error) => toast.error("Erro ao salvar: " + error.message));
+      }
+    },
+    { onlyOnce: true },
+  );
+}
 
   const handleQuantityChange = (e) => {
     const q = e.target.value
