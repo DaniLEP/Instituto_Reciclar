@@ -157,7 +157,9 @@ const handleQuantidadeChange = async (index, newQuantidade) => {
     return (p.name?.toLowerCase().includes(termo) || p.tipo?.toLowerCase().includes(termo) || p.category?.toLowerCase().includes(termo));
   });
 
-const salvarRascunhoManual = async () => {
+  const salvarRascunhoManual = async (e) => {
+  e?.preventDefault();
+
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -178,27 +180,13 @@ const salvarRascunhoManual = async () => {
     itensPedido,
   };
 
+  console.log("📌 Rascunho antes de salvar:", rascunho); // <-- debug
+
   try {
     const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
     await set(rascunhoRef, rascunho);
-
-    toast.success("✅ Rascunho salvo com sucesso!", {
-      description: "Você pode continuar o preenchimento depois.",
-      duration: 5000,
-    });
-
-    // Limpa campos
-    setDataSelecionada("");
-    setPeriodoInicio("");
-    setPeriodoFim("");
-    setCategory("");
-    setProjeto("");
-    setFornecedorSelecionado(null);
-    setDadosFornecedor({});
-    setItensPedido([]);
-    setProductSelecionado(null);
-    setDadosProduct({ quantidade: 1, observacao: "" });
-
+    toast.success("✅ Rascunho salvo com sucesso!");
+    // limpar estados ...
   } catch (error) {
     toast.error("❌ Erro ao salvar rascunho: " + error.message);
   }
