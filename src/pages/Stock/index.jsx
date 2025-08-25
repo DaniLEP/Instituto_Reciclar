@@ -1,22 +1,49 @@
-import { useState, useEffect } from "react"
-import { ref, onValue, update, db, set } from "../../../firebase"
-import { useNavigate } from "react-router-dom"
-import * as XLSX from "xlsx"
-import { Button } from "@/components/ui/Button/button" 
-import { Input } from "@/components/ui/input/index"
-import { Label } from "@/components/ui/label/index"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Search, Download, ArrowLeft, Filter, Calendar, Package, TrendingUp, Weight, DollarSign, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Eye, Edit3,
-Clock, Building2, Tag, Layers, Hash, Scale, Calculator, CalendarDays, Truck, FolderOpen, Zap, 
-ClipboardEdit} from "lucide-react"
-import { Textarea } from "@headlessui/react"
-import { toast } from "react-toastify"
-const dbProdutos = ref(db, "Estoque")
+import { useState, useEffect } from "react";
+import { ref, onValue, update, db, set } from "../../../firebase";
+import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { Button } from "@/components/ui/Button/button";
+import { Input } from "@/components/ui/input/index";
+import { Label } from "@/components/ui/label/index";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Search,
+  Download,
+  ArrowLeft,
+  Filter,
+  Calendar,
+  Package,
+  TrendingUp,
+  Weight,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  BarChart3,
+  Eye,
+  Edit3,
+  Clock,
+  Building2,
+  Tag,
+  Layers,
+  Hash,
+  Scale,
+  Calculator,
+  CalendarDays,
+  Truck,
+  FolderOpen,
+  Zap,
+  ClipboardEdit,
+} from "lucide-react";
+import { Textarea } from "@headlessui/react";
+import { toast } from "react-toastify";
+const dbProdutos = ref(db, "Estoque");
 
 export default function Stock() {
-   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [productsData, setProductsData] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -38,9 +65,18 @@ export default function Stock() {
 
   // Função para calcular totais (quantidade, peso, preço)
   const calculateTotals = (products) => {
-    const qty = products.reduce((acc, i) => acc + Number.parseInt(i.quantity, 10), 0);
-    const peso = products.reduce((acc, i) => acc + Number.parseFloat(i.peso || 0), 0);
-    const price = products.reduce((acc, i) => acc + (Number.parseFloat(i.totalPrice) || 0), 0);
+    const qty = products.reduce(
+      (acc, i) => acc + Number.parseInt(i.quantity, 10),
+      0
+    );
+    const peso = products.reduce(
+      (acc, i) => acc + Number.parseFloat(i.peso || 0),
+      0
+    );
+    const price = products.reduce(
+      (acc, i) => acc + (Number.parseFloat(i.totalPrice) || 0),
+      0
+    );
     setTotalQuantity(qty);
     setTotalPeso(peso);
     setTotalPrice(price);
@@ -51,7 +87,10 @@ export default function Stock() {
     const unsubscribe = onValue(dbProdutos, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const products = Object.keys(data).map((key) => ({ sku: key, ...data[key] }));
+        const products = Object.keys(data).map((key) => ({
+          sku: key,
+          ...data[key],
+        }));
         setProductsData(products);
         setFilteredProducts(products);
         calculateTotals(products);
@@ -71,9 +110,14 @@ export default function Stock() {
     const filtered = productsData.filter((item) => {
       if (!term) return true;
       if (!isNaN(searchTerm)) return String(item.sku) === searchTerm.trim();
-      return [item.name, item.supplier, item.marca, item.category, item.tipo, item.status].some((field) =>
-        field?.toLowerCase().includes(term)
-      );
+      return [
+        item.name,
+        item.supplier,
+        item.marca,
+        item.category,
+        item.tipo,
+        item.status,
+      ].some((field) => field?.toLowerCase().includes(term));
     });
     setFilteredProducts(filtered);
   };
@@ -131,7 +175,10 @@ export default function Stock() {
   // Filtra produtos pelo status
   const handleStatusFilter = (status) => {
     setStatusFiltro(status);
-    if (!status) {setFilteredProducts(productsData); return;}
+    if (!status) {
+      setFilteredProducts(productsData);
+      return;
+    }
     const filtered = productsData.filter((item) => getStatus(item) === status);
     setFilteredProducts(filtered);
   };
@@ -145,7 +192,9 @@ export default function Stock() {
       const month = String(d.getUTCMonth() + 1).padStart(2, "0");
       const year = d.getUTCFullYear();
       return `${day}/${month}/${year}`;
-    } catch {return "--";}
+    } catch {
+      return "--";
+    }
   };
   // Edição inline da data de validade
   const handleDoubleClick = (sku, value) => {
@@ -159,8 +208,12 @@ export default function Stock() {
     const produtoRef = ref(db, `Estoque/${sku}`);
     update(produtoRef, { expiryDate: formatted })
       .then(() => {
-        setProductsData((prev) => prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i)));
-        setFilteredProducts((prev) => prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i)));
+        setProductsData((prev) =>
+          prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
+        );
+        setFilteredProducts((prev) =>
+          prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
+        );
         setEditando(null);
       })
       .catch(console.error);
@@ -170,8 +223,17 @@ export default function Stock() {
   const exportToExcel = (products) => {
     const ws = XLSX.utils.json_to_sheet(
       products.map((item) => ({
-        Status: Number.parseInt(item.quantity, 10) < 5 ? "Estoque baixo" : isExpired(item.expiryDate) ? "Produto vencido" : "Estoque Abastecido",
-            SKU: item.sku, Nome: item.name, Marca: item.marca,Peso: item.peso, Quantidade: item.quantity,
+        Status:
+          Number.parseInt(item.quantity, 10) < 5
+            ? "Estoque baixo"
+            : isExpired(item.expiryDate)
+            ? "Produto vencido"
+            : "Estoque Abastecido",
+        SKU: item.sku,
+        Nome: item.name,
+        Marca: item.marca,
+        Peso: item.peso,
+        Quantidade: item.quantity,
         // Adicione mais campos se desejar
       }))
     );
@@ -183,70 +245,106 @@ export default function Stock() {
   const getStatusBadge = (item) => {
     const low = Number.parseInt(item.quantity, 10) < 5;
     const expired = isExpired(item.expiryDate);
-    if (expired) {return (<Badge variant="destructive" className="flex items-center gap-1.5 px-3 py-1 font-medium shadow-sm"><XCircle className="w-3.5 h-3.5" /> Vencido</Badge>);}
-    if (low) {return (<Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-amber-100 text-amber-800 border-amber-200 shadow-sm hover:bg-amber-200"><AlertTriangle className="w-3.5 h-3.5" /> Baixo</Badge>);}
-    return (<Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-emerald-100 text-emerald-800 border-emerald-200 shadow-sm hover:bg-emerald-200"> <CheckCircle className="w-3.5 h-3.5" /> Normal </Badge>);
+    if (expired) {
+      return (
+        <Badge
+          variant="destructive"
+          className="flex items-center gap-1.5 px-3 py-1 font-medium shadow-sm"
+        >
+          <XCircle className="w-3.5 h-3.5" /> Vencido
+        </Badge>
+      );
+    }
+    if (low) {
+      return (
+        <Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-amber-100 text-amber-800 border-amber-200 shadow-sm hover:bg-amber-200">
+          <AlertTriangle className="w-3.5 h-3.5" /> Baixo
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="flex items-center gap-1.5 px-3 py-1 font-medium bg-emerald-100 text-emerald-800 border-emerald-200 shadow-sm hover:bg-emerald-200">
+        {" "}
+        <CheckCircle className="w-3.5 h-3.5" /> Normal{" "}
+      </Badge>
+    );
   };
 
   // Estatísticas do estoque por status
   const getStockStats = () => {
-    const normal = filteredProducts.filter((item) => getStatus(item) === "Estoque Abastecido").length;
-    const low = filteredProducts.filter((item) => getStatus(item) === "Estoque Baixo").length;
-    const expired = filteredProducts.filter((item) => getStatus(item) === "Produto Vencido").length;
+    const normal = filteredProducts.filter(
+      (item) => getStatus(item) === "Estoque Abastecido"
+    ).length;
+    const low = filteredProducts.filter(
+      (item) => getStatus(item) === "Estoque Baixo"
+    ).length;
+    const expired = filteredProducts.filter(
+      (item) => getStatus(item) === "Produto Vencido"
+    ).length;
     return { normal, low, expired };
   };
 
   const stats = getStockStats();
 
   // Abre modal de inventário com cópia dos dados para edição
-  const handleInventario = () => {const dados = productsData.map((p) => ({ ...p, novaQuantidade: p.quantity })); setInventarioData(dados); setShowInventario(true);};
+  const handleInventario = () => {
+    const dados = productsData.map((p) => ({
+      ...p,
+      novaQuantidade: p.quantity,
+    }));
+    setInventarioData(dados);
+    setShowInventario(true);
+  };
   // Salva inventário atualizado no Firebase e gera log
-const salvarInventario = async () => {
-  const agora = new Date();
-  const dataFormatada = agora.toISOString().split("T")[0]; // YYYY-MM-DD
+  const salvarInventario = async () => {
+    const agora = new Date();
+    const dataFormatada = agora.toISOString().split("T")[0]; // YYYY-MM-DD
 
-  const promessas = inventarioData.map(async (item) => {
-    const { sku, name, quantity, novaQuantidade, expiryDate } = item; // incluí expiryDate
-    const novaQtd = Number(novaQuantidade || 0);
+    const promessas = inventarioData.map(async (item) => {
+      const { sku, name, quantity, novaQuantidade, expiryDate } = item; // incluí expiryDate
+      const novaQtd = Number(novaQuantidade || 0);
 
-    // Atualiza estoque
-    await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });
+      // Atualiza estoque
+      await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });
 
-    // Atualiza ou cria registro no inventário do dia
-    await update(ref(db, `inventario/${dataFormatada}/${sku}`), {
-      sku,
-      nome: name,
-      anterior: Number(quantity),
-      atual: novaQtd,
-      observacao: observacoes[sku] || "",
-      data: agora.toISOString(),
-      expiryDate: expiryDate || null, // salva a data de validade
+      // Atualiza ou cria registro no inventário do dia
+      await update(ref(db, `inventario/${dataFormatada}/${sku}`), {
+        sku,
+        nome: name,
+        anterior: Number(quantity),
+        atual: novaQtd,
+        observacao: observacoes[sku] || "",
+        data: agora.toISOString(),
+        expiryDate: expiryDate || null, // salva a data de validade
+      });
     });
-  });
 
-  await Promise.all(promessas);
+    await Promise.all(promessas);
 
-  setShowInventario(false);
-  toast.success("Inventário salvo com sucesso!", {
-    position: "top-right",
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  });
-};
-
-
+    setShowInventario(false);
+    toast.success("Inventário salvo com sucesso!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
 
   // Busca histórico do inventário por mês selecionado
   const buscarHistorico = () => {
     if (!historicoMes) return;
     const refHist = ref(db, `Inventarios/${historicoMes}`);
-    onValue(refHist,(snap) => {setDadosHistorico(snap.val());},{ onlyOnce: true });
+    onValue(
+      refHist,
+      (snap) => {
+        setDadosHistorico(snap.val());
+      },
+      { onlyOnce: true }
+    );
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 p-4 md:p-6">
@@ -257,14 +355,26 @@ const salvarInventario = async () => {
           <CardHeader className="relative z-10">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/20"><Package className="w-8 h-8 text-white" /></div>
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/20">
+                  <Package className="w-8 h-8 text-white" />
+                </div>
                 <div>
-                  <CardTitle className="text-3xl font-bold text-white mb-1">Controle de Estoque</CardTitle>
-                  <p className="text-blue-100 text-sm font-medium">Sistema inteligente de gestão de inventário</p>
+                  <CardTitle className="text-3xl font-bold text-white mb-1">
+                    Controle de Estoque
+                  </CardTitle>
+                  <p className="text-blue-100 text-sm font-medium">
+                    Sistema inteligente de gestão de inventário
+                  </p>
                 </div>
               </div>
-              <Button onClick={voltar} variant="secondary"
-                className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border-white/20 text-white hover:bg-white/30 transition-all duration-200"><ArrowLeft className="w-4 h-4" />Voltar</Button>
+              <Button
+                onClick={voltar}
+                variant="secondary"
+                className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border-white/20 text-white hover:bg-white/30 transition-all duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Voltar
+              </Button>
             </div>
           </CardHeader>
         </Card>
@@ -275,11 +385,19 @@ const salvarInventario = async () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-emerald-700">Valor Total</p>
-                  <p className="text-2xl font-bold text-emerald-900">R$ {totalPrice.toFixed(2).replace(".", ",")}</p>
-                  <p className="text-xs text-emerald-600">Inventário completo</p>
+                  <p className="text-sm font-medium text-emerald-700">
+                    Valor Total
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-900">
+                    R$ {totalPrice.toFixed(2).replace(".", ",")}
+                  </p>
+                  <p className="text-xs text-emerald-600">
+                    Inventário completo
+                  </p>
                 </div>
-                <div className="p-3 bg-emerald-500 rounded-xl shadow-lg"><DollarSign className="w-6 h-6 text-white" /></div>
+                <div className="p-3 bg-emerald-500 rounded-xl shadow-lg">
+                  <DollarSign className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -287,11 +405,18 @@ const salvarInventario = async () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-blue-700">Peso Total</p>
-                  <p className="text-2xl font-bold text-blue-900">{totalPeso.toFixed(2)} KG</p>
+                  <p className="text-sm font-medium text-blue-700">
+                    Peso Total
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {totalPeso.toFixed(2)} KG
+                  </p>
                   <p className="text-xs text-blue-600">Massa do estoque</p>
                 </div>
-                <div className="p-3 bg-blue-500 rounded-xl shadow-lg"> <Weight className="w-6 h-6 text-white" /></div>
+                <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+                  {" "}
+                  <Weight className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -300,11 +425,17 @@ const salvarInventario = async () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-purple-700">Quantidade Total</p>
-                  <p className="text-2xl font-bold text-purple-900">{totalQuantity}</p>
+                  <p className="text-sm font-medium text-purple-700">
+                    Quantidade Total
+                  </p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {totalQuantity}
+                  </p>
                   <p className="text-xs text-purple-600">Unidades em estoque</p>
                 </div>
-                <div className="p-3 bg-purple-500 rounded-xl shadow-lg"><TrendingUp className="w-6 h-6 text-white" /></div>
+                <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -313,11 +444,17 @@ const salvarInventario = async () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-orange-700">Produtos Ativos</p>
-                  <p className="text-2xl font-bold text-orange-900">{filteredProducts.length}</p>
+                  <p className="text-sm font-medium text-orange-700">
+                    Produtos Ativos
+                  </p>
+                  <p className="text-2xl font-bold text-orange-900">
+                    {filteredProducts.length}
+                  </p>
                   <p className="text-xs text-orange-600">Itens filtrados</p>
                 </div>
-                <div className="p-3 bg-orange-500 rounded-xl shadow-lg"><BarChart3 className="w-6 h-6 text-white" /></div>
+                <div className="p-3 bg-orange-500 rounded-xl shadow-lg">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -329,7 +466,9 @@ const salvarInventario = async () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-emerald-100 text-sm font-medium">Estoque Normal</p>
+                  <p className="text-emerald-100 text-sm font-medium">
+                    Estoque Normal
+                  </p>
                   <p className="text-2xl font-bold">{stats.normal}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-emerald-200" />
@@ -341,9 +480,13 @@ const salvarInventario = async () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-amber-100 text-sm font-medium">Estoque Baixo</p>
+                  <p className="text-amber-100 text-sm font-medium">
+                    Estoque Baixo
+                  </p>
                   <p className="text-2xl font-bold">{stats.low}</p>
-                </div><AlertTriangle className="w-8 h-8 text-amber-200" /></div>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-amber-200" />
+              </div>
             </CardContent>
           </Card>
 
@@ -351,7 +494,9 @@ const salvarInventario = async () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-100 text-sm font-medium">Produtos Vencidos</p>
+                  <p className="text-red-100 text-sm font-medium">
+                    Produtos Vencidos
+                  </p>
                   <p className="text-2xl font-bold">{stats.expired}</p>
                 </div>
                 <XCircle className="w-8 h-8 text-red-200" />
@@ -361,133 +506,302 @@ const salvarInventario = async () => {
         </div>
 
         <Card className="border-0 shadow-xl">
+          {/* Header */}
           <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-xl"><div className="p-2 bg-blue-100 rounded-lg"><Filter className="w-5 h-5 text-blue-600" /></div>Filtros e Pesquisa Avançada</CardTitle>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Filter className="w-5 h-5 text-blue-600" />
+              </div>
+              Filtros e Pesquisa Avançada
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-8">
-            {/* Enhanced Search */}
+
+          <CardContent className="p-6 space-y-10">
+            {/* 🔍 Pesquisa Inteligente */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Search className="w-4 h-4" />Pesquisa Inteligente</Label>
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Search className="w-4 h-4" /> Pesquisa Inteligente
+              </Label>
               <div className="flex gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <Input type="text" placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 text-base border-2 border-slate-200 focus:border-blue-500 rounded-xl shadow-sm" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por SKU, nome, fornecedor, marca, categoria ou tipo..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-12 text-base border-2 border-slate-200 focus:border-blue-500 rounded-xl shadow-sm"
+                  />
                 </div>
-                <Button onClick={handleSearch} className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg rounded-xl"><Search className="w-4 h-4 mr-2" />Pesquisar</Button>
+                <Button
+                  onClick={handleSearch}
+                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg rounded-xl"
+                >
+                  <Search className="w-4 h-4 mr-2" /> Pesquisar
+                </Button>
               </div>
             </div>
-            <Separator className="my-6" />
+
+            <Separator />
+
+            {/* 📊 Status do Estoque */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Eye className="w-4 h-4" /> Filtrar por Status do Estoque </Label>
-              <select value={statusFiltro} onChange={(e) => handleStatusFilter(e.target.value)}
-                className="w-full h-12 p-4border-2 border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-base">
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Eye className="w-4 h-4" /> Filtrar por Status do Estoque
+              </Label>
+              <select
+                value={statusFiltro}
+                onChange={(e) => handleStatusFilter(e.target.value)}
+                className="w-full h-12 p-3 border-2 border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 shadow-sm text-base"
+              >
                 <option value="all">🔍 Visualizar todos os status</option>
-                <option value="Estoque Abastecido">✅ Estoque Abastecido ({stats.normal} itens)</option>
-                <option value="Estoque Baixo">⚠️ Estoque Baixo ({stats.low} itens)</option>
-                <option value="Produto Vencido">❌ Produto Vencido ({stats.expired} itens)</option>
+                <option value="Estoque Abastecido">
+                  ✅ Estoque Abastecido ({stats.normal} itens)
+                </option>
+                <option value="Estoque Baixo">
+                  ⚠️ Estoque Baixo ({stats.low} itens)
+                </option>
+                <option value="Produto Vencido">
+                  ❌ Produto Vencido ({stats.expired} itens)
+                </option>
               </select>
             </div>
-            <Separator className="my-6" />
+
+            <Separator />
+
+            {/* 📅 Período de Cadastro */}
             <div className="space-y-4">
-              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Calendar className="w-4 h-4" /> Filtro por Período de Cadastro </Label>
+              <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Calendar className="w-4 h-4" /> Filtro por Período de Cadastro
+              </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1"><CalendarDays className="w-3 h-3" />Data Início</Label>
-                  <Input type="date" value={filtroInicio} onChange={(e) => setFiltroInicio(e.target.value)}
-                    className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg" />
+                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
+                    <CalendarDays className="w-3 h-3" /> Data Início
+                  </Label>
+                  <Input
+                    type="date"
+                    value={filtroInicio}
+                    onChange={(e) => setFiltroInicio(e.target.value)}
+                    className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg"
+                  />
                 </div>
+
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1"><CalendarDays className="w-3 h-3" /> Data Fim</Label>
-                  <Input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg" />
+                  <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
+                    <CalendarDays className="w-3 h-3" /> Data Fim
+                  </Label>
+                  <Input
+                    type="date"
+                    value={filtroFim}
+                    onChange={(e) => setFiltroFim(e.target.value)}
+                    className="h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg"
+                  />
                 </div>
-                <Button onClick={handleDateFilter} className="h-11 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg rounded-lg mt-6"><Filter className="w-4 h-4 mr-2" />Aplicar Filtro</Button>
-                <Button onClick={clearDateFilter} variant="outline" className="h-11 border-2 border-slate-200 hover:bg-slate-50 rounded-lg mt-6"><RefreshCw className="w-4 h-4 mr-2" />Limpar Filtros</Button>
+
+                <div className="col-span-full flex justify-end gap-3">
+                  <Button
+                    onClick={handleDateFilter}
+                    className="h-11 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg rounded-lg"
+                  >
+                    <Filter className="w-4 h-4 mr-2" /> Aplicar Filtro
+                  </Button>
+                  <Button
+                    onClick={clearDateFilter}
+                    variant="outline"
+                    className="h-11 border-2 border-slate-200 hover:bg-slate-50 rounded-lg"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" /> Limpar Filtros
+                  </Button>
+                </div>
               </div>
             </div>
-            <Separator className="my-6" />
-            <div className="my-6">
-            <Label className="text-sm font-medium">Consultar Estoque de um Mês:</Label>
-              <div className="flex items-center gap-4 mt-2">
-                <Input type="month" value={historicoMes} onChange={(e) => setHistoricoMes(e.target.value)} className="w-48" />
-                <Button onClick={buscarHistorico}>Buscar</Button>
+
+            <Separator />
+
+            {/* 📆 Histórico Mensal */}
+            <div className="space-y-4">
+              <Label className="text-sm font-semibold text-slate-700">
+                Consultar Estoque de um Mês:
+              </Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="month"
+                  value={historicoMes}
+                  onChange={(e) => setHistoricoMes(e.target.value)}
+                  className="w-48 h-11 border-2 border-slate-200 focus:border-blue-500 rounded-lg"
+                />
+                <Button onClick={buscarHistorico} className="h-11">
+                  Buscar
+                </Button>
               </div>
-            {dadosHistorico && (
-              <div className="mt-6 bg-white rounded-lg shadow p-4">
-                <h3 className="font-semibold text-lg mb-2">Estoque de {historicoMes}</h3>
-                <div className="space-y-2">
-                  {Object.entries(dadosHistorico).map(([sku, info]) => (
-                    <div key={sku} className="border p-2 rounded">
-                      <p><strong>{info.nome}</strong> (SKU: {sku})</p>
-                      <p>Anterior: {info.anterior} → Atual: {info.atual}</p>
-                      <p>Observação: {info.observacao || "--"}</p>
-                    </div>
-                  ))}
+
+              {dadosHistorico && (
+                <div className="mt-6 bg-white rounded-lg shadow p-4">
+                  <h3 className="font-semibold text-lg mb-2">
+                    Estoque de {historicoMes}
+                  </h3>
+                  <div className="space-y-2">
+                    {Object.entries(dadosHistorico).map(([sku, info]) => (
+                      <div key={sku} className="border p-2 rounded">
+                        <p>
+                          <strong>{info.nome}</strong> (SKU: {sku})
+                        </p>
+                        <p>
+                          Anterior: {info.anterior} → Atual: {info.atual}
+                        </p>
+                        <p>Observação: {info.observacao || "--"}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-           {showInventario && (
+              )}
+            </div>
+
+            <Separator />
+
+            {/* 📋 Inventário */}
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <Button
+                onClick={handleInventario}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center gap-2"
+              >
+                <ClipboardEdit className="w-4 h-4" /> Realizar Inventário
+              </Button>
+              <Button
+                onClick={() => navigate("/visualizar-inventario")}
+                variant="outline"
+                className="border-2 border-slate-200 rounded-lg"
+              >
+                Visualizar Inventário
+              </Button>
+            </div>
+
+            {/* 📋 Modal de Inventário */}
+            {showInventario && (
               <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-start pt-10 overflow-auto">
                 <div className="bg-white rounded-lg w-full max-w-5xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Estoque Semanal</h2>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Estoque Semanal
+                  </h2>
+
                   {/* Barra de pesquisa */}
-                  <input type="text" placeholder="Pesquisar por SKU, nome ou marca..." value={buscaInventario} onChange={(e) => setBuscaInventario(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded mb-4" />
-                  {/* Lista de produtos com scroll */}
+                  <Input
+                    type="text"
+                    placeholder="Pesquisar por SKU, nome ou marca..."
+                    value={buscaInventario}
+                    onChange={(e) => setBuscaInventario(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                  />
+
+                  {/* Lista de produtos */}
                   <div className="max-h-[60vh] overflow-y-auto border rounded divide-y">
-                    {inventarioData.filter((item) => [item.sku, item.name, item.marca].some((campo) => campo?.toLowerCase().includes(buscaInventario.toLowerCase())))
+                    {inventarioData
+                      .filter((item) =>
+                        [item.sku, item.name, item.marca].some((campo) =>
+                          campo
+                            ?.toLowerCase()
+                            .includes(buscaInventario.toLowerCase())
+                        )
+                      )
                       .map((item, idx) => (
-                        <div key={idx} className="flex flex-col md:flex-row gap-4 py-3 px-2 hover:bg-gray-50">
-                          {/* SKU */}
-                          <div className="w-28 font-mono text-sm text-gray-600">{item.sku || "-"}</div>
-                          {/* Nome */}
-                          <div className="flex-1">{item.name}{" "}<span className="text-sm text-slate-500">(Atual: {item.quantity})</span></div>
-                          {/* Marca */}
-                          <div className="w-32 text-gray-700">{item.marca || "-"}</div>
-                          {/* Validade */}
-                          <div className="w-28 text-gray-700">{formatDate(item.expiryDate || "-")}</div>
-                          {/* Nova quantidade */}
-                          <Input type="number" min="0" className="w-24" value={item.novaQuantidade} onChange={(e) => {
-                            const valor = e.target.value; setInventarioData((prev) => prev.map((p) => p.sku === item.sku ? { ...p, novaQuantidade: valor } : p))}}/>
-                          {/* Observações */}
-                          <Textarea placeholder="Observações" className="flex-1" value={observacoes[item.sku] || ""}
-                            onChange={(e) => setObservacoes((prev) => ({...prev, [item.sku]: e.target.value}))} />
+                        <div
+                          key={idx}
+                          className="flex flex-col md:flex-row gap-4 py-3 px-2 hover:bg-gray-50"
+                        >
+                          <div className="w-28 font-mono text-sm text-gray-600">
+                            {item.sku || "-"}
+                          </div>
+                          <div className="flex-1">
+                            {item.name}{" "}
+                            <span className="text-sm text-slate-500">
+                              (Atual: {item.quantity})
+                            </span>
+                          </div>
+                          <div className="w-32 text-gray-700">
+                            {item.marca || "-"}
+                          </div>
+                          <div className="w-28 text-gray-700">
+                            {formatDate(item.expiryDate || "-")}
+                          </div>
+                          <Input
+                            type="number"
+                            min="0"
+                            className="w-24"
+                            value={item.novaQuantidade}
+                            onChange={(e) => {
+                              const valor = e.target.value;
+                              setInventarioData((prev) =>
+                                prev.map((p) =>
+                                  p.sku === item.sku
+                                    ? { ...p, novaQuantidade: valor }
+                                    : p
+                                )
+                              );
+                            }}
+                          />
+                          <Textarea
+                            placeholder="Observações"
+                            className="flex-1"
+                            value={observacoes[item.sku] || ""}
+                            onChange={(e) =>
+                              setObservacoes((prev) => ({
+                                ...prev,
+                                [item.sku]: e.target.value,
+                              }))
+                            }
+                          />
                         </div>
                       ))}
-                    {inventarioData.length === 0 && (<div className="text-center p-4 text-gray-500">Nenhum item encontrado</div>)}
+                    {inventarioData.length === 0 && (
+                      <div className="text-center p-4 text-gray-500">
+                        Nenhum item encontrado
+                      </div>
+                    )}
                   </div>
 
-                  {/* Botões */}
+                  {/* Botões do modal */}
                   <div className="flex justify-end gap-3 mt-4">
-                    <Button variant="outline" onClick={() => setShowInventario(false)}>
+                    <Button
+                      variant="outline"
+                      className="h-11 border-2 border-slate-200 hover:bg-slate-50 rounded-lg"
+                      onClick={() => setShowInventario(false)}
+                    >
                       Cancelar
                     </Button>
-                    <Button onClick={salvarInventario}>Salvar Inventário</Button>
+                    <Button
+                      onClick={salvarInventario}
+                      className="h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                    >
+                      Salvar Inventário
+                    </Button>
                   </div>
                 </div>
               </div>
             )}
-            <div className="flex justify-end my-4">
-            <Button onClick={handleInventario} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center gap-2"><ClipboardEdit className="w-4 h-4" /> Realizar Inventário</Button></div>
-            <Button onClick={() => navigate('/visualizar-inventario')}>Visualizar Inventário</Button>
-          </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-lg bg-gradient-to-r from-slate-50 to-slate-100">
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
               <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium text-slate-700">Estoque Normal</span>
+                <span className="font-medium text-slate-700">
+                  Estoque Normal
+                </span>
               </div>
               <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
-                <span className="font-medium text-slate-700">Estoque Baixo de 5 unidades</span>
+                <span className="font-medium text-slate-700">
+                  Estoque Baixo de 5 unidades
+                </span>
               </div>
               <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
                 <XCircle className="w-5 h-5 text-red-600" />
-                <span className="font-medium text-slate-700">Produto Vencido</span>
+                <span className="font-medium text-slate-700">
+                  Produto Vencido
+                </span>
               </div>
             </div>
           </CardContent>
@@ -497,13 +811,29 @@ const salvarInventario = async () => {
           <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-100 rounded-lg"><Package className="w-5 h-5 text-indigo-600" /></div>
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Package className="w-5 h-5 text-indigo-600" />
+                </div>
                 <div>
-                  <CardTitle className="text-xl">Inventário Detalhado</CardTitle>
-                  <p className="text-sm text-slate-600 mt-1"> {filteredProducts.length}{" "} {filteredProducts.length === 1 ? "produto encontrado" : "produtos encontrados"}</p>
+                  <CardTitle className="text-xl">
+                    Inventário Detalhado
+                  </CardTitle>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {" "}
+                    {filteredProducts.length}{" "}
+                    {filteredProducts.length === 1
+                      ? "produto encontrado"
+                      : "produtos encontrados"}
+                  </p>
                 </div>
               </div>
-              <Button onClick={() => exportToExcel(filteredProducts)} className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg"><Download className="w-4 h-4 mr-2" />Exportar Excel</Button>
+              <Button
+                onClick={() => exportToExcel(filteredProducts)}
+                className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -512,53 +842,210 @@ const salvarInventario = async () => {
                 <table className="w-full min-w-[1600px]">
                   <thead className="bg-gradient-to-r from-slate-100 to-slate-200 sticky top-0 z-10 border-b-2 border-slate-300">
                     <tr>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Zap className="w-4 h-4" />Status</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Hash className="w-4 h-4" />SKU</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Tag className="w-4 h-4" />Nome</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Building2 className="w-4 h-4" />Marca</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Scale className="w-4 h-4" />Peso</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Layers className="w-4 h-4" />Un. Medida</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Package className="w-4 h-4" />Qtd.</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><DollarSign className="w-4 h-4" />Valor Unit.</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Calculator className="w-4 h-4" />Valor Total</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Calendar className="w-4 h-4" />Vencimento</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Clock className="w-4 h-4" />Dias Rest.</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><CalendarDays className="w-4 h-4" />Cadastro</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Truck className="w-4 h-4" />Fornecedor</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><FolderOpen className="w-4 h-4" />Categoria</div></th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider"><div className="flex items-center gap-2"><Layers className="w-4 h-4" />Tipo</div></th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4" />
+                          Status
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Hash className="w-4 h-4" />
+                          SKU
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4" />
+                          Nome
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          Marca
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Scale className="w-4 h-4" />
+                          Peso
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4" />
+                          Un. Medida
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4" />
+                          Qtd.
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4" />
+                          Valor Unit.
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Calculator className="w-4 h-4" />
+                          Valor Total
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Vencimento
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Dias Rest.
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <CalendarDays className="w-4 h-4" />
+                          Cadastro
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Truck className="w-4 h-4" />
+                          Fornecedor
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4" />
+                          Categoria
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4" />
+                          Tipo
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
                     {filteredProducts.map((item, idx) => {
-                      const days = calculateConsumptionDays(item.dateAdded, item.expiryDate)
+                      const days = calculateConsumptionDays(
+                        item.dateAdded,
+                        item.expiryDate
+                      );
                       return (
-                        <tr key={idx} className="hover:bg-slate-50/80 transition-all duration-200 group">
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/80 transition-all duration-200 group"
+                        >
                           <td className="px-4 py-4">{getStatusBadge(item)}</td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">{item.sku}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm font-medium text-slate-800">{item.name}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.marca}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700 font-medium">{item.peso}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.unit}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm font-semibold text-slate-900">{item.quantity}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.unitPrice}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm font-semibold text-slate-900">{item.totalPrice}</span></td>
-                          <td className="px-4 py-4 text-center cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group-hover:bg-blue-100/50"
-                            onDoubleClick={() => handleDoubleClick(item.sku, item.expiryDate)} title="Clique duplo para editar a data de vencimento">
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">
+                              {item.sku}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm font-medium text-slate-800">
+                              {item.name}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.marca}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700 font-medium">
+                              {item.peso}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.unit}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm font-semibold text-slate-900">
+                              {item.quantity}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.unitPrice}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm font-semibold text-slate-900">
+                              {item.totalPrice}
+                            </span>
+                          </td>
+                          <td
+                            className="px-4 py-4 text-center cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group-hover:bg-blue-100/50"
+                            onDoubleClick={() =>
+                              handleDoubleClick(item.sku, item.expiryDate)
+                            }
+                            title="Clique duplo para editar a data de vencimento"
+                          >
                             {editando === item.sku ? (
-                              <Input type="date" value={valorEditado} onChange={handleChange} onBlur={() => handleSave(item.sku)}
-                                className="w-full text-sm border-2 border-blue-300 focus:border-blue-500"  autoFocus/>) : (<div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-700">{formatDate(item.expiryDate)}</span>
+                              <Input
+                                type="date"
+                                value={valorEditado}
+                                onChange={handleChange}
+                                onBlur={() => handleSave(item.sku)}
+                                className="w-full text-sm border-2 border-blue-300 focus:border-blue-500"
+                                autoFocus
+                              />
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-slate-700">
+                                  {formatDate(item.expiryDate)}
+                                </span>
                                 <Edit3 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>)}</td>
-                          <td className="px-4 py-4 text-center"><span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${days <= 7 ? "bg-red-100 text-red-800 border border-red-200" : 
-                          days <= 30 ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"}`}>{days} dias</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{formatDate(item.dateAdded)}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.supplier}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.category || "N/A"}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm text-slate-700">{item.tipo || "N/A"}</span></td>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                days <= 7
+                                  ? "bg-red-100 text-red-800 border border-red-200"
+                                  : days <= 30
+                                  ? "bg-amber-100 text-amber-800 border border-amber-200"
+                                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              }`}
+                            >
+                              {days} dias
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {formatDate(item.dateAdded)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.supplier}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.category || "N/A"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="text-sm text-slate-700">
+                              {item.tipo || "N/A"}
+                            </span>
+                          </td>
                         </tr>
-                      )
+                      );
                     })}
                     {filteredProducts.length === 0 && (
                       <tr>
@@ -568,9 +1055,12 @@ const salvarInventario = async () => {
                               <Package className="w-12 h-12 text-slate-400" />
                             </div>
                             <div className="space-y-2">
-                              <p className="text-lg font-medium text-slate-600">Nenhum produto encontrado</p>
+                              <p className="text-lg font-medium text-slate-600">
+                                Nenhum produto encontrado
+                              </p>
                               <p className="text-sm text-slate-500">
-                                Tente ajustar os filtros de pesquisa ou verificar os critérios aplicados
+                                Tente ajustar os filtros de pesquisa ou
+                                verificar os critérios aplicados
                               </p>
                             </div>
                           </div>
@@ -585,11 +1075,8 @@ const salvarInventario = async () => {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-
-
-
 
 // import { useState } from "react";
 // import * as XLSX from "xlsx";
@@ -684,4 +1171,3 @@ const salvarInventario = async () => {
 //     </div>
 //   );
 // }
-
