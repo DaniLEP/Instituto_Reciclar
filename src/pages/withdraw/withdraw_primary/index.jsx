@@ -48,81 +48,91 @@ export default function Retirada() {
   const [quantidadeDisponivel, setQuantidadeDisponivel] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+const calcularDiasParaValidade = (expiryDate) => {
+if (!expiryDate) return Number.POSITIVE_INFINITY
+const now = new Date()
+const validadeDate = new Date(expiryDate)
+const diffTime = validadeDate - now
+return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+}
+const formatDate = (date) => {
+if (!date) return "--"
+try {
+const d = new Date(date)
+if (isNaN(d)) return "--"
+return d.toLocaleDateString("pt-BR")
+} catch {
+return "--"
+}
+}
 
-  const calcularDiasParaValidade = (expiryDate) => {
-    if (!expiryDate) return Number.POSITIVE_INFINITY
-    const now = new Date()
-    const validadeDate = new Date(expiryDate)
-    const diffTime = validadeDate - now
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  }
 
-  const formatDate = (date) => {
-    if (!date) return "--"
-    try {
-      const d = new Date(date)
-      if (isNaN(d)) return "--"
-      return d.toLocaleDateString("pt-BR")
-    } catch {
-      return "--"
-    }
-  }
 
-  useEffect(() => {
-    const fetchProdutos = async () => {
-      setIsLoading(true)
-      try {
-        const produtosRef = ref(db, "Estoque")
-        const snapshot = await get(produtosRef)
-        if (snapshot.exists()) {
-          const data = snapshot.val()
-          const produtosList = Object.entries(data).map(([id, produto]) => ({
-            id,
-            ...produto,
-            dataValidade: produto.dataValidade || produto.expiryDate || null,
-            validadeStatus: calcularDiasParaValidade(produto.dataValidade || produto.expiryDate),
-          }))
-          setProdutos(produtosList)
-          setFilteredProdutos(produtosList)
+useEffect(() => {
+const fetchProdutos = async () => {
+setIsLoading(true)
+try {
+const produtosRef = ref(db, "Estoque")
+const snapshot = await get(produtosRef)
+if (snapshot.exists()) {
+const data = snapshot.val()
+let produtosList = Object.entries(data).map(([id, produto]) => ({
+id,
+...produto,
+dataValidade: produto.dataValidade || produto.expiryDate || null,
+validadeStatus: calcularDiasParaValidade(produto.dataValidade || produto.expiryDate),
+}))
 
-          const temProximoVencimento = produtosList.some((p) => p.validadeStatus <= 7)
-          if (temProximoVencimento) {
-            toast({
-              title: "Atenção",
-              description: "Existem produtos próximos do vencimento!",
-              variant: "warning",
-            })
-          }
-        } else {
-          setProdutos([])
-          setFilteredProdutos([])
-        }
-      } catch (error) {
-        console.error("Erro ao buscar produtos:", error)
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar produtos do estoque.",
-          variant: "error",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchProdutos()
-  }, [])
 
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredProdutos(produtos)
-    } else {
-      const filtered = produtos.filter(
-        (produto) =>
-          (produto.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredProdutos(filtered)
-    }
-  }, [searchTerm, produtos])
+// Ordenar por validade (mais crítico primeiro)
+produtosList = produtosList.sort((a, b) => a.validadeStatus - b.validadeStatus)
+
+
+setProdutos(produtosList)
+setFilteredProdutos(produtosList)
+
+
+const temProximoVencimento = produtosList.some((p) => p.validadeStatus <= 7)
+if (temProximoVencimento) {
+toast({
+title: "Atenção",
+description: "Existem produtos próximos do vencimento!",
+variant: "warning",
+})
+}
+} else {
+setProdutos([])
+setFilteredProdutos([])
+}
+} catch (error) {
+console.error("Erro ao buscar produtos:", error)
+toast({
+title: "Erro",
+description: "Não foi possível carregar produtos do estoque.",
+variant: "error",
+})
+} finally {
+setIsLoading(false)
+}
+}
+fetchProdutos()
+}, [])
+  
+
+useEffect(() => {
+if (searchTerm.trim() === "") {
+setFilteredProdutos(produtos)
+} else {
+let filtered = produtos.filter(
+(produto) =>
+(produto.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+(produto.sku || "").toLowerCase().includes(searchTerm.toLowerCase())
+)
+// Ordenar também os filtrados
+filtered = filtered.sort((a, b) => a.validadeStatus - b.validadeStatus)
+setFilteredProdutos(filtered)
+}
+}, [searchTerm, produtos])
 
   const handleProdutoSelecionado = (produto) => {
     setSku(produto.sku || "")
@@ -379,7 +389,7 @@ export default function Retirada() {
                             </div>
 
                             {/* Lista de Produtos Aprimorada */}
-                            <div className="flex-1 overflow-y-auto min-h-0">
+                            <div className="flex-1 overflow-y-auto min-h-1">
                               {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-16">
                                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
@@ -401,13 +411,13 @@ export default function Retirada() {
                                     <Card
                                       key={produto.id}
                                       onClick={() => handleProdutoSelecionado(produto)}
-                                      className="hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-blue-500 hover:scale-[1.02] bg-gradient-to-r from-white to-gray-50"
+                                      className="hover:shadow-lg transition-all duration-200 cursor-pointer border-l- border-l-transparent hover:border-l-blue-500 hover:scale-[1.02] bg-gradient-to-r from-white to-gray-50"
                                     >
                                       <CardContent className="p-6">
                                         <div className="flex items-center justify-between mb-4">
                                           <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-lg text-gray-900 truncate mb-1">
-                                              {produto.name}
+                                              {produto.name} - {produto.peso}{produto.unit}
                                             </h4>
                                             <p className="text-gray-600 font-medium">{produto.marca}</p>
                                           </div>
