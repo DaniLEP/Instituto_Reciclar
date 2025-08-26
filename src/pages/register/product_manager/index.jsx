@@ -258,3 +258,7 @@ function Gerenciador() {
   )
 }
 export default Gerenciador
+
+
+
+

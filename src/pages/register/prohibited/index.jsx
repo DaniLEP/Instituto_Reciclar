@@ -249,10 +249,26 @@ const handleSave = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tipo" className="text-sm font-medium text-gray-700">Tipo </Label>
-                  <Input id="tipo" placeholder="Tipo do produto" value={tipo} onChange={(e) => setTipo(e.target.value)} className="h-11" />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tipo" className="text-sm font-medium text-gray-700">Tipo</Label>
+                      <Select value={tipo} onValueChange={setTipo}>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Frutas">Frutas</SelectItem>
+                          <SelectItem value="Legumes">Legumes</SelectItem>
+                          <SelectItem value="Verduras">Verduras</SelectItem>
+                          <SelectItem value="Bovina">Bovina</SelectItem>
+                          <SelectItem value="Ave">Ave</SelectItem>
+                          <SelectItem value="Suína">Suína</SelectItem>
+                          <SelectItem value="Pescado">Pescado</SelectItem>
+                          <SelectItem value="Mercado">Mercado</SelectItem>
+                          <SelectItem value="Produtos em Consumo">Produtos em Consumo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
               </div>
             </div>
 
