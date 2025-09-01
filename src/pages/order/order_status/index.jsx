@@ -826,7 +826,7 @@ const exportToPDF = async () => {
                       <TableCell><Input value={produto.tipo} onChange={(e) => handleEditar(index, "tipo", e.target.value)} className="w-24" /></TableCell>
                       <TableCell><Input value={produto.category} onChange={(e) => handleEditar(index, "category", e.target.value)} className="w-24"/></TableCell>
                       <TableCell><Input type="number" value={produto.peso} onChange={(e) => handleEditar(index, "peso", e.target.value)} className="w-20" /></TableCell>
-                      <TableCell><Input value={produto.unit} onChange={(e) => handleEditar(index, "unit", e.target.value)} className="w-20" /></TableCell>
+                      <TableCell><Input value={produto.unitMeasure} onChange={(e) => handleEditar(index, "unit", e.target.value)} className="w-20" /></TableCell>
                       <TableCell><Input type="number" value={produto.quantidade} onChange={(e) => handleEditar(index, "quantidade", e.target.value)} className="w-20" /></TableCell>
                       <TableCell><Input type="number" value={produto.unitPrice} onChange={(e) => handleEditar(index, "unitPrice", e.target.value)} className="w-24" /></TableCell>
                       <TableCell className="font-medium">R$ {(produto.quantidade * produto.unitPrice).toFixed(2)}</TableCell>
