@@ -139,44 +139,86 @@ export default function StatusPedidos() {
     } catch (error) {console.error("Erro ao salvar valor do caixa:", error); toast.error("Erro ao salvar valor do caixa");}
   };
 
-  const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscalParam, chaveAcessoParam) => {
-    const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`)
-    const dataCadastro = new Date().toISOString()
-    const updates = {status: novoStatus, ...(motivo && { motivoCancelamento: motivo }), ...(numeroNotaFiscalParam && { numeroNotaFiscal: numeroNotaFiscalParam }), ...(recebido && { recebido }), ...(chaveAcessoParam && { chaveAcesso: chaveAcessoParam }), dataCadastro,}
-    update(pedidoRef, updates)
-      .then(() => {
-        toast.success(`Status atualizado para ${novoStatus}`)
-        setPedidos((prev) => prev.map((p) => (p.id === pedidoId ? { ...p, ...updates } : p)))
-        if (novoStatus === "Aprovado") {
-          enviarParaEstoque(pedidoId)
-        }
-      })
-      .catch(() => {
-        toast.error("Erro ao atualizar status")
-      })
-  }
+const handleAtualizarStatus = (pedidoId, novoStatus, motivo, numeroNotaFiscalParam, chaveAcessoParam) => {
+  const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
+  const dataCadastro = new Date().toISOString();
 
-  const enviarParaEstoque = async (pedidoId) => {
-    try {
-      const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`)
-      const pedidoSnapshot = await get(pedidoRef)
-      if (!pedidoSnapshot.exists()) {console.warn("Pedido não encontrado!"); return;}
-      const pedido = pedidoSnapshot.val()
-      const estoqueRef = ref(dbRealtime, "Estoque")
-      const dataCadastro = new Date().toISOString().split("T")[0]
-      const fornecedor = pedido.fornecedor
+  const updates = {
+    status: novoStatus,
+    ...(motivo && { motivoCancelamento: motivo }),
+    ...(numeroNotaFiscalParam && { numeroNotaFiscal: numeroNotaFiscalParam }),
+    ...(recebido && { recebido }),
+    ...(chaveAcessoParam && { chaveAcesso: chaveAcessoParam }),
+    dataCadastro,
+  };
 
-      const produtoPromises = pedido.produtos.map(async (produto) => {
-        const dataProduto = {sku: produto.sku || "Indefinido", name: produto.name || "Indefinido", quantity: produto.quantidade || 0, projeto: produto.projeto || "Indefinido", category: produto.category || "Indefinido",
-          tipo: produto.tipo || "Indefinido", marca: produto.marca || "Indefinido", peso: produto.peso || "Indefinido", unitmeasure: produto.unit || "Indefinido",
-          supplier: fornecedor?.razaoSocial || "Indefinido", dateAdded: dataCadastro, unitPrice: produto.unitPrice || 0, totalPrice: produto.totalPrice || 0, expiryDate: produto.expiryDate || "",}
-        const result = await push(estoqueRef, dataProduto)
-        console.log("Produto salvo com ID:", result.key)
-      })
-      await Promise.all(produtoPromises)
-      console.log("Todos os produtos foram enviados para o estoque.")
-    } catch (error) {console.error("Erro ao enviar produtos para o estoque:", error); toast.error("Erro ao enviar produtos para o estoque")}
+  update(pedidoRef, updates)
+    .then(() => {
+      toast.success(`Status atualizado para ${novoStatus}`);
+      setPedidos((prev) =>
+        prev.map((p) => (p.id === pedidoId ? { ...p, ...updates } : p))
+      );
+
+      if (novoStatus === "Aprovado") {
+        enviarParaEstoque(pedidoId); // envia para estoque usando SKU
+      }
+    })
+    .catch(() => {
+      toast.error("Erro ao atualizar status");
+    });
+};
+
+const enviarParaEstoque = async (pedidoId) => {
+  try {
+    const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
+    const pedidoSnapshot = await get(pedidoRef);
+    if (!pedidoSnapshot.exists()) {
+      console.warn("Pedido não encontrado!");
+      return;
+    }
+
+    const pedido = pedidoSnapshot.val();
+    const fornecedor = pedido.fornecedor;
+    const dataCadastro = new Date().toISOString().split("T")[0];
+
+    const produtoPromises = pedido.produtos.map(async (produto) => {
+      if (!produto.sku) {
+        console.warn("Produto sem SKU, não será enviado para o estoque:", produto);
+        return;
+      }
+
+      const dataProduto = {
+        sku: produto.sku,
+        name: produto.name || "Indefinido",
+        quantity: produto.quantidade || 0,
+        projeto: produto.projeto || "Indefinido",
+        category: produto.category || "Indefinido",
+        tipo: produto.tipo || "Indefinido",
+        marca: produto.marca || "Indefinido",
+        peso: produto.peso || 0,
+        unit: produto.unit || "Indefinido",
+        supplier: fornecedor?.razaoSocial || "Indefinido",
+        dateAdded: dataCadastro,
+        unitPrice: produto.unitPrice || 0,
+        totalPrice: produto.totalPrice || 0,
+        expiryDate: produto.expiryDate || "",
+      };
+
+      // Salva usando a SKU como chave
+      await set(ref(dbRealtime, `Estoque/${produto.sku}`), dataProduto);
+      console.log("Produto salvo com SKU:", produto.sku);
+    });
+
+    await Promise.all(produtoPromises);
+    console.log("Todos os produtos foram enviados para o estoque.");
+    toast.success("Produtos enviados para o estoque com sucesso!");
+  } catch (error) {
+    console.error("Erro ao enviar produtos para o estoque:", error);
+    toast.error("Erro ao enviar produtos para o estoque");
   }
+};
+
+
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida"
