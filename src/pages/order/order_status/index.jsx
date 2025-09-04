@@ -65,6 +65,10 @@ export default function StatusPedidos() {
   const [novoPeriodoInicio, setNovoPeriodoInicio] = useState("")
   const [novoPeriodoFim, setNovoPeriodoFim] = useState("")
   const [numeroDuplicado, setNumeroDuplicado] = useState("")
+const [fornecedores, setFornecedores] = useState([]);
+const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
+const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
+
 
 
 
@@ -112,6 +116,26 @@ export default function StatusPedidos() {
             tipo: item.tipo || "", category: item.category || "", peso: item.peso || "",unit: item.unit || item.unitMeasure || "", unitPrice: parseFloat(item.unitPrice || 0)})) : []; setProdutosDisponiveis(produtosList)})
     } catch (error) {console.error("Erro ao carregar produtos:", error); toast.error("Erro ao carregar produtos")}
   }; carregarProdutos(); }, [modalSelecionarProduto])
+
+useEffect(() => {
+  const carregarFornecedores = async () => {
+    try {
+      const fornecedoresRef = ref(dbRealtime, "CadastroFornecedores");
+      const snapshot = await get(fornecedoresRef);
+      if (snapshot.exists()) {
+        const dados = Object.entries(snapshot.val()).map(([id, f]) => ({ id, ...f }));
+        setFornecedores(dados);
+      } else {
+        toast.error("Nenhum fornecedor encontrado!");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar fornecedores:", error);
+      toast.error("Erro ao carregar fornecedores");
+    }
+  };
+  carregarFornecedores();
+}, []);
+
 
 // Adiciona produto selecionado ao pedido
   const handleSelecionarProduto = (produtoSelecionado) => {
@@ -337,106 +361,141 @@ const exportToPDF = async () => {
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
 
-    const headerX = 10, headerY = 6, headerWidth = 45, headerHeight = 9;
-    const segundaHeaderX = 150, segundaHeaderY = 6, segundaHeaderWidth = 45, segundaHeaderHeight = 9;
-    const footerX = 10, footerWidth = 90, footerHeight = 25;
-    const footerY = pageHeight - footerHeight;
+    // Margens menores
+    const contentTop = 25;
+    const contentBottom = pageHeight - 25;
+    const marginLeft = 15;
 
-    const contentTop = headerY + headerHeight + 10;
-    const contentBottom = footerY - 20;
-    const marginLeft = 20;
-
+    // Helpers
     const addHeader = () => {
-      doc.addImage(headerImg, "PNG", headerX, headerY, headerWidth, headerHeight);
-      doc.addImage(segundaHeaderImg, "PNG", segundaHeaderX, segundaHeaderY, segundaHeaderWidth, segundaHeaderHeight);
+      doc.addImage(headerImg, "PNG", 10, 6, 40, 8);
+      doc.addImage(segundaHeaderImg, "PNG", pageWidth - 55, 6, 40, 8);
     };
 
-    const addFooter = () => {
-      doc.addImage(footerImg, "PNG", footerX, footerY, footerWidth, footerHeight);
+    const addFooter = (pageNumber) => {
+      doc.addImage(footerImg, "PNG", 10, pageHeight - 22, 80, 20);
+      doc.setFontSize(8);
+      doc.text(`Página ${pageNumber}`, pageWidth - 25, pageHeight - 10);
     };
 
-    doc.setFont("Helvetica");
-    doc.setFontSize(10);
-    addHeader();
-    addFooter();
-
-    let y = contentTop;
-
-    doc.text("Número do Pedido: " + (pedidoSelecionado.numeroPedido || ""), marginLeft, y); y += 8;
-    doc.text("Projeto Custeador: " + (pedidoSelecionado.projeto || ""), marginLeft, y); y += 8;
-    doc.text("Fornecedor: " + (pedidoSelecionado.fornecedor?.razaoSocial || ""), marginLeft, y); y += 8;
-    doc.text("Data do Pedido: " + formatDate(pedidoSelecionado.dataPedido || ""), marginLeft, y); y += 8;
-    const periodo = `Período que irá suprir: ${formatDate(pedidoSelecionado.periodoInicio)} até: ${formatDate(pedidoSelecionado.periodoFim)}`;
-    doc.text(periodo, marginLeft, y); y += 22;
-
-    const addTableHeader = (y) => {
+    const addLabelValue = (label, value, x, y, width = 40) => {
       doc.setFontSize(9);
-      doc.text("Produto", 20, y);
-      doc.text("Peso", 60, y);
-      doc.text("Unidade", 80, y);
-      doc.text("Marca", 100, y);
-      doc.text("Quantidade", 135, y);
-      doc.text("Observação", 160, y);
-      doc.line(20, y + 2, 190, y + 2);
+      doc.setFont("Helvetica", "bold");
+      doc.text(label, x, y);
+      doc.setFont("Helvetica", "normal");
+      doc.text(value, x + width, y);
+    };
+
+    // Início
+    let currentPage = 1;
+    addHeader();
+    addFooter(currentPage);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Resumo do Pedido", pageWidth / 2, contentTop, { align: "center" });
+
+    let y = contentTop + 8;
+
+    // Dados do pedido em 2 colunas
+    addLabelValue("Número:", String(pedidoSelecionado.numeroPedido || ""), marginLeft, y);
+    addLabelValue("Data:", formatDate(pedidoSelecionado.dataPedido || ""), pageWidth / 2, y);
+    y += 6;
+
+    addLabelValue("Projeto:", String(pedidoSelecionado.projeto || ""), marginLeft, y);
+    addLabelValue("Fornecedor:", String(pedidoSelecionado.fornecedor?.razaoSocial || ""), pageWidth / 2, y);
+    y += 6;
+
+    addLabelValue("Período:", `${formatDate(pedidoSelecionado.periodoInicio)} até ${formatDate(pedidoSelecionado.periodoFim)}`, marginLeft, y);
+    y += 12;
+
+    // Cabeçalho da tabela
+    const addTableHeader = (y) => {
+      doc.setFillColor(230, 230, 230);
+      doc.rect(marginLeft, y - 4, pageWidth - marginLeft * 2, 7, "F");
+      doc.setFontSize(8);
+      doc.setFont("Helvetica", "bold");
+      doc.text("Produto", marginLeft + 2, y);
+      doc.text("Peso", 65, y);
+      doc.text("Unid.", 80, y);
+      doc.text("Marca", 95, y);
+      doc.text("Qtd.", 125, y, { align: "right" });
+      doc.text("Obs.", 135, y);
+      doc.setFont("Helvetica", "normal");
     };
 
     addTableHeader(y);
-    y += 10;
+    y += 6;
 
-    doc.setFontSize(9);
-    const lineHeight = 5;
+    // Tabela compactada
+    const lineHeight = 4.5;
+    doc.setFontSize(8);
 
-    (pedidoSelecionado.produtos || []).forEach((produto) => {
-      const nomeLines = doc.splitTextToSize(String(produto.name || ""), 35);
-      const pesoLines = doc.splitTextToSize(String(produto.peso || ""), 15);
-      const unidadeLines = doc.splitTextToSize(String(produto.unitMeasure || ""), 15);
-      const marcaLines = doc.splitTextToSize(String(produto.marca || ""), 30);
-      const quantidadeLines = doc.splitTextToSize(String(produto.quantidade || "0"), 15);
-      const observacaoLines = doc.splitTextToSize(produto.observacao || "Sem observação", 40);
+    (pedidoSelecionado.produtos || []).forEach((produto, index) => {
+      // Quebra observação longa
+      let obs = produto.observacao || "Sem obs.";
+      if (obs.length > 80) obs = obs.slice(0, 77) + "...";
 
-      const maxLines = Math.max(
-        nomeLines.length,
-        pesoLines.length,
-        unidadeLines.length,
-        marcaLines.length,
-        quantidadeLines.length,
-        observacaoLines.length
-      );
+      const nome = String(produto.name || "");
+      const peso = String(produto.peso || "");
+      const unidade = String(produto.unitMeasure || "");
+      const marca = String(produto.marca || "");
+      const quantidade = String(produto.quantidade || "0");
 
-      const rowHeight = Math.max(maxLines * lineHeight, 14);
-
-      if (y + rowHeight > contentBottom) {
+      // Se passar do limite da página → nova página
+      if (y + lineHeight > contentBottom) {
         doc.addPage();
+        currentPage++;
         addHeader();
-        addFooter();
+        addFooter(currentPage);
         y = contentTop;
         addTableHeader(y);
-        y += 10;
+        y += 6;
       }
 
-      const baseY = y;
-      for (let i = 0; i < maxLines; i++) {
-        const offsetY = baseY + i * lineHeight;
-        if (nomeLines[i]) doc.text(nomeLines[i], 20, offsetY);
-        if (pesoLines[i]) doc.text(pesoLines[i], 60, offsetY);
-        if (unidadeLines[i]) doc.text(unidadeLines[i], 80, offsetY);
-        if (marcaLines[i]) doc.text(marcaLines[i], 100, offsetY);
-        if (quantidadeLines[i]) doc.text(quantidadeLines[i], 135, offsetY);
-        if (observacaoLines[i]) doc.text(observacaoLines[i], 160, offsetY);
+      // Fundo zebrado
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(marginLeft, y - 3.5, pageWidth - marginLeft * 2, lineHeight + 1, "F");
       }
 
-      y += rowHeight;
-      doc.line(20, y, 190, y);
-      y += 5;
+      // Conteúdo
+      doc.text(doc.splitTextToSize(nome, 40), marginLeft + 2, y);
+      doc.text(peso, 65, y);
+      doc.text(unidade, 80, y);
+      doc.text(marca, 95, y);
+      doc.text(quantidade, 125, y, { align: "right" });
+      doc.text(doc.splitTextToSize(obs, 55), 135, y);
+
+      y += lineHeight + 1;
     });
 
-    addFooter();
-    doc.save(`pedido_${pedidoSelecionado.numeroPedido || "sem_numero"}.pdf`);
+    // Totalizador
+    if (y + 10 > contentBottom) {
+      doc.addPage();
+      currentPage++;
+      addHeader();
+      addFooter(currentPage);
+      y = contentTop;
+    }
 
+    const totalQtd = (pedidoSelecionado.produtos || []).reduce(
+      (sum, p) => sum + Number(p.quantidade || 0),
+      0
+    );
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`Total de Itens: ${pedidoSelecionado.produtos?.length || 0}`, marginLeft, y + 6);
+    doc.text(`Quantidade Total: ${totalQtd}`, pageWidth / 2, y + 6);
+
+    // Salvar
+    doc.save(`pedido_${pedidoSelecionado.numeroPedido || "sem_numero"}.pdf`);
   } catch (error) {
     console.error("Erro ao gerar PDF:", error);
   }
 };
+
 
   const salvarDescontoNoPedido = async () => {
     if (!pedidoSelecionado?.id) return
@@ -447,41 +506,66 @@ const exportToPDF = async () => {
   }
 
     const abrirModalDuplicar = () => {
-    const randomId = Math.floor(2000 + Math.random() * 10000) // Ex: PED-4321
-    const novoNumero = `PED${randomId}`
-    setNumeroDuplicado(novoNumero)
-    setNovaDataPedido(new Date().toISOString().slice(0, 10))
-    setNovoPeriodoInicio("")
-    setNovoPeriodoFim("")
-    setModalDuplicarAberto(true)
+    const randomId = Math.floor(2000 + Math.random() * 10000); // Ex: PED-4321
+    const novoNumero = `PED${randomId}`;
+    setNumeroDuplicado(novoNumero);
+    setNovaDataPedido(new Date().toISOString().slice(0, 10));
+    setNovoPeriodoInicio("");
+    setNovoPeriodoFim("");
+    setFornecedorSelecionado(null); // limpa fornecedor ao abrir
+    setModalDuplicarAberto(true);
+};
+
+const handleDuplicarPedido = async () => {
+  if (!novaDataPedido || !novoPeriodoInicio || !novoPeriodoFim) {
+    toast.error("Preencha todos os campos.");
+    return;
+  }
+  if (!fornecedorSelecionado) {
+    toast.error("Selecione um fornecedor.");
+    return;
   }
 
-    const handleDuplicarPedido = async () => {
-    if (!novaDataPedido || !novoPeriodoInicio || !novoPeriodoFim) {
-      toast.error("Preencha todos os campos.")
-      return
-    }
+  const novoPedido = {
+    ...pedidoSelecionado,
+    numeroPedido: numeroDuplicado,
+    dataPedido: novaDataPedido,
+    periodoInicio: novoPeriodoInicio,
+    periodoFim: novoPeriodoFim,
+    status: "Pendente",
+    motivoCancelamento: "",
+    recebido: "",
+    numeroNotaFiscal: "",
+    chaveAcesso: "",
+    fornecedor: {
+      razaoSocial: fornecedorSelecionado.razaoSocial,
+      contato: fornecedorSelecionado.contato,
+      telefone: fornecedorSelecionado.telefone,
+      email: fornecedorSelecionado.email,
+    },
+  };
+  delete novoPedido.id; // garante que o Firebase crie um novo ID
 
-    const novoPedido = {...pedidoSelecionado, numeroPedido: numeroDuplicado, dataPedido: novaDataPedido, periodoInicio: novoPeriodoInicio, periodoFim: novoPeriodoFim, status: "Pendente", motivoCancelamento: "", recebido: "", numeroNotaFiscal: "", chaveAcesso: "",}
-    delete novoPedido.id
+  try {
+    await push(ref(dbRealtime, "novosPedidos"), novoPedido);
+    toast.success("Pedido duplicado com sucesso!");
+    setModalDuplicarAberto(false);
 
-    try {
-      await push(ref(dbRealtime, "novosPedidos"), novoPedido)
-      toast.success("Pedido duplicado com sucesso!")
-      setModalDuplicarAberto(false)
-      // Atualiza a lista
-      const pedidosRef = ref(dbRealtime, "novosPedidos")
-      const snapshot = await get(pedidosRef)
-      if (snapshot.exists()) {
-        const dados = Object.entries(snapshot.val()).map(([id, pedido]) => ({ id, ...pedido }))
-        setPedidos(dados)
-        setPedidosFiltrados(dados)
-      }
-    } catch (error) {
-      console.error("Erro ao duplicar pedido:", error)
-      toast.error("Erro ao duplicar pedido")
+    // Atualiza a lista de pedidos
+    const pedidosRef = ref(dbRealtime, "novosPedidos");
+    const snapshot = await get(pedidosRef);
+    if (snapshot.exists()) {
+      const dados = Object.entries(snapshot.val()).map(([id, pedido]) => ({ id, ...pedido }));
+      setPedidos(dados);
+      setPedidosFiltrados(dados);
     }
+  } catch (error) {
+    console.error("Erro ao duplicar pedido:", error);
+    toast.error("Erro ao duplicar pedido");
   }
+};
+
+
 
 
   return (
@@ -752,31 +836,95 @@ const exportToPDF = async () => {
               <Button onClick={abrirModalDuplicar} variant="outline" className="flex items-center gap-1"><Copy className="w-4 h-4" />Duplicar Pedido</Button>
             </div>
             {/* MODAL DE DUPLICAÇÃO DE PEDIDOS */}
-            <Dialog open={modalDuplicarAberto} onOpenChange={setModalDuplicarAberto}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Duplicar Pedido</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div><Label>Número do novo pedido</Label>
-                    <Input value={numeroDuplicado} disabled />
-                  </div>
-                  <div><Label>Data do Pedido</Label>
-                    <Input type="date" value={novaDataPedido} onChange={(e) => setNovaDataPedido(e.target.value)} />
-                  </div>
-                  <div><Label>Período Início</Label>
-                    <Input type="date" value={novoPeriodoInicio} onChange={(e) => setNovoPeriodoInicio(e.target.value)} />
-                  </div>
-                  <div><Label>Período Fim</Label>
-                    <Input type="date" value={novoPeriodoFim} onChange={(e) => setNovoPeriodoFim(e.target.value)} />
-                  </div>
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setModalDuplicarAberto(false)}>Cancelar</Button>
-                    <Button onClick={handleDuplicarPedido}>Confirmar Duplicação</Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+<Dialog open={modalDuplicarAberto} onOpenChange={setModalDuplicarAberto}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Duplicar Pedido</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+
+      {/* Número do Pedido */}
+      <div>
+        <Label>Número do novo pedido</Label>
+        <Input value={numeroDuplicado} disabled />
+      </div>
+
+      {/* Data do Pedido */}
+      <div>
+        <Label>Data do Pedido</Label>
+        <Input type="date" value={novaDataPedido} onChange={(e) => setNovaDataPedido(e.target.value)} />
+      </div>
+
+      {/* Período Início */}
+      <div>
+        <Label>Período Início</Label>
+        <Input type="date" value={novoPeriodoInicio} onChange={(e) => setNovoPeriodoInicio(e.target.value)} />
+      </div>
+
+      {/* Período Fim */}
+      <div>
+        <Label>Período Fim</Label>
+        <Input type="date" value={novoPeriodoFim} onChange={(e) => setNovoPeriodoFim(e.target.value)} />
+      </div>
+
+      {/* Select de Fornecedor */}
+      <div>
+        <Label>Fornecedor</Label>
+        <Select
+          value={fornecedorSelecionado?.id || ""}
+          onValueChange={(id) => {
+            const f = fornecedores.find(f => f.id === id);
+            setFornecedorSelecionado(f);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione um fornecedor" />
+          </SelectTrigger>
+          <SelectContent>
+            {fornecedores.map(f => (
+              <SelectItem key={f.id} value={f.id}>
+                {f.razaoSocial} - {f.contato}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Botões */}
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => setModalDuplicarAberto(false)}>Cancelar</Button>
+        <Button onClick={handleDuplicarPedido}>Confirmar Duplicação</Button>
+      </div>
+
+    </div>
+  </DialogContent>
+</Dialog>
+
+
+{/* Modal de Seleção de Fornecedor */}
+<Dialog open={modalFornecedorAberto} onOpenChange={setModalFornecedorAberto}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Selecionar Fornecedor</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-2">
+      {fornecedores.map((forn) => (
+        <Button
+          key={forn.id}
+          variant={fornecedorSelecionado?.id === forn.id ? "default" : "outline"}
+          onClick={() => {
+            setFornecedorSelecionado(forn);
+            setModalFornecedorAberto(false);
+            atualizarDadosDoFornecedor(forn); // Função para atualizar os dados do pedido
+          }}
+        >
+          {forn.nome}
+        </Button>
+      ))}
+    </div>
+  </DialogContent>
+</Dialog>
+
             {/* Tabela de Produtos */}
             <Card>
               <CardHeader><CardTitle className="text-lg">Produtos do Pedido</CardTitle></CardHeader>

@@ -31,42 +31,55 @@ const CadastroCardapioLanche = () => {
 
   const criarComposicoesInicial = () =>
     Array(5).fill(null).map(() => criarComposicaoInicial())
+
   const [dadosNutri, setDadosNutri] = useState(criarDadosNutriInicial())
   const [composicoes, setComposicoes] = useState(criarComposicoesInicial())
   const [rascunhos, setRascunhos] = useState([])
   const [rascunhoSelecionado, setRascunhoSelecionado] = useState(null)
   const [semanaAtiva, setSemanaAtiva] = useState(0)
 
+  // Carregar rascunhos do Firebase
   useEffect(() => {
     const rascunhosRef = ref(db, "cardapiosRascunho")
     const unsubscribe = onValue(rascunhosRef, (snapshot) => {
       const data = snapshot.val() || {}
-      const lista = Object.entries(data).map(([id, value]) => ({ id, ...value })).filter((item) => item.tipo === "LanchedaTarde")
+      const lista = Object.entries(data)
+        .map(([id, value]) => ({ id, ...value }))
+        .filter((item) => item.tipo === "LanchedaTarde")
       setRascunhos(lista)
     })
     return () => unsubscribe()
   }, [])
 
+  // Handler para atualizar composição do cardápio
   const handleChange = (semana, secao, dia, valor) => {
     setComposicoes((old) => {
-      const novas = [...old]
-      novas[semana] = { ...novas[semana] }
-      novas[semana][secao] = { ...novas[semana][secao] }
-      novas[semana][secao][dia] = valor
-      return novas
+      return old.map((comp, i) => {
+        if (i !== semana) return comp
+        return {
+          ...comp,
+          [secao]: {
+            ...comp[secao],
+            [dia]: valor
+          }
+        }
+      })
     })
   }
 
+  // Handler para atualizar dados do nutricionista
   const handleDadosNutriChange = (semana, campo, valor) => {
     setDadosNutri((old) => {
-      const novos = [...old].novos[semana] = { ...novos[semana], [campo]: valor }; return novos
+      const novos = [...old]
+      novos[semana] = { ...novos[semana], [campo]: valor }
+      return novos
     })
   }
 
   const calcularProgresso = () => {
     let totalCampos = 0
     let camposPreenchidos = 0
-    // Contar dados do nutricionista
+
     dadosNutri.forEach((dados) => {
       totalCampos += 4
       if (dados.nomeNutri) camposPreenchidos++
@@ -75,47 +88,76 @@ const CadastroCardapioLanche = () => {
       if (dados.dataFim) camposPreenchidos++
     })
 
-    // Contar composições
     composicoes.forEach((composicao) => {
-      secoes.forEach((secao) => {diasSemana.forEach((dia) => {totalCampos++
+      secoes.forEach((secao) => {
+        diasSemana.forEach((dia) => {
+          totalCampos++
           if (composicao[secao]?.[dia]) camposPreenchidos++
         })
       })
     })
+
     return Math.round((camposPreenchidos / totalCampos) * 100)
   }
 
   const validarDados = () => {
     for (let i = 0; i < 5; i++) {
       const { nomeNutri, crn3, dataInicio, dataFim } = dadosNutri[i]
-      if (!nomeNutri || !crn3 || !dataInicio || !dataFim) {toast.error(`Por favor, preencha todos os dados do nutricionista para a Semana ${i + 1}.`); return false;}
+      if (!nomeNutri || !crn3 || !dataInicio || !dataFim) {
+        toast.error(`Por favor, preencha todos os dados do nutricionista para a Semana ${i + 1}.`)
+        return false
+      }
     }
-    return true;
+    return true
   }
 
   const salvarRascunho = async () => {
     try {
-      const dados = {tipo: "LanchedaTarde", dataAtualizacao: new Date().toISOString(), dadosNutri, composicoes,}
-      if (rascunhoSelecionado) {await set(ref(db, `cardapiosRascunho/${rascunhoSelecionado.id}`), dados); toast.success("Rascunho atualizado com sucesso!")} 
-      else {await push(ref(db, "cardapiosRascunho"), dados); toast.success("Rascunho salvo com sucesso!")}
-    } catch (error) {console.error(error); toast.error("Erro ao salvar rascunho.")}
+      const dados = { tipo: "LanchedaTarde", dataAtualizacao: new Date().toISOString(), dadosNutri, composicoes }
+      if (rascunhoSelecionado) {
+        await set(ref(db, `cardapiosRascunho/${rascunhoSelecionado.id}`), dados)
+        toast.success("Rascunho atualizado com sucesso!")
+      } else {
+        await push(ref(db, "cardapiosRascunho"), dados)
+        toast.success("Rascunho salvo com sucesso!")
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao salvar rascunho.")
+    }
   }
 
-  const enviarParaAprovacao = async () => {if (!validarDados()) return;
-    const dados = {dataCadastro: new Date().toISOString(), tipo: "LanchedaTarde", periodo: {inicio: dadosNutri[0].dataInicio, fim: dadosNutri[4].dataFim,}, composicoes: {},}
+  const enviarParaAprovacao = async () => {
+    if (!validarDados()) return
+
+    const dados = {
+      dataCadastro: new Date().toISOString(),
+      tipo: "LanchedaTarde",
+      periodo: { inicio: dadosNutri[0].dataInicio, fim: dadosNutri[4].dataFim },
+      composicoes: {}
+    }
+
     for (let i = 0; i < 5; i++) {
-      dados.composicoes[`semana${i + 1}`] = {nutricionista: {nome: dadosNutri[i].nomeNutri, crn3: dadosNutri[i].crn3,},
-         periodo: {inicio: dadosNutri[i].dataInicio, fim: dadosNutri[i].dataFim,}, cardapio: composicoes[i],
+      dados.composicoes[`semana${i + 1}`] = {
+        nutricionista: { nome: dadosNutri[i].nomeNutri, crn3: dadosNutri[i].crn3 },
+        periodo: { inicio: dadosNutri[i].dataInicio, fim: dadosNutri[i].dataFim },
+        cardapio: composicoes[i]
       }
     }
 
     try {
       await push(ref(db, "cardapiosPendentes"), dados)
       toast.success("Cardápio enviado para aprovação!")
-      if (rascunhoSelecionado) {await remove(ref(db, `cardapiosRascunho/${rascunhoSelecionado.id}`)); setRascunhoSelecionado(null)}
+      if (rascunhoSelecionado) {
+        await remove(ref(db, `cardapiosRascunho/${rascunhoSelecionado.id}`))
+        setRascunhoSelecionado(null)
+      }
       setDadosNutri(criarDadosNutriInicial())
       setComposicoes(criarComposicoesInicial())
-    } catch (error) {console.error(error); toast.error("Erro ao enviar cardápio para aprovação.")}
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao enviar cardápio para aprovação.")
+    }
   }
 
   const carregarRascunho = (id) => {
@@ -123,7 +165,12 @@ const CadastroCardapioLanche = () => {
     if (rascunho) {
       const composicoesCorrigidas = rascunho.composicoes.map((comp) => {
         const nova = criarComposicaoInicial()
-        secoes.forEach((secao) => {diasSemana.forEach((dia) => {nova[secao][dia] = comp?.[secao]?.[dia] ?? ""})}); return nova
+        secoes.forEach((secao) => {
+          diasSemana.forEach((dia) => {
+            nova[secao][dia] = comp?.[secao]?.[dia] ?? ""
+          })
+        })
+        return nova
       })
       setDadosNutri(rascunho.dadosNutri)
       setComposicoes(composicoesCorrigidas)
@@ -181,13 +228,16 @@ const CadastroCardapioLanche = () => {
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {Array(5).fill().map((_, index) => (<Button key={index} variant={semanaAtiva === index ? "default" : "outline"} onClick={() => setSemanaAtiva(index)} className="flex-1 min-w-[120px]" >Semana {index + 1}</Button>))}
+          {Array(5).fill().map((_, index) => (
+            <Button key={index} variant={semanaAtiva === index ? "default" : "outline"} onClick={() => setSemanaAtiva(index)} className="flex-1 min-w-[120px]">Semana {index + 1}</Button>
+          ))}
         </div>
 
         {/* Semana Ativa */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center"><Calendar className="h-5 w-5 mr-2" />Semana {semanaAtiva + 1}</CardTitle></CardHeader>
+            <CardTitle className="flex items-center"><Calendar className="h-5 w-5 mr-2" />Semana {semanaAtiva + 1}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-6">
             {/* Dados do Nutricionista */}
             <div>

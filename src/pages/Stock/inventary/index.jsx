@@ -144,35 +144,45 @@ const VisualizarInventarioFinal = () => {
   const itensPagina = itensFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina)
 
   // Exportar Excel
-  const exportarParaExcel = async () => {
-    if (itensFiltrados.length === 0) return
-    setIsExporting(true)
-    try {
-      const dias = [...new Set(itensFiltrados.map((item) => item.dia))]
-      const workbook = XLSX.utils.book_new()
-      dias.forEach((dia) => {
-        const itemsDia = itensFiltrados.filter((item) => item.dia === dia)
-        const worksheet = XLSX.utils.json_to_sheet(itemsDia.map(({ dia, ...rest }) => rest))
-        XLSX.utils.book_append_sheet(workbook, worksheet, dia)
-      })
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" })
-      const data = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      })
-      const url = window.URL.createObjectURL(data)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = `inventario_completo_${new Date().toISOString().split("T")[0]}.xlsx`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error("Erro ao exportar:", error)
-    } finally {
-      setIsExporting(false)
-    }
+const exportarParaExcel = async () => {
+  if (itensFiltrados.length === 0) return
+  setIsExporting(true)
+  try {
+    const dias = [...new Set(itensFiltrados.map((item) => item.dia))]
+    const workbook = XLSX.utils.book_new()
+
+    dias.forEach((dia) => {
+      const itemsDia = itensFiltrados.filter((item) => item.dia === dia)
+      // Incluindo o campo peso
+      const worksheet = XLSX.utils.json_to_sheet(
+        itemsDia.map(({ dia, peso, ...rest }) => ({
+          ...rest,
+          Peso: peso || "", // adiciona o peso
+        }))
+      )
+      XLSX.utils.book_append_sheet(workbook, worksheet, dia)
+    })
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" })
+    const data = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    })
+    const url = window.URL.createObjectURL(data)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `inventario_completo_${new Date().toISOString().split("T")[0]}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error("Erro ao exportar:", error)
+  } finally {
+    setIsExporting(false)
   }
+}
+
+
 
   const mudarPagina = (num) => {
     if (num < 1 || num > totalPaginas) return
@@ -396,7 +406,7 @@ const VisualizarInventarioFinal = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 space-y-3">
                         <div>
-                          <h3 className="font-semibold text-lg text-slate-900 mb-1">{item.nome}</h3>
+                          <h3 className="font-semibold text-lg text-slate-900 mb-1">{item.nome} {''} {item.peso}</h3>
                           <div className="flex items-center gap-4 text-sm text-slate-600">
                             <span className="bg-slate-100 px-2 py-1 rounded font-mono">SKU: {item.sku}</span>
                             <span>Data: {formatDate(item.dia)}</span>

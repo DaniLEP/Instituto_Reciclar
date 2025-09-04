@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, onValue, update, db, set } from "../../../firebase";
+import { ref, onValue, update, db } from "../../../firebase";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/Button/button";
@@ -37,6 +37,7 @@ import {
   FolderOpen,
   Zap,
   ClipboardEdit,
+  PackageIcon,
 } from "lucide-react";
 import { Textarea } from "@headlessui/react";
 import { toast } from "react-toastify";
@@ -286,52 +287,56 @@ export default function Stock() {
 
   const stats = getStockStats();
 
-  // Abre modal de inventário com cópia dos dados para edição
-  const handleInventario = () => {
-    const dados = productsData.map((p) => ({
-      ...p,
-      novaQuantidade: p.quantity,
-    }));
-    setInventarioData(dados);
-    setShowInventario(true);
-  };
-  // Salva inventário atualizado no Firebase e gera log
-  const salvarInventario = async () => {
-    const agora = new Date();
-    const dataFormatada = agora.toISOString().split("T")[0]; // YYYY-MM-DD
+// Abre modal de inventário com cópia dos dados para edição
+const handleInventario = () => {
+  const dados = productsData.map((p) => ({
+    ...p,
+    novaQuantidade: p.quantity,
+    Peso: p.peso // garante que o peso seja copiado
+  }));
+  setInventarioData(dados);
+  setShowInventario(true);
+};
 
-    const promessas = inventarioData.map(async (item) => {
-      const { sku, name, quantity, novaQuantidade, expiryDate } = item; // incluí expiryDate
-      const novaQtd = Number(novaQuantidade || 0);
+// Salva inventário atualizado no Firebase e gera log
+const salvarInventario = async () => {
+  const agora = new Date();
+  const dataFormatada = agora.toISOString().split("T")[0]; // YYYY-MM-DD
 
-      // Atualiza estoque
-      await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });
+  const promessas = inventarioData.map(async (item) => {
+    const { sku, name, quantity, novaQuantidade, Peso, expiryDate } = item; // pega Peso do item
+    const novaQtd = Number(novaQuantidade || 0);
 
-      // Atualiza ou cria registro no inventário do dia
-      await update(ref(db, `inventario/${dataFormatada}/${sku}`), {
-        sku,
-        nome: name,
-        anterior: Number(quantity),
-        atual: novaQtd,
-        observacao: observacoes[sku] || "",
-        data: agora.toISOString(),
-        expiryDate: expiryDate || null, // salva a data de validade
-      });
+    // Atualiza estoque
+    await update(ref(db, `Estoque/${sku}`), { quantity: novaQtd });
+
+    // Atualiza ou cria registro no inventário do dia
+    await update(ref(db, `inventario/${dataFormatada}/${sku}`), {
+      sku,
+      nome: name,
+      anterior: Number(quantity),
+      atual: novaQtd,
+      Peso: Peso, // usa o peso do item
+      observacao: observacoes[sku] || "",
+      data: agora.toISOString(),
+      expiryDate: expiryDate || null, // salva a data de validade
     });
+  });
 
-    await Promise.all(promessas);
+  await Promise.all(promessas);
 
-    setShowInventario(false);
-    toast.success("Inventário salvo com sucesso!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  };
+  setShowInventario(false);
+  toast.success("Inventário salvo com sucesso!", {
+    position: "top-right",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+};
+
 
   // Busca histórico do inventário por mês selecionado
   const buscarHistorico = () => {
@@ -713,7 +718,7 @@ export default function Stock() {
                             {item.sku || "-"}
                           </div>
                           <div className="flex-1">
-                            {item.name}{" "}
+                            {item.name}{" "} {item.peso}{item.unit}
                             <span className="text-sm text-slate-500">
                               (Atual: {item.quantity})
                             </span>
@@ -815,9 +820,7 @@ export default function Stock() {
                   <Package className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">
-                    Inventário Detalhado
-                  </CardTitle>
+                  <CardTitle className="text-xl">Estoque Atual</CardTitle>
                   <p className="text-sm text-slate-600 mt-1">
                     {" "}
                     {filteredProducts.length}{" "}
@@ -827,13 +830,25 @@ export default function Stock() {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={() => exportToExcel(filteredProducts)}
-                className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar Excel
-              </Button>
+             <div className="flex gap-4">
+      {/* Botão Exportar Excel */}
+      <Button
+        onClick={() => exportToExcel(filteredProducts)}
+        className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg flex items-center"
+      >
+        <Download className="w-4 h-4 mr-2" />
+        Exportar Excel
+      </Button>
+
+      {/* Botão Realizar Retirada */}
+      <Button
+        onClick={() => navigate("/Retirada")}
+        className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-lg flex items-center"
+      >
+        <PackageIcon className="w-4 h-4 mr-2" />
+        Realizar Retirada
+      </Button>
+    </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">

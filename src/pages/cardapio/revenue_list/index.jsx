@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Calendar, Download, Filter, RotateCcw, Edit3, Coffee, UtensilsCrossed, Cookie, ChefHat, Users, UserCheck, Clock, Trash2, FileText, Search, TableIcon, Grid3X3 } from "lucide-react"
+import { ArrowLeft, Calendar, Download, Filter, RotateCcw, Edit3, Coffee, UtensilsCrossed, Cookie, ChefHat, Users, UserCheck, Clock, Trash2, FileText, Search, TableIcon, Grid3X3, PlusCircle } from "lucide-react"
 import { getApps, initializeApp } from "firebase/app"
+import { TrademarkRegistered } from "phosphor-react"
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFXaeQ2L8zq0ZYTsydGek2K5pEZ_-BqPw",
@@ -34,6 +35,7 @@ export default function ExibirRefeicoes() {
   const [editando, setEditando] = useState(null)
   const [viewMode, setViewMode] = useState("cards") // 'cards' or 'table'
   const navigate = useNavigate()
+  const handleView = () => navigate("/cadastro-refeicoes");
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida"
@@ -236,6 +238,7 @@ export default function ExibirRefeicoes() {
                 <Button onClick={filtrarRefeicoes} className="h-10"><Search className="w-4 h-4 mr-2" />Filtrar</Button>
                 <Button onClick={limparFiltros} variant="outline" className="h-10"><RotateCcw className="w-4 h-4 mr-2" />Limpar</Button>
                 <Button onClick={exportToExcel} variant="outline" className="h-10"><Download className="w-4 h-4 mr-2" />Excel</Button>
+                <Button onClick={handleView} variant="outline" className="h-10"><PlusCircle  className="w-4 h-4 mr-2" />Cadastrar Refeição</Button>
               </div>
             </div>
           </CardContent>

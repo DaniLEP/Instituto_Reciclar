@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie, ChefHat, Users, UserCheck, Clock, Save, Trash2, FileText, AlertTriangle, Calculator } from "lucide-react";
+import { ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie, ChefHat, Users, UserCheck, Clock, Save, Trash2, FileText, AlertTriangle, Calculator, ArrowRight } from "lucide-react";
 
 export default function CadastroRefeicoes() {
   const [formData, setFormData] = useState({
@@ -90,7 +90,8 @@ export default function CadastroRefeicoes() {
   };
 
   const handleDateChange = (e) => setFormData((prev) => ({ ...prev, dataRefeicao: e.target.value }));
-  const handleBack = () => navigate("/cardapio");
+  const handleBack = () => navigate("/refeicoes");
+  const handleView = () => navigate("/refeicoes-servidas");
 
   const salvarNoBanco = () => {
     if (!formData.dataRefeicao) {
@@ -161,10 +162,34 @@ export default function CadastroRefeicoes() {
         </div>
 
         {/* Data */}
-        <Card className="max-w-md mx-auto mb-8">
-          <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Calendar className="w-5 h-5" />Data da Refeição</CardTitle></CardHeader>
-          <CardContent><Input type="date" id="dataRefeicao" value={formData.dataRefeicao} onChange={handleDateChange} className="h-12" /></CardContent>
-        </Card>
+<Card className="w-full max-w-7xl mx-auto mb-8 shadow-lg rounded-xl overflow-hidden">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+      <Calendar className="w-5 h-5 text-indigo-600" />
+      Data da Refeição
+    </CardTitle>
+  </CardHeader>
+
+  <CardContent className="flex flex-col gap-4">
+    <Input
+      type="date"
+      id="dataRefeicao"
+      value={formData.dataRefeicao}
+      onChange={handleDateChange}
+      className="h-12"
+    />
+
+    <Button
+      onClick={handleView}
+      variant="outline"
+      className="flex items-center justify-center gap-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+    >
+      <ArrowRight className="w-4 h-4" />
+      Visualizar Refeições Cadastradas
+    </Button>
+  </CardContent>
+</Card>
+
 
         {/* Resumo */}
         {getTotalServings() > 0 && (
