@@ -52,8 +52,8 @@ export default function Stock() {
   const [totalPrice, setTotalPrice] = useState(0);
   const [filtroInicio, setFiltroInicio] = useState("");
   const [filtroFim, setFiltroFim] = useState("");
-  const [valorEditado, setValorEditado] = useState("");
-  const [editando, setEditando] = useState(null);
+const [editando, setEditando] = useState(null);  
+const [valoresEditados, setValoresEditados] = useState({});
   const [statusFiltro, setStatusFiltro] = useState("");
   const [showInventario, setShowInventario] = useState(false);
   const [observacoes, setObservacoes] = useState({});
@@ -198,27 +198,42 @@ export default function Stock() {
     }
   };
   // Edição inline da data de validade
-  const handleDoubleClick = (sku, value) => {
-    setEditando(sku);
-    setValorEditado(value?.slice(0, 10) || "");
-  };
-  const handleChange = (e) => setValorEditado(e.target.value);
-  const handleSave = (sku) => {
-    if (!valorEditado) return;
-    const formatted = new Date(valorEditado).toISOString().split("T")[0];
-    const produtoRef = ref(db, `Estoque/${sku}`);
-    update(produtoRef, { expiryDate: formatted })
-      .then(() => {
-        setProductsData((prev) =>
-          prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
-        );
-        setFilteredProducts((prev) =>
-          prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
-        );
-        setEditando(null);
-      })
-      .catch(console.error);
-  };
+const handleDoubleClick = (sku, value) => {
+  setEditando(sku);
+  setValoresEditados((prev) => ({
+    ...prev,
+    [sku]: value?.slice(0, 10) || "",
+  }));
+};
+
+const handleChange = (sku, e) => {
+  setValoresEditados((prev) => ({
+    ...prev,
+    [sku]: e.target.value,
+  }));
+};
+
+const handleSave = (sku) => {
+  const valorEditado = valoresEditados[sku];
+  if (!valorEditado) return;
+
+  const formatted = new Date(valorEditado).toISOString().split("T")[0];
+  const produtoRef = ref(db, `Estoque/${sku}`);
+
+  update(produtoRef, { expiryDate: formatted })   // 🔹 aqui ele atualiza no Firebase
+    .then(() => {
+      // Atualiza os estados locais também
+      setProductsData((prev) =>
+        prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
+      );
+      setFilteredProducts((prev) =>
+        prev.map((i) => (i.sku === sku ? { ...i, expiryDate: formatted } : i))
+      );
+      setEditando(null);
+    })
+    .catch(console.error);
+};
+
 
   // Exporta os produtos para Excel
   const exportToExcel = (products) => {
@@ -1001,31 +1016,32 @@ const salvarInventario = async () => {
                               {item.totalPrice}
                             </span>
                           </td>
-                          <td
-                            className="px-4 py-4 text-center cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group-hover:bg-blue-100/50"
-                            onDoubleClick={() =>
-                              handleDoubleClick(item.sku, item.expiryDate)
-                            }
-                            title="Clique duplo para editar a data de vencimento"
-                          >
-                            {editando === item.sku ? (
-                              <Input
-                                type="date"
-                                value={valorEditado}
-                                onChange={handleChange}
-                                onBlur={() => handleSave(item.sku)}
-                                className="w-full text-sm border-2 border-blue-300 focus:border-blue-500"
-                                autoFocus
-                              />
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-700">
-                                  {formatDate(item.expiryDate)}
-                                </span>
-                                <Edit3 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            )}
-                          </td>
+<td
+  className="px-4 py-4 text-center cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group-hover:bg-blue-100/50"
+  onDoubleClick={() =>
+    handleDoubleClick(item.sku, item.expiryDate)
+  }
+  title="Clique duplo para editar a data de vencimento"
+>
+  {editando === item.sku ? (
+    <Input
+      type="date"
+      value={valoresEditados[item.sku] || ""}
+      onChange={(e) => handleChange(item.sku, e)}
+      onBlur={() => handleSave(item.sku)}
+      className="w-full text-sm border-2 border-blue-300 focus:border-blue-500"
+      autoFocus
+    />
+  ) : (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-slate-700">
+        {formatDate(item.expiryDate)}
+      </span>
+      <Edit3 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </div>
+  )}
+</td>
+
                           <td className="px-4 py-4 text-center">
                             <span
                               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${

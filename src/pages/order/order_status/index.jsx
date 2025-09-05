@@ -68,6 +68,7 @@ export default function StatusPedidos() {
 const [fornecedores, setFornecedores] = useState([]);
 const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
 const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false);
+const [projetoSelecionado, setProjetoSelecionado] = useState(null);
 
 
 
@@ -220,7 +221,7 @@ const enviarParaEstoque = async (pedidoId) => {
         tipo: produto.tipo || "Indefinido",
         marca: produto.marca || "Indefinido",
         peso: produto.peso || 0,
-        unit: produto.unit || "Indefinido",
+        unit: produto.unit || " ",
         supplier: fornecedor?.razaoSocial || "Indefinido",
         dateAdded: dataCadastro,
         unitPrice: produto.unitPrice || 0,
@@ -525,6 +526,10 @@ const handleDuplicarPedido = async () => {
     toast.error("Selecione um fornecedor.");
     return;
   }
+  if (!projetoSelecionado) {
+    toast.error("Selecione um projeto.");
+    return;
+  }
 
   const novoPedido = {
     ...pedidoSelecionado,
@@ -543,7 +548,9 @@ const handleDuplicarPedido = async () => {
       telefone: fornecedorSelecionado.telefone,
       email: fornecedorSelecionado.email,
     },
+    projeto: projetoSelecionado, // agora só salva o nome do projeto
   };
+
   delete novoPedido.id; // garante que o Firebase crie um novo ID
 
   try {
@@ -836,94 +843,114 @@ const handleDuplicarPedido = async () => {
               <Button onClick={abrirModalDuplicar} variant="outline" className="flex items-center gap-1"><Copy className="w-4 h-4" />Duplicar Pedido</Button>
             </div>
             {/* MODAL DE DUPLICAÇÃO DE PEDIDOS */}
-<Dialog open={modalDuplicarAberto} onOpenChange={setModalDuplicarAberto}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Duplicar Pedido</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-4">
+            <Dialog open={modalDuplicarAberto} onOpenChange={setModalDuplicarAberto}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Duplicar Pedido</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
 
-      {/* Número do Pedido */}
-      <div>
-        <Label>Número do novo pedido</Label>
-        <Input value={numeroDuplicado} disabled />
-      </div>
+                  {/* Número do Pedido */}
+                  <div>
+                    <Label>Número do novo pedido</Label>
+                    <Input value={numeroDuplicado} disabled />
+                  </div>
 
-      {/* Data do Pedido */}
-      <div>
-        <Label>Data do Pedido</Label>
-        <Input type="date" value={novaDataPedido} onChange={(e) => setNovaDataPedido(e.target.value)} />
-      </div>
+                  {/* Data do Pedido */}
+                  <div>
+                    <Label>Data do Pedido</Label>
+                    <Input type="date" value={novaDataPedido} onChange={(e) => setNovaDataPedido(e.target.value)} />
+                  </div>
 
-      {/* Período Início */}
-      <div>
-        <Label>Período Início</Label>
-        <Input type="date" value={novoPeriodoInicio} onChange={(e) => setNovoPeriodoInicio(e.target.value)} />
-      </div>
+                  {/* Período Início */}
+                  <div>
+                    <Label>Período Início</Label>
+                    <Input type="date" value={novoPeriodoInicio} onChange={(e) => setNovoPeriodoInicio(e.target.value)} />
+                  </div>
 
-      {/* Período Fim */}
-      <div>
-        <Label>Período Fim</Label>
-        <Input type="date" value={novoPeriodoFim} onChange={(e) => setNovoPeriodoFim(e.target.value)} />
-      </div>
+                  {/* Período Fim */}
+                  <div>
+                    <Label>Período Fim</Label>
+                    <Input type="date" value={novoPeriodoFim} onChange={(e) => setNovoPeriodoFim(e.target.value)} />
+                  </div>
 
-      {/* Select de Fornecedor */}
-      <div>
-        <Label>Fornecedor</Label>
-        <Select
-          value={fornecedorSelecionado?.id || ""}
-          onValueChange={(id) => {
-            const f = fornecedores.find(f => f.id === id);
-            setFornecedorSelecionado(f);
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione um fornecedor" />
-          </SelectTrigger>
-          <SelectContent>
-            {fornecedores.map(f => (
-              <SelectItem key={f.id} value={f.id}>
-                {f.razaoSocial} - {f.contato}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+                  {/* Select de Fornecedor */}
+                  <div>
+                    <Label>Fornecedor</Label>
+                    <Select
+                      value={fornecedorSelecionado?.id || ""}
+                      onValueChange={(id) => {
+                        const f = fornecedores.find(f => f.id === id);
+                        setFornecedorSelecionado(f);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um fornecedor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fornecedores.map(f => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.razaoSocial} - {f.contato}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {/* Select de Projeto */}
+{/* Select de Projeto */}
+<div>
+  <Label>Projeto</Label>
+  <Select
+    value={projetoSelecionado || ""}
+    onValueChange={(value) => setProjetoSelecionado(value)}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Selecione um projeto" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="FUMCAD">FUMCAD</SelectItem>
+      <SelectItem value="CONDECA">CONDECA</SelectItem>
+      <SelectItem value="INSTITUTO RECICLAR">INSTITUTO RECICLAR</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
 
-      {/* Botões */}
-      <div className="flex justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={() => setModalDuplicarAberto(false)}>Cancelar</Button>
-        <Button onClick={handleDuplicarPedido}>Confirmar Duplicação</Button>
-      </div>
 
-    </div>
-  </DialogContent>
-</Dialog>
+                  </div>
+
+                  {/* Botões */}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setModalDuplicarAberto(false)}>Cancelar</Button>
+                    <Button onClick={handleDuplicarPedido}>Confirmar Duplicação</Button>
+                  </div>
+
+                </div>
+              </DialogContent>
+            </Dialog>
 
 
-{/* Modal de Seleção de Fornecedor */}
-<Dialog open={modalFornecedorAberto} onOpenChange={setModalFornecedorAberto}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Selecionar Fornecedor</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-2">
-      {fornecedores.map((forn) => (
-        <Button
-          key={forn.id}
-          variant={fornecedorSelecionado?.id === forn.id ? "default" : "outline"}
-          onClick={() => {
-            setFornecedorSelecionado(forn);
-            setModalFornecedorAberto(false);
-            atualizarDadosDoFornecedor(forn); // Função para atualizar os dados do pedido
-          }}
-        >
-          {forn.nome}
-        </Button>
-      ))}
-    </div>
-  </DialogContent>
-</Dialog>
+            {/* Modal de Seleção de Fornecedor */}
+            <Dialog open={modalFornecedorAberto} onOpenChange={setModalFornecedorAberto}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Selecionar Fornecedor</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-2">
+                  {fornecedores.map((forn) => (
+                    <Button
+                      key={forn.id}
+                      variant={fornecedorSelecionado?.id === forn.id ? "default" : "outline"}
+                      onClick={() => {
+                        setFornecedorSelecionado(forn);
+                        setModalFornecedorAberto(false);
+                        atualizarDadosDoFornecedor(forn); // Função para atualizar os dados do pedido
+                      }}
+                    >
+                      {forn.nome}
+                    </Button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Tabela de Produtos */}
             <Card>
@@ -989,6 +1016,11 @@ const handleDuplicarPedido = async () => {
               </div>
               <Button onClick={() => setModalSelecionarProduto(true)} className="flex items-center gap-2"><Plus className="h-4 w-4" />Adicionar Produto</Button>
             </div>
+            <div className="flex justify-end mt-4">
+            <span className="text-xl font-semibold">
+              Total do Pedido: R$ {totalPedido.toFixed(2)}
+            </span>
+          </div>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
