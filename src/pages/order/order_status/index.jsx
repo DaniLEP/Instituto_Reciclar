@@ -139,14 +139,35 @@ useEffect(() => {
 
 
 // Adiciona produto selecionado ao pedido
-  const handleSelecionarProduto = (produtoSelecionado) => {
-    console.log("Produto recebido:", produtoSelecionado)
-    const precoUnitario = parseFloat(produtoSelecionado.unitPrice || 0)
-    const novaQuantidade = 1
-    const novoProduto = {...produtoSelecionado, quantidade: novaQuantidade, unitPrice: precoUnitario, totalPrice: parseFloat((precoUnitario * novaQuantidade).toFixed(2)), observacao: "",}
-    setPedidoSelecionado((prev) => ({...prev, produtos: [...(prev.produtos || []), novoProduto],}))
-    toast.success("Produto adicionado ao pedido")
-  }
+const handleSelecionarProduto = (produtoSelecionado) => {
+  console.log("Produto recebido:", produtoSelecionado);
+
+  const precoUnitario = parseFloat(produtoSelecionado.unitPrice || 0);
+
+  const novoProduto = {
+    sku: produtoSelecionado.sku || "",
+    name: produtoSelecionado.name || "",
+    marca: produtoSelecionado.marca || "",
+    tipo: produtoSelecionado.tipo || "",
+    category: produtoSelecionado.category || "",
+    peso: produtoSelecionado.peso || produtoSelecionado.weight || 0, // garante peso
+    unitMeasure: produtoSelecionado.unit || produtoSelecionado.unitMeasure || "", // garante unitMeasure
+    quantidade: 1,
+    unitPrice: precoUnitario,
+    totalPrice: parseFloat((precoUnitario * 1).toFixed(2)),
+    observacao: "",
+  };
+
+  setPedidoSelecionado((prev) => ({
+    ...prev,
+    produtos: [...(prev.produtos || []), novoProduto],
+  }));
+
+  toast.success("Produto adicionado ao pedido");
+};
+
+
+
   const totalPedido = useMemo(() => {return pedidoSelecionado?.produtos?.reduce((acc, item) => acc + Number.parseFloat(item.totalPrice || 0), 0) || 0}, [pedidoSelecionado])
   const totalComDesconto = useMemo(() => {const valor = totalPedido - parseFloat(desconto || 0); return valor > 0 ? valor.toFixed(2) : "0.00";}, [totalPedido, desconto]);
 
