@@ -356,7 +356,6 @@ function Gerenciador() {
                           <SelectItem value="Suína">Suína</SelectItem>
                           <SelectItem value="Pescado">Pescado</SelectItem>
                           <SelectItem value="Mercado">Mercado</SelectItem>
-                          <SelectItem value="Diversos">Diversos</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

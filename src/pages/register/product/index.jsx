@@ -168,7 +168,7 @@ export default function CadProdutos() {
                     <SelectItem value="Suína">Suína</SelectItem>
                     <SelectItem value="Pescado">Pescado</SelectItem>
                     <SelectItem value="Mercado">Mercado</SelectItem>
-                    <SelectItem value="Produtos em Consumo">Produtos em Consumo</SelectItem>
+                    <SelectItem value="Diversos">Diversos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

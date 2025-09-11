@@ -284,7 +284,7 @@ const enviarParaEstoque = async (pedidoId) => {
     }
     const ws = XLSX.utils.json_to_sheet(
       pedidoSelecionado.produtos.map((produto) => ({Projeto: produto.projeto, SKU: produto.sku, Produto: produto.name, Marca: produto.marca, Peso: produto.peso, UnidadeMedida: produto.unit, Quantidade: `${produto.quantidade} unidades`,
-        Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.observacao || "",})),
+        Tipo: produto.tipo, ValorUnitario: produto.unitPrice, ValorTotal: produto.totalPrice, Observação: produto.observacao || "", ValorTotalPedido: produto.totalPedido})),
     )
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Produtos")
@@ -342,15 +342,43 @@ const enviarParaEstoque = async (pedidoId) => {
     setPedidosFiltrados(filteredPedidos);
   }
   const handleVoltar = () => navigate("/Pedidos")
-  const exportarConsultaParaExcel = () => {
-    if (pedidosFiltrados.length === 0) {toast.error("Nenhum pedido filtrado para exportar!"); return;}
-    const dataParaExportar = pedidosFiltrados.map((pedido) => ({Número: pedido.numeroPedido, Data: formatDate(pedido.dataPedido), Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado",
-      Categoria: pedido.category || "Não informado", Status: pedido.status, MotivoCancelamento: pedido.motivoCancelamento || "",}))
-    const ws = XLSX.utils.json_to_sheet(dataParaExportar)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Status dos Pedidos")
-    XLSX.writeFile(wb, "Pedidos_Filtrados.xlsx")
+const exportarConsultaParaExcel = () => {
+  if (pedidosFiltrados.length === 0) {
+    toast.error("Nenhum pedido filtrado para exportar!");
+    return;
   }
+
+  const dataParaExportar = pedidosFiltrados.map((pedido) => {
+    // Calcula total do pedido
+    const totalPedido = (pedido.produtos || []).reduce(
+      (acc, item) => acc + Number(item.totalPrice || 0),
+      0
+    );
+
+    // Calcula total de quilos
+    const totalKilos = (pedido.produtos || []).reduce(
+      (acc, item) => acc + (Number(item.peso || 0) * Number(item.quantidade || 0)),
+      0
+    );
+
+    return {
+      Número: pedido.numeroPedido,
+      Data: formatDate(pedido.dataPedido),
+      Fornecedor: pedido?.fornecedor?.razaoSocial || "Não informado",
+      Categoria: pedido.category || "Não informado",
+      Status: pedido.status,
+      MotivoCancelamento: pedido.motivoCancelamento || "",
+      TotalPedido: totalPedido.toFixed(2),
+      TotalKilos: totalKilos.toFixed(2),
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(dataParaExportar);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Status dos Pedidos");
+  XLSX.writeFile(wb, "Pedidos_Filtrados.xlsx");
+};
+
 
   const headerImgSrc = "./Reciclar_30anos_Horizontal_Positivo.png";
   const segundaHeaderImgSrc = "./seloAtualizado.png";

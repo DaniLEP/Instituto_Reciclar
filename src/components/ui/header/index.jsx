@@ -63,7 +63,7 @@ export default function Header() {
       funcao: ["", "editor", "analista"],
       icon: "📊",
     },
-    { path: "/retirada", label: "Retirada", shortLabel: "Retirada", funcao: ["Admin", "Cozinha"], icon: "📦" },
+    { path: "/home-retirada", label: "Retirada", shortLabel: "Retirada", funcao: ["Admin", "Cozinha"], icon: "📦" },
     { path: "/Verificacao_Usuario", label: "Usuários", shortLabel: "Usuários", funcao: ["Admin"], icon: "👥" },
     { path: "/Estoque", label: "Estoque", shortLabel: "Estoque", funcao: ["Admin", "Cozinha"], icon: "📋" },
     {

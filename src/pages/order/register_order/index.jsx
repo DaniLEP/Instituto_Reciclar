@@ -128,13 +128,47 @@ export default function NovoPedido() {
     });
   };
 
-  const handleQuantidadeChange = async (index, newQuantidade) => {
-    const novaLista = itensPedido.map((item, i) =>
-      i === index ? { ...item, quantidade: Number(newQuantidade) } : item
-    );
-    setItensPedido(novaLista);
-    await atualizarRascunho(novaLista);
-  };
+// Converte o peso unitário sempre para gramas
+const getPesoEmGramas = (item) => {
+  if (!item?.peso) return 0;
+
+  if (item.unitMeasure?.toLowerCase() === "kg") {
+    return item.peso * 1000;
+  }
+  return item.peso; // já está em gramas
+};
+
+// Atualiza quantidade e kilosDesejados de forma bidirecional
+const handleQuantidadeChange = async (index, value, modoKg = true) => {
+  const item = itensPedido[index];
+  const pesoUnitario = getPesoEmGramas(item);
+  let novaQuantidade = 0;
+  let kilosDesejados = item.kilosDesejados || 0;
+
+  if (modoKg) {
+    // Atualização via quilos
+    kilosDesejados = parseFloat(value) || 0;
+    if (pesoUnitario > 0) {
+      novaQuantidade = Math.ceil((kilosDesejados * 1000) / pesoUnitario);
+    }
+  } else {
+    // Atualização via quantidade
+    novaQuantidade = parseInt(value) || 0;
+    if (pesoUnitario > 0) {
+      kilosDesejados = (novaQuantidade * pesoUnitario) / 1000;
+    }
+  }
+
+  const novaLista = itensPedido.map((prod, i) =>
+    i === index
+      ? { ...prod, quantidade: novaQuantidade, kilosDesejados }
+      : prod
+  );
+
+  setItensPedido(novaLista);
+  await atualizarRascunho(novaLista);
+};
+
 
   const handleObservacaoChange = async (index, novaObs) => {
     const novaLista = itensPedido.map((item, i) =>
@@ -163,6 +197,7 @@ export default function NovoPedido() {
     await atualizarRascunho(novaLista);
     toast.info("Produto adicionado ao pedido.");
   };
+  
 
   const handleDelete = async (index) => {
     const clone = [...itensPedido];
@@ -581,79 +616,109 @@ export default function NovoPedido() {
                 className="pl-10"
               />
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Marca</TableHead>
-                  <TableHead>Grupo</TableHead>
-                  <TableHead>Peso</TableHead>
-                  <TableHead>Quantidade</TableHead>
-                  <TableHead>Observação</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {itensPedido
-                  .filter(
-                    (item) =>
-                      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      item.category.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((item, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-mono text-sm">{item.sku}</TableCell>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.tipo}</TableCell>
-                      <TableCell>
-                        <Input
-                          className="w-32 text-sm"
-                          value={item.marca || ""}
-                          onChange={async (e) => {
-                            const novaLista = itensPedido.map((prod, i) =>
-                              i === idx ? { ...prod, marca: e.target.value } : prod
-                            );
-                            setItensPedido(novaLista);
-                            await atualizarRascunho(novaLista);
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{item.category}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {item.peso} {item.unitMeasure}
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min="0"
-                          className="w-20 border rounded px-2 py-1 text-sm text-center"
-                          value={item.quantidade}
-                          onChange={(e) => handleQuantidadeChange(idx, e.target.value)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Textarea
-                          className="w-full min-w-[200px] text-sm"
-                          rows={2}
-                          value={item.observacao || ""}
-                          onChange={(e) => handleObservacaoChange(idx, e.target.value)}
-                          placeholder="Digite a observação..."
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(idx)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>SKU</TableHead>
+      <TableHead>Nome</TableHead>
+      <TableHead>Tipo</TableHead>
+      <TableHead>Marca</TableHead>
+      <TableHead>Grupo</TableHead>
+      <TableHead>Peso</TableHead>
+      <TableHead>Kg Desejados</TableHead>
+      <TableHead>Quantidade Calculada</TableHead>
+      <TableHead>Observação</TableHead>
+      <TableHead>Ações</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {itensPedido
+      .filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.category.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((item, idx) => (
+        <TableRow key={idx}>
+          <TableCell className="font-mono text-sm">{item.sku}</TableCell>
+          <TableCell className="font-medium">{item.name}</TableCell>
+          <TableCell>{item.tipo}</TableCell>
+          <TableCell>
+            <Input
+              className="w-32 text-sm"
+              value={item.marca || ""}
+              onChange={async (e) => {
+                const novaLista = itensPedido.map((prod, i) =>
+                  i === idx ? { ...prod, marca: e.target.value } : prod
+                );
+                setItensPedido(novaLista);
+                await atualizarRascunho(novaLista);
+              }}
+            />
+          </TableCell>
+          <TableCell>
+            <Badge variant="secondary">{item.category}</Badge>
+          </TableCell>
+          <TableCell>
+            {item.peso} {item.unitMeasure}
+          </TableCell>
+
+          {/* Campo 1: Kg desejados */}
+          <TableCell>
+            <Input
+              type="number"
+              min="0"
+              step="0.1"
+              className="w-24 border rounded px-2 py-1 text-sm text-center"
+              value={item.kilosDesejados || ""}
+              onChange={(e) =>
+                handleQuantidadeChange(idx, parseFloat(e.target.value) || 0, true)
+              }
+              placeholder="Kg"
+            />
+          </TableCell>
+
+          {/* Campo 2: Quantidade calculada (agora editável) */}
+          <TableCell>
+            <Input
+              type="number"
+              min="0"
+              className="w-24 border rounded px-2 py-1 text-sm text-center"
+              value={item.quantidade || ""}
+              onChange={(e) =>
+                handleQuantidadeChange(idx, parseInt(e.target.value) || 0, false)
+              }
+              placeholder="Qtd"
+            />
+          </TableCell>
+
+          <TableCell>
+            <Textarea
+              className="w-full min-w-[200px] text-sm"
+              rows={2}
+              value={item.observacao || ""}
+              onChange={(e) => handleObservacaoChange(idx, e.target.value)}
+              placeholder="Digite a observação..."
+            />
+          </TableCell>
+          <TableCell>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => handleDelete(idx)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+  </TableBody>
+</Table>
+
+
+
+
           </CardContent>
         </Card>
       )}
