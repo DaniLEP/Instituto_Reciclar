@@ -22,6 +22,8 @@ import {
   Trash2,
   FileText,
   PlusCircle,
+  Grid3X3,
+  TableIcon,
 } from "lucide-react"
 import { getApps, initializeApp } from "firebase/app"
 
@@ -45,6 +47,7 @@ export default function ExibirRefeicoes() {
   const [valorEditado, setValorEditado] = useState("")
   const [editando, setEditando] = useState(null)
   const [paginaAtual, setPaginaAtual] = useState(1)
+  const [viewMode, setViewMode] = useState("cards")
   const itensPorPagina = 5
   const navigate = useNavigate()
 
@@ -187,7 +190,8 @@ export default function ExibirRefeicoes() {
               {(refeicao.cafeTotalQtd || 0) +
                 (refeicao.almocoTotalQtd || 0) +
                 (refeicao.lancheTotalQtd || 0) +
-                (refeicao.outrasTotalQtd || 0)} porções
+                (refeicao.outrasTotalQtd || 0)}{" "}
+              porções
             </Badge>
           </div>
         </CardHeader>
@@ -199,99 +203,60 @@ export default function ExibirRefeicoes() {
               </h4>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium">Descrição:</Label>
-                  <EditableField
-                    refeicaoId={refeicao.key}
-                    field={`${id}Descricao`}
-                    value={refeicao[`${id}Descricao`]}
-                  />
+                  <Label>Descrição:</Label>
+                  <EditableField refeicaoId={refeicao.key} field={`${id}Descricao`} value={refeicao[`${id}Descricao`]} />
                 </div>
-
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
-                    <Label className="text-sm font-medium flex items-center gap-1">
-                      <Users className="w-3 h-3" />Total
+                    <Label className="flex items-center gap-1">
+                      <Users className="w-3 h-3" /> Total
                     </Label>
-                    <EditableField
-                      refeicaoId={refeicao.key}
-                      field={`${id}TotalQtd`}
-                      value={refeicao[`${id}TotalQtd`]}
-                    />
+                    <EditableField refeicaoId={refeicao.key} field={`${id}TotalQtd`} value={refeicao[`${id}TotalQtd`]} />
                   </div>
-
                   <div>
-                    <Label className="text-sm font-medium flex items-center gap-1">
+                    <Label className="flex items-center gap-1">
                       <UserCheck className="w-3 h-3" /> Funcionários
                     </Label>
-                    <EditableField
-                      refeicaoId={refeicao.key}
-                      field={`${id}FuncionariosQtd`}
-                      value={refeicao[`${id}FuncionariosQtd`]}
-                    />
+                    <EditableField refeicaoId={refeicao.key} field={`${id}FuncionariosQtd`} value={refeicao[`${id}FuncionariosQtd`]} />
                   </div>
-
                   <div>
-                    <Label className="text-sm font-medium flex items-center gap-1">
-                      <Clock className="w-3 h-3" />Jovens Manhã
+                    <Label className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Jovens Manhã
                     </Label>
-                    <EditableField
-                      refeicaoId={refeicao.key}
-                      field={`${id}JovensQtd`}
-                      value={refeicao[`${id}JovensQtd`]}
-                    />
+                    <EditableField refeicaoId={refeicao.key} field={`${id}JovensQtd`} value={refeicao[`${id}JovensQtd`]} />
                   </div>
-
                   {refeicao[`${id}JovensTardeQtd`] !== undefined && (
                     <div>
-                      <Label className="text-sm font-medium flex items-center gap-1">
-                        <Clock className="w-3 h-3" />Jovens Tarde
+                      <Label className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Jovens Tarde
                       </Label>
-                      <EditableField
-                        refeicaoId={refeicao.key}
-                        field={`${id}JovensTardeQtd`}
-                        value={refeicao[`${id}JovensTardeQtd`]}
-                      />
+                      <EditableField refeicaoId={refeicao.key} field={`${id}JovensTardeQtd`} value={refeicao[`${id}JovensTardeQtd`]} />
                     </div>
                   )}
                 </div>
               </div>
             </div>
           ))}
-
           <Separator className="my-4" />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium flex items-center gap-1 mb-2">
+              <Label className="flex items-center gap-1 mb-2">
                 <Trash2 className="w-3 h-3" /> Sobras
               </Label>
-              <EditableField
-                refeicaoId={refeicao.key}
-                field="sobrasDescricao"
-                value={refeicao.sobrasDescricao}
-              />
+              <EditableField refeicaoId={refeicao.key} field="sobrasDescricao" value={refeicao.sobrasDescricao} />
             </div>
             <div>
-              <Label className="text-sm font-medium flex items-center gap-1 mb-2">
-                <FileText className="w-3 h-3" />Observações
+              <Label className="flex items-center gap-1 mb-2">
+                <FileText className="w-3 h-3" /> Observações
               </Label>
-              <EditableField
-                refeicaoId={refeicao.key}
-                field="observacaoDescricao"
-                value={refeicao.observacaoDescricao}
-              />
+              <EditableField refeicaoId={refeicao.key} field="observacaoDescricao" value={refeicao.observacaoDescricao} />
             </div>
           </div>
-
           <div className="mt-4">
-            <Label className="text-sm font-medium flex items-center gap-1 mb-2">
-              <Trash2 className="w-3 h-3 text-red-600" />Desperdício (kg)
+            <Label className="flex items-center gap-1 mb-2">
+              <Trash2 className="w-3 h-3 text-red-600" /> Desperdício (kg)
             </Label>
-            <EditableField
-              refeicaoId={refeicao.key}
-              field="desperdicioQtd"
-              value={refeicao.desperdicioQtd}
-            />
+            <EditableField refeicaoId={refeicao.key} field="desperdicioQtd" value={refeicao.desperdicioQtd} />
           </div>
         </CardContent>
       </Card>
@@ -299,25 +264,36 @@ export default function ExibirRefeicoes() {
   }
 
   const totalPaginas = Math.ceil(refeicoes.length / itensPorPagina)
-  const refeicoesPaginadas = refeicoes.slice(
-    (paginaAtual - 1) * itensPorPagina,
-    paginaAtual * itensPorPagina
-  )
+  const refeicoesPaginadas = refeicoes.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina)
+
+  const headers = [
+    "Data Refeição", "Café Descrição", "Café Total", "Café Funcionários", "Café Jovens",
+    "Almoço Descrição", "Almoço Total", "Almoço Funcionários", "Almoço Jovens", "Almoço Jovens Tarde",
+    "Lanche Descrição", "Lanche Total", "Lanche Funcionários", "Lanche Jovens", "Lanche Jovens Tarde",
+    "Outras Descrição", "Outras Total", "Outras Funcionários", "Outras Jovens", "Outras Jovens Tarde",
+    "Sobras", "Observação", "Desperdício"
+  ]
+
+  const fields = [
+    "dataRefeicao", "cafeDescricao", "cafeTotalQtd", "cafeFuncionariosQtd", "cafeJovensQtd",
+    "almocoDescricao", "almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd", "almocoJovensTardeQtd",
+    "lancheDescricao", "lancheTotalQtd", "lancheFuncionariosQtd", "lancheJovensQtd", "lancheJovensTardeQtd",
+    "outrasDescricao", "outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd", "outrasJovensTardeQtd",
+    "sobrasDescricao", "observacaoDescricao", "desperdicioQtd"
+  ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen p-4 md:p-6 space-y-6">
+      {/* Header e Ações */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Refeições Servidas</h2>
+        <h1 className="text-3xl font-bold">Refeições Cadastradas</h1>
         <div className="flex gap-2">
-          <Button onClick={handleView}>
-            <PlusCircle className="w-4 h-4 mr-2" /> Nova Refeição
-          </Button>
-          <Button onClick={exportToExcel}>
-            <Download className="w-4 h-4 mr-2" /> Exportar
-          </Button>
+          <Button onClick={handleView}><PlusCircle className="w-4 h-4 mr-2" /> Nova Refeição</Button>
+          <Button onClick={exportToExcel}><Download className="w-4 h-4 mr-2" /> Exportar</Button>
         </div>
       </div>
 
+      {/* Filtros */}
       <div className="flex gap-4 items-end">
         <div>
           <Label>Data Início</Label>
@@ -328,27 +304,53 @@ export default function ExibirRefeicoes() {
           <Input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} />
         </div>
         <Button onClick={filtrarRefeicoes}>Filtrar</Button>
-        <Button variant="outline" onClick={limparFiltros}>
-          Limpar
-        </Button>
+        <Button variant="outline" onClick={limparFiltros}>Limpar</Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {refeicoesPaginadas.map((refeicao) => (
-          <MealCard key={refeicao.key} refeicao={refeicao} />
-        ))}
+      {/* Modo de Visualização */}
+      <div className="flex justify-center gap-2">
+        <Button variant={viewMode === "cards" ? "default" : "ghost"} onClick={() => setViewMode("cards")}><Grid3X3 className="w-4 h-4" /> Cards</Button>
+        <Button variant={viewMode === "table" ? "default" : "ghost"} onClick={() => setViewMode("table")}><TableIcon className="w-4 h-4" /> Tabela</Button>
       </div>
+
+      {/* Conteúdo */}
+      {refeicoes.length === 0 ? (
+        <p>Nenhuma refeição encontrada.</p>
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {refeicoesPaginadas.map(r => <MealCard key={r.key} refeicao={r} />)}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="overflow-auto p-0">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>{headers.map((h,i) => <th key={i} className="px-4 py-2 text-left border-b">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {refeicoesPaginadas.map(r => (
+                  <tr key={r.key} className="hover:bg-gray-50 border-b">
+                    {fields.map(f => (
+                      <td key={f} className="px-4 py-2 border-r last:border-r-0 whitespace-nowrap">
+                        <EditableField refeicaoId={r.key} field={f} value={f === "dataRefeicao" ? r[f] : r[f]} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Paginação */}
-      <div className="flex justify-center items-center gap-4 mt-6">
-        <Button disabled={paginaAtual === 1} onClick={() => setPaginaAtual((p) => p - 1)}>
-          Anterior
-        </Button>
-        <span>Página {paginaAtual} de {totalPaginas}</span>
-        <Button disabled={paginaAtual === totalPaginas} onClick={() => setPaginaAtual((p) => p + 1)}>
-          Próxima
-        </Button>
-      </div>
+      {totalPaginas > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          <Button onClick={() => setPaginaAtual(p => Math.max(p-1,1))} disabled={paginaAtual===1}>Anterior</Button>
+          <span className="px-4 py-2">{paginaAtual} / {totalPaginas}</span>
+          <Button onClick={() => setPaginaAtual(p => Math.min(p+1,totalPaginas))} disabled={paginaAtual===totalPaginas}>Próxima</Button>
+        </div>
+      )}
     </div>
   )
 }
