@@ -67,23 +67,25 @@ const ChartCard = React.memo(({ chartType, campo, dadosFiltrados }) => {
     return dadosFiltrados.map((_, i) => baseColors[i % baseColors.length]);
   }, [dadosFiltrados]);
 
-  const chartData = useMemo(() => ({
-    labels: dadosFiltrados.map((item, i) =>
-      item.Mês && item.Ano ? `${item.Mês}/${item.Ano}` : `Item ${i + 1}`
-    ),
-    datasets: [
-      {
-        label: campo,
-        data: dadosFiltrados.map(item => item[campo] ?? 0),
-        backgroundColor: chartType === "pie" || chartType === "doughnut" ? colors : colors[0] + "20",
-        borderColor: chartType === "pie" || chartType === "doughnut" ? colors : colors[0],
-        borderWidth: 2,
-        fill: chartType === "line" ? false : true,
-        tension: 0.4,
-        ...(chartType === "bar" && { borderSkipped: false, borderRadius: 6 }),
-      },
-    ],
-  }), [dadosFiltrados, chartType, campo, colors]);
+const chartData = useMemo(() => ({
+  labels: dadosFiltrados.map((item, i) =>
+    item.Mês && item.Ano ? `${item.Mês}/${item.Ano}` : `Item ${i + 1}`
+  ),
+  datasets: [
+    {
+      label: campo,
+      data: dadosFiltrados.map(item => item[campo] ?? 0),
+      // Use cores sólidas para todos os tipos, inclusive barras
+      backgroundColor: colors,
+      borderColor: colors,
+      borderWidth: 2,
+      fill: chartType === "line" ? false : true,
+      tension: 0.4,
+      ...(chartType === "bar" && { borderSkipped: false, borderRadius: 6 }),
+    },
+  ],
+}), [dadosFiltrados, chartType, campo, colors]);
+
 
   const options = useMemo(() => ({
     responsive: true,
