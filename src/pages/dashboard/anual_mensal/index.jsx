@@ -1,430 +1,256 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState } from "react";
+import { get, ref } from "firebase/database";
 import { db } from "../../../../firebase";
-import { ref, get } from "firebase/database";
-import { Bar, Line, Pie, Doughnut, Radar } from "react-chartjs-2";
-import * as XLSX from "xlsx";
-import FileSaver from "file-saver";
-import {
-  Chart as ChartJS,
-  BarElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  Title,
-  Filler,
-} from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+
+import * as XLSX from "xlsx";
+import FileSaver from "file-saver";
+
 import {
-  DownloadIcon,
-  BarChart3Icon,
-  LineChartIcon,
-  PieChartIcon,
-  RadarIcon,
-  FilterIcon,
-  RefreshCwIcon,
-  DatabaseIcon,
-  XIcon,
-} from "lucide-react";
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  LineChart, Line,
+  PieChart, Pie, Cell
+} from "recharts";
 
-ChartJS.register(
-  BarElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  Title,
-  Filler,
-  ChartDataLabels
-);
-
-// Componente de cada gráfico
-const ChartCard = React.memo(({ chartType, campo, dadosFiltrados }) => {
-  const chartRef = useRef();
-
-  const colors = useMemo(() => {
-    const baseColors = [
-      "#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6",
-      "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1"
-    ];
-    return dadosFiltrados.map((_, i) => baseColors[i % baseColors.length]);
-  }, [dadosFiltrados]);
-
-const chartData = useMemo(() => ({
-  labels: dadosFiltrados.map((item, i) =>
-    item.Mês && item.Ano ? `${item.Mês}/${item.Ano}` : `Item ${i + 1}`
-  ),
-  datasets: [
-    {
-      label: campo,
-      data: dadosFiltrados.map(item => item[campo] ?? 0),
-      // Use cores sólidas para todos os tipos, inclusive barras
-      backgroundColor: colors,
-      borderColor: colors,
-      borderWidth: 2,
-      fill: chartType === "line" ? false : true,
-      tension: 0.4,
-      ...(chartType === "bar" && { borderSkipped: false, borderRadius: 6 }),
-    },
-  ],
-}), [dadosFiltrados, chartType, campo, colors]);
-
-
-  const options = useMemo(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    ...(chartType === "bar" && { indexAxis: "y" }),
-    plugins: {
-      legend: { display: chartType === "pie" || chartType === "doughnut", position: "bottom" },
-      title: { display: true, text: campo },
-      datalabels: {
-        display: true,
-        color: "#374151",
-        align: chartType === "pie" || chartType === "doughnut" ? "end" : "top",
-        anchor: chartType === "pie" || chartType === "doughnut" ? "end" : "end",
-        formatter: (value, context) => {
-          if (value == null) return "";
-          if (chartType === "pie" || chartType === "doughnut") {
-            const total = context.dataset.data.reduce((a, b) => (b != null ? a + b : a), 0);
-            const percent = total ? ((value / total) * 100).toFixed(2) : 0;
-            return `${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percent}%)`;
-          }
-          return Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-        },
-      },
-    },
-    ...(chartType === "bar" && {
-      scales: {
-        x: {
-          beginAtZero: true,
-          ticks: {
-            callback: (value) =>
-              Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }),
-          },
-        },
-        y: { ticks: { maxRotation: 0, minRotation: 0 } },
-      },
-    }),
-  }), [chartType, campo]);
-
-  useEffect(() => {
-    return () => {
-      if (chartRef.current) chartRef.current.destroy();
-    };
-  }, []);
-
-  const ChartComponent = { bar: Bar, line: Line, pie: Pie, doughnut: Doughnut, radar: Radar }[chartType];
-
-  return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-3 text-gray-800">
-          <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-          {campo}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="h-96 relative bg-gradient-to-br from-gray-50/50 to-white rounded-xl p-4 border border-gray-100">
-          <ChartComponent ref={chartRef} key={`${campo}-${chartType}`} data={chartData} options={options} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-export default function AnualDashboard() {
-  const [relatorios, setRelatorios] = useState({});
-  const [selected, setSelected] = useState("");
-  const [dados, setDados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function PremiumDashboardCorporativo() {
+  const [tipoSelecionado, setTipoSelecionado] = useState("Refeicoes");
   const [chartType, setChartType] = useState("bar");
-  const [filtros, setFiltros] = useState({ ano: "", mes: "", min: "", max: "", campo: "" });
+  const [dadosRefeicoes, setDadosRefeicoes] = useState([]);
+  const [dadosCompras, setDadosCompras] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [resumo, setResumo] = useState({ totalJovens: 0, totalFuncionarios: 0, totalPedidos: 0, registros: 0 });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const snapshot = await get(ref(db, "RelatoriosPeriodico"));
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setRelatorios(data);
-          const firstKey = Object.keys(data)[0];
-          setSelected(firstKey);
-          setDados(data[firstKey] || []);
-        } else setError("Nenhum dado encontrado no banco de dados");
-      } catch (err) {
-        setError("Erro ao carregar dados: " + err.message);
-      } finally {
-        setLoading(false);
+  const COLORS = ["#36A2EB", "#FF6384", "#4BC0C0", "#FFCE56", "#F59E0B", "#8B5CF6"];
+  const nomesMeses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+  const formatarValor = (valor) =>
+    Number(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const carregarDados = async () => {
+    setLoading(true);
+    try {
+      const refeicoesSnap = await get(ref(db, "refeicoesServidas"));
+      const pedidosSnap = await get(ref(db, "novosPedidos"));
+
+      const refeicoes = refeicoesSnap.exists() ? Object.values(refeicoesSnap.val()) : [];
+      const pedidos = pedidosSnap.exists() ? Object.values(pedidosSnap.val()) : [];
+
+      const inicio = dataInicio ? new Date(dataInicio) : null;
+      const fim = dataFim ? new Date(dataFim) : null;
+
+      // ---------- Processar Refeições ----------
+      const mesesAnosRefeicoes = {};
+      let totalJovens = 0, totalFuncionarios = 0;
+
+      refeicoes.forEach(r => {
+        const data = new Date(r.dataRefeicao);
+        if ((inicio && data < inicio) || (fim && data > fim)) return;
+
+        const ano = data.getFullYear();
+        const mes = data.getMonth();
+        const key = `${ano}-${mes}`;
+
+        if (!mesesAnosRefeicoes[key]) mesesAnosRefeicoes[key] = { Ano: ano, Mês: nomesMeses[mes], totalJovens:0, totalFuncionarios:0, totalRefeicoes:0, dias: new Set() };
+
+        const jovens = (r.almocoJovensQtd||0)+(r.almocoJovensTardeQtd||0)+(r.cafeJovensQtd||0)+(r.lancheJovensQtd||0)+(r.lancheJovensManhaQtd||0);
+        const funcionarios = (r.almocoFuncionariosQtd||0)+(r.cafeFuncionariosQtd||0)+(r.lancheFuncionariosQtd||0);
+        const totalRefeicoesMes = jovens+funcionarios;
+
+        mesesAnosRefeicoes[key].totalJovens += jovens;
+        mesesAnosRefeicoes[key].totalFuncionarios += funcionarios;
+        mesesAnosRefeicoes[key].totalRefeicoes += totalRefeicoesMes;
+        mesesAnosRefeicoes[key].dias.add(r.dataRefeicao);
+
+        totalJovens += jovens;
+        totalFuncionarios += funcionarios;
+      });
+
+      const dadosRefeicoesArray = [];
+      for (let i=0; i<12; i++){
+        const key = Object.keys(mesesAnosRefeicoes).find(k => k.endsWith(`-${i}`));
+        const registro = key ? mesesAnosRefeicoes[key] : { totalJovens:0, totalFuncionarios:0, totalRefeicoes:0, dias: new Set([1]) };
+        const dias = registro.dias.size || 1;
+        dadosRefeicoesArray.push({
+          Mês: nomesMeses[i],
+          totalJovens: registro.totalJovens,
+          totalFuncionarios: registro.totalFuncionarios,
+          mediaJovens: registro.totalJovens/dias,
+          mediaFuncionarios: registro.totalFuncionarios/dias,
+          totalRefeicoes: registro.totalRefeicoes,
+          mediaRefeicoes: registro.totalRefeicoes/dias
+        });
       }
-    };
-    fetchData();
-  }, []);
 
-  const handleSelect = (key) => {
-    setSelected(key);
-    setDados(relatorios[key] || []);
-    setFiltros({ ano: "", mes: "", min: "", max: "", campo: "" });
+      // ---------- Processar Compras ----------
+      const mesesCompras = {};
+      let totalPedidos = 0;
+
+      pedidos.forEach(p=>{
+        const data = new Date(p.dataPedido);
+        if ((inicio && data < inicio) || (fim && data > fim)) return;
+        const ano = data.getFullYear();
+        const mes = data.getMonth();
+        const key = `${ano}-${mes}`;
+
+        if (!mesesCompras[key]) mesesCompras[key] = { Ano: ano, Mês: nomesMeses[mes], totalPedidos:0, dias: new Set() };
+        mesesCompras[key].totalPedidos += p.totalPedido||0;
+        mesesCompras[key].dias.add(p.dataPedido);
+        totalPedidos += p.totalPedido||0;
+      });
+
+      const dadosComprasArray = [];
+      for (let i=0; i<12; i++){
+        const key = Object.keys(mesesCompras).find(k=>k.endsWith(`-${i}`));
+        const registro = key ? mesesCompras[key] : { totalPedidos:0, dias:new Set([1]) };
+        const dias = registro.dias.size || 1;
+        dadosComprasArray.push({
+          Mês: nomesMeses[i],
+          totalPedidos: registro.totalPedidos,
+          mediaPedidos: registro.totalPedidos/dias
+        });
+      }
+
+      const registros = dadosRefeicoesArray.length + dadosComprasArray.length;
+      setDadosRefeicoes(dadosRefeicoesArray);
+      setDadosCompras(dadosComprasArray);
+      setResumo({ totalJovens, totalFuncionarios, totalPedidos, registros });
+
+    } catch(err){ console.error(err); }
+    finally{ setLoading(false); }
   };
 
-  const anos = [...new Set(dados.map((d) => d.Ano))].filter(Boolean).sort();
-  const meses = [...new Set(dados.map((d) => d.Mês))].filter(Boolean).sort();
+  useEffect(()=>{ carregarDados(); },[dataInicio,dataFim]);
 
-  const dadosFiltrados = useMemo(
-    () =>
-      dados.filter((d) => {
-        const dentroAno = filtros.ano && filtros.ano !== "all" ? d.Ano == filtros.ano : true;
-        const dentroMes = filtros.mes && filtros.mes !== "all" ? d.Mês === filtros.mes : true;
-        const dentroMin = filtros.min
-          ? Object.values(d).some((v) => typeof v === "number" && v >= Number(filtros.min))
-          : true;
-        const dentroMax = filtros.max
-          ? Object.values(d).some((v) => typeof v === "number" && v <= Number(filtros.max))
-          : true;
-        const dentroCampo = filtros.campo && filtros.campo !== "all" ? Object.keys(d).includes(filtros.campo) : true;
-        return dentroAno && dentroMes && dentroMin && dentroMax && dentroCampo;
-      }),
-    [dados, filtros]
-  );
-
-  const chartKeys = dadosFiltrados.length
-    ? Object.keys(dadosFiltrados[0]).filter((k) => typeof dadosFiltrados[0][k] === "number")
-    : [];
-
-  const exportarParaExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
+  const exportarExcel = () => {
+    const dados = tipoSelecionado==="Refeicoes"? dadosRefeicoes : dadosCompras;
+    const ws = XLSX.utils.json_to_sheet(dados);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, selected);
-    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    FileSaver.saveAs(
-      new Blob([wbout], { type: "application/octet-stream" }),
-      `${selected}-${new Date().toISOString().split("T")[0]}.xlsx`
-    );
+    XLSX.utils.book_append_sheet(wb, ws, tipoSelecionado);
+    FileSaver.saveAs(new Blob([XLSX.write(wb, {bookType:"xlsx",type:"array"})]), `${tipoSelecionado}-${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
-  const exportarParaJSON = () => {
-    const dataBlob = new Blob([JSON.stringify(dadosFiltrados, null, 2)], { type: "application/json" });
-    FileSaver.saveAs(dataBlob, `${selected}-${new Date().toISOString().split("T")[0]}.json`);
+  const exportarJSON = () => {
+    const dados = tipoSelecionado==="Refeicoes"? dadosRefeicoes : dadosCompras;
+    const blob = new Blob([JSON.stringify(dados,null,2)],{type:"application/json"});
+    FileSaver.saveAs(blob, `${tipoSelecionado}-${new Date().toISOString().split("T")[0]}.json`);
   };
 
-  const limparFiltros = () => setFiltros({ ano: "", mes: "", min: "", max: "", campo: "" });
-  const hasActiveFilters = Object.values(filtros).some((v) => v && v !== "all");
+  const renderChart = () => {
+    const dados = tipoSelecionado==="Refeicoes"? dadosRefeicoes : dadosCompras;
+    if (!dados.length) return <p>Sem dados para o período selecionado.</p>;
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center min-h-96 bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-2xl shadow-lg">
-          <RefreshCwIcon className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="text-lg font-medium text-gray-700">Carregando relatórios...</span>
-        </div>
-      </div>
+    const CustomTooltip = ({ active, payload })=>{
+      if (active && payload && payload.length){
+        return (
+          <div className="bg-white p-2 border shadow rounded">
+            {payload.map((p,i)=><div key={i}>{p.name}: {formatarValor(p.value)}</div>)}
+          </div>
+        );
+      }
+      return null;
+    };
+
+    if (chartType==="bar") return (
+      <BarChart width={900} height={500} layout="vertical" data={dados} margin={{top:20,right:50,left:80,bottom:20}}>
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis type="number" tickFormatter={formatarValor}/>
+        <YAxis type="category" dataKey="Mês"/>
+        <Tooltip content={CustomTooltip}/>
+        <Legend/>
+        {tipoSelecionado==="Refeicoes" ? <>
+          <Bar dataKey="totalJovens" fill={COLORS[0]} name="Jovens"/>
+          <Bar dataKey="totalFuncionarios" fill={COLORS[1]} name="Funcionários"/>
+        </> : <Bar dataKey="totalPedidos" fill={COLORS[2]} name="Total Pedidos"/>}
+      </BarChart>
     );
 
-  if (error)
-    return (
-      <Card className="max-w-2xl mx-auto mt-8 border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-700 flex items-center gap-2">
-            <XIcon className="h-5 w-5" /> Erro ao carregar dados
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-red-600">{error}</p>
-        </CardContent>
-      </Card>
+    if (chartType==="line") return (
+      <LineChart width={900} height={500} data={dados} margin={{top:20,right:50,left:50,bottom:20}}>
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis dataKey="Mês" interval={0} tick={{fontSize:12}}/>
+        <YAxis tickFormatter={formatarValor}/>
+        <Tooltip content={CustomTooltip}/>
+        <Legend/>
+        {tipoSelecionado==="Refeicoes" ? <>
+          <Line type="monotone" dataKey="mediaJovens" stroke={COLORS[0]} name="Média Jovens"/>
+          <Line type="monotone" dataKey="mediaFuncionarios" stroke={COLORS[1]} name="Média Funcionários"/>
+        </> : <Line type="monotone" dataKey="mediaPedidos" stroke={COLORS[2]} name="Média Pedidos"/>}
+      </LineChart>
     );
+
+    if (chartType==="pie"){
+      const total = tipoSelecionado==="Refeicoes" ? [
+        {name:"Jovens", value:resumo.totalJovens},
+        {name:"Funcionários", value:resumo.totalFuncionarios}
+      ] : [{name:"Total Pedidos", value:resumo.totalPedidos}];
+
+      return (
+        <PieChart width={500} height={500}>
+          <Pie data={total} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={150}
+            label={({name,value,percent})=> `${name}: ${formatarValor(value)} (${(percent*100).toFixed(1)}%)`}>
+            {total.map((entry,index)=><Cell key={index} fill={COLORS[index%COLORS.length]}/>)}
+          </Pie>
+          <Tooltip formatter={formatarValor}/>
+          <Legend/>
+        </PieChart>
+      );
+    }
+
+    return null;
+  };
+
+  if (loading) return <p>Carregando dados...</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      <div className="p-6 space-y-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg">
-                <DatabaseIcon className="h-8 w-8 text-white" />
-              </div>
-              Dashboard de Relatórios
-            </h1>
-            <p className="text-gray-600 text-lg">Análise completa dos dados com visualizações interativas</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="text-base px-4 py-2 bg-blue-100 text-blue-800 border-blue-200">
-              {dadosFiltrados.length} registros
-            </Badge>
-            {hasActiveFilters && (
-              <Badge variant="outline" className="text-sm px-3 py-1 border-orange-200 text-orange-700 bg-orange-50">
-                Filtros ativos
-              </Badge>
-            )}
-          </div>
-        </div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">📊 Dashboard Corporativo Premium</h1>
 
-        {/* Seleção de Relatório */}
-        <Card className="border-0 shadow-sm bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-800">Selecionar Relatório</CardTitle>
-            <CardDescription className="text-gray-600">Escolha o conjunto de dados para análise</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {Object.keys(relatorios).map((key) => (
-                <Button
-                  key={key}
-                  variant={selected === key ? "default" : "outline"}
-                  onClick={() => handleSelect(key)}
-                  className={`transition-all duration-200 px-6 py-3 font-medium ${
-                    selected === key
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
-                      : "hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-                  }`}
-                >
-                  {key.replace(/_/g, " ")}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Filtros Avançados */}
-        <Card className="border-0 shadow-sm bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-gray-800">
-              <FilterIcon className="h-5 w-5 text-blue-600" />
-              Filtros Avançados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-              {/* Ano */}
-              <div className="space-y-3">
-                <Label htmlFor="ano" className="text-sm font-medium text-gray-700">Ano</Label>
-                <Select value={filtros.ano} onValueChange={(value) => setFiltros({ ...filtros, ano: value })}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder="Todos os anos" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {anos.map((ano) => <SelectItem key={ano} value={ano}>{ano}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Mês */}
-              <div className="space-y-3">
-                <Label htmlFor="mes" className="text-sm font-medium text-gray-700">Mês</Label>
-                <Select value={filtros.mes} onValueChange={(value) => setFiltros({ ...filtros, mes: value })}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder="Todos os meses" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {meses.map((mes) => <SelectItem key={mes} value={mes}>{mes}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Campo */}
-              <div className="space-y-3">
-                <Label htmlFor="campo" className="text-sm font-medium text-gray-700">Campo</Label>
-                <Select value={filtros.campo} onValueChange={(value) => setFiltros({ ...filtros, campo: value })}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder="Todos os campos" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {chartKeys.map((key) => <SelectItem key={key} value={key}>{key}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Min */}
-              <div className="space-y-3">
-                <Label htmlFor="min" className="text-sm font-medium text-gray-700">Valor Mínimo</Label>
-                <Input
-                  id="min"
-                  type="number"
-                  value={filtros.min}
-                  onChange={(e) => setFiltros({ ...filtros, min: e.target.value })}
-                  placeholder="Ex: 0"
-                  className="h-11"
-                />
-              </div>
-
-              {/* Max */}
-              <div className="space-y-3">
-                <Label htmlFor="max" className="text-sm font-medium text-gray-700">Valor Máximo</Label>
-                <Input
-                  id="max"
-                  type="number"
-                  value={filtros.max}
-                  onChange={(e) => setFiltros({ ...filtros, max: e.target.value })}
-                  placeholder="Ex: 1000"
-                  className="h-11"
-                />
-              </div>
-
-              {/* Limpar Filtros */}
-              <div className="flex items-end">
-                <Button variant="destructive" className="w-full h-11" onClick={limparFiltros}>
-                  <XIcon className="h-5 w-5 mr-2" /> Limpar Filtros
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tipos de Gráfico */}
-        <Card className="border-0 shadow-sm bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-3">
-              <BarChart3Icon className="h-5 w-5 text-blue-600" />
-              Tipo de Gráfico
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={chartType} onValueChange={setChartType}>
-              <TabsList className="grid grid-cols-5 gap-2">
-                <TabsTrigger value="bar"><BarChart3Icon className="h-5 w-5 mr-2" />Barras</TabsTrigger>
-                <TabsTrigger value="line"><LineChartIcon className="h-5 w-5 mr-2" />Linha</TabsTrigger>
-                <TabsTrigger value="pie"><PieChartIcon className="h-5 w-5 mr-2" />Pizza</TabsTrigger>
-                <TabsTrigger value="doughnut"><PieChartIcon className="h-5 w-5 mr-2" />Rosca</TabsTrigger>
-                <TabsTrigger value="radar"><RadarIcon className="h-5 w-5 mr-2" />Radar</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Gráficos */}
-        <div className="flex flex-col gap-6">
-          {chartKeys.map((campo) => (
-            <ChartCard key={campo} chartType={chartType} campo={campo} dadosFiltrados={dadosFiltrados} />
-          ))}
-        </div>
-
-        {/* Exportação */}
-        <div className="flex gap-3 mt-6">
-          <Button onClick={exportarParaExcel} variant="outline">
-            <DownloadIcon className="h-5 w-5 mr-2" /> Exportar Excel
-          </Button>
-          <Button onClick={exportarParaJSON} variant="outline">
-            <DownloadIcon className="h-5 w-5 mr-2" /> Exportar JSON
-          </Button>
-        </div>
+      <div className="flex gap-4 flex-wrap">
+        <Badge variant="secondary">Total Jovens: {formatarValor(resumo.totalJovens)}</Badge>
+        <Badge variant="secondary">Total Funcionários: {formatarValor(resumo.totalFuncionarios)}</Badge>
+        <Badge variant="secondary">Total Pedidos: {formatarValor(resumo.totalPedidos)}</Badge>
+        <Badge variant="secondary">Registros: {resumo.registros}</Badge>
       </div>
+
+      <div className="flex gap-4 flex-wrap items-center mt-4">
+        <Input type="date" value={dataInicio} onChange={e=>setDataInicio(e.target.value)}/>
+        <Input type="date" value={dataFim} onChange={e=>setDataFim(e.target.value)}/>
+
+        <Select value={tipoSelecionado} onValueChange={setTipoSelecionado}>
+          <SelectTrigger className="w -[180px]"><SelectValue/></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Refeicoes">Refeições</SelectItem>
+            <SelectItem value="Compras">Compras</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={chartType} onValueChange={setChartType}>
+          <SelectTrigger className="w-[150px]"><SelectValue/></SelectTrigger>
+          <SelectContent>    
+            <SelectItem value="bar">Barra</SelectItem>
+            <SelectItem value="line">Linha</SelectItem>
+            <SelectItem value="pie">Pizza</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button onClick={carregarDados}>Atualizar</Button>
+        <Button onClick={exportarExcel} variant="outline">Exportar Excel</Button>
+        <Button onClick={exportarJSON} variant="outline">Exportar JSON</Button>
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle>{tipoSelecionado} - Gráfico {chartType}</CardTitle></CardHeader>
+        <CardContent>{renderChart()}</CardContent>
+      </Card>
     </div>
   );
 }

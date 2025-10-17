@@ -13,7 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table/table"
-import { Package, Search, Edit, ArrowLeft, Building2, Tag, Truck, Weight, Save, X, Grid3X3, ChevronLeft, ChevronRight } from "lucide-react"
+import { Package, Search, Edit, ArrowLeft, Grid3X3, ChevronLeft, ChevronRight, Weight, Save, X } from "lucide-react"
+import * as XLSX from "xlsx"
+import { saveAs } from "file-saver"
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -25,6 +27,7 @@ const firebaseConfig = {
   messagingSenderId: "71775149511",
   appId: "1:71775149511:web:bb2ce1a1872c65d1668de2",
 }
+
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 const db = getDatabase(app)
 
@@ -34,12 +37,8 @@ function Gerenciador() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
-
-  // 🔹 Paginação
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
-
-  // 🔹 Filtro por categoria
   const [selectedCategory, setSelectedCategory] = useState("all")
 
   useEffect(() => {
@@ -56,10 +55,10 @@ function Gerenciador() {
 
   const handleSearchChange = debounce((value) => {
     setSearchTerm(value)
-    setCurrentPage(1) // reseta para página 1 ao buscar
+    setCurrentPage(1)
   }, 500)
 
-  // 🔹 Filtro + Busca
+  // Filtro + busca
   const filteredProducts = products
     .filter((product) => {
       const matchesSearch =
@@ -79,38 +78,28 @@ function Gerenciador() {
       return a.name.localeCompare(b.name, "pt", { sensitivity: "base" })
     })
 
-  // 🔹 Lógica da paginação
+  // Paginação
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage)
 
-  const openModal = (product) => {
-    setEditingProduct(product)
-    setIsModalOpen(true)
-  }
-  const closeModal = () => {
-    setEditingProduct(null)
-    setIsModalOpen(false)
-  }
+  // Modal
+  const openModal = (product) => { setEditingProduct(product); setIsModalOpen(true) }
+  const closeModal = () => { setEditingProduct(null); setIsModalOpen(false) }
   const handleUpdate = () => {
     if (editingProduct) {
       const productRef = ref(db, `EntradaProdutos/${editingProduct.id}`)
       update(productRef, editingProduct)
-        .then(() => {
-          toast.success("Produto atualizado com sucesso!")
-          closeModal()
-        })
-        .catch((error) => {
-          toast.error("Erro ao atualizar: " + error.message)
-        })
+        .then(() => { toast.success("Produto atualizado com sucesso!"); closeModal() })
+        .catch((error) => { toast.error("Erro ao atualizar: " + error.message) })
     }
   }
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setEditingProduct({ ...editingProduct, [name]: value })
   }
 
+  // Cores
   const getCategoryColor = (category) => {
     const colors = {
       Proteína: "bg-red-100 text-red-800",
@@ -135,6 +124,32 @@ function Gerenciador() {
     return colors[tipo] || "bg-gray-100 text-gray-800"
   }
 
+  // Exportar Excel
+  const exportToExcel = () => {
+    if (filteredProducts.length === 0) {
+      toast.error("Nenhum produto para exportar!")
+      return
+    }
+
+    const dataToExport = filteredProducts.map((product) => ({
+      SKU: product.sku || "",
+      Produto: product.name || "",
+      Marca: product.marca || "",
+      Fornecedor: product.supplier || "",
+      Tipo: product.tipo || "",
+      Categoria: product.category || "",
+      Peso: product.peso || "",
+      Unidade: product.unitMeasure || "",
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Produtos")
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" })
+    const file = new Blob([excelBuffer], { type: "application/octet-stream" })
+    saveAs(file, "produtos.xlsx")
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
@@ -144,8 +159,7 @@ function Gerenciador() {
         <Card className="mb-6 shadow-lg border-0">
           <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
             <CardTitle className="text-2xl md:text-3xl font-bold text-center flex items-center justify-center gap-3">
-              <Package className="w-8 h-8" />
-              Gerenciador de Produtos
+              <Package className="w-8 h-8" /> Gerenciador de Produtos
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 flex flex-col md:flex-row gap-4 items-center">
@@ -175,6 +189,13 @@ function Gerenciador() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Botão Exportar */}
+        {!loading && filteredProducts.length > 0 && (
+          <Button onClick={exportToExcel} className="mb-2 bg-green-600 hover:bg-green-700 text-white h-11">
+            Exportar para Excel
+          </Button>
+        )}
 
         {/* Tabela */}
         {!loading && (
@@ -208,16 +229,10 @@ function Gerenciador() {
                         <TableCell>{product.name}</TableCell>
                         <TableCell>{product.marca}</TableCell>
                         <TableCell>{product.supplier}</TableCell>
-                        <TableCell>
-                          <Badge className={getTipoColor(product.tipo)}>{product.tipo}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getCategoryColor(product.category)}>{product.category}</Badge>
-                        </TableCell>
+                        <TableCell><Badge className={getTipoColor(product.tipo)}>{product.tipo}</Badge></TableCell>
+                        <TableCell><Badge className={getCategoryColor(product.category)}>{product.category}</Badge></TableCell>
                         <TableCell>{product.peso} {product.unitMeasure}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.unitMeasure}</Badge>
-                        </TableCell>
+                        <TableCell><Badge variant="outline">{product.unitMeasure}</Badge></TableCell>
                         <TableCell className="text-center">
                           <Button onClick={() => openModal(product)} size="sm" className="bg-blue-600 hover:bg-blue-700">
                             <Edit className="w-4 h-4" />
@@ -230,22 +245,14 @@ function Gerenciador() {
               </div>
             </CardContent>
 
-            {/* 🔹 Paginação */}
+            {/* Paginação */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 p-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
+                <Button variant="outline" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
                   <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
                 </Button>
                 <span>Página {currentPage} de {totalPages}</span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
+                <Button variant="outline" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
                   Próxima <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
