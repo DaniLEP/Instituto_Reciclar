@@ -1,14 +1,14 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Calendar, UtensilsCrossed, ArrowLeft, BarChart3, TrendingUp, Sparkles } from "lucide-react"
+import { Calendar, UtensilsCrossed, ArrowLeft, BarChart3, TrendingUp, Sparkles, ListOrdered } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 const cardData = [
   {
     onClick: () => {},
-    icon: Calendar,
-    title: "Periódico",
-    description: "Relatórios e análises por período",
+    icon: ListOrdered,
+    title: "Pedidos",
+    description: "Relatórios e análises de compras",
     color: "from-emerald-500 to-teal-500",
     bgColor: "bg-emerald-50 hover:bg-emerald-100",
     stats: "Anual",

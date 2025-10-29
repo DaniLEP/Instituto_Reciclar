@@ -214,6 +214,53 @@ export default function StatusPedidos() {
     }
     carregarFornecedores()
   }, [])
+useEffect(() => {
+  const calcularKilosTotais = async () => {
+    try {
+      const pedidosRef = ref(dbRealtime, "novosPedidos");
+      const snapshot = await get(pedidosRef);
+
+      if (!snapshot.exists()) return;
+
+      const pedidos = snapshot.val();
+      const atualizacoes = [];
+
+      for (const [id, pedido] of Object.entries(pedidos)) {
+        // Pula se já existe kilosTotais
+        if (pedido.kilosTotais !== undefined && pedido.kilosTotais !== null) continue;
+
+        // Garante que há produtos
+        if (!pedido.produtos || !Array.isArray(pedido.produtos)) continue;
+
+        // Calcula o total em kg
+        const totalKilos = pedido.produtos.reduce((acc, item) => {
+          const peso = Number(item.peso || item.pesoUnitario || 0);
+          const qtd = Number(item.quantidade || 0);
+          return acc + peso * qtd;
+        }, 0);
+
+        // Atualiza o pedido no Firebase
+        const pedidoRef = ref(dbRealtime, `novosPedidos/${id}`);
+        await update(pedidoRef, { kilosTotais: totalKilos.toFixed(2) });
+
+        atualizacoes.push({ id, kilosTotais: totalKilos.toFixed(2) });
+      }
+
+      if (atualizacoes.length > 0) {
+        console.log("Atualizações realizadas:", atualizacoes);
+        toast.success(`Atualizado ${atualizacoes.length} pedido(s) com kilosTotais`);
+      } else {
+        console.log("Nenhum pedido precisou de atualização.");
+      }
+    } catch (error) {
+      console.error("Erro ao calcular kilosTotais:", error);
+      toast.error("Erro ao calcular kilosTotais");
+    }
+  };
+
+  calcularKilosTotais();
+}, []);
+
 
   // Adiciona produto selecionado ao pedido
   const handleSelecionarProduto = (produtoSelecionado) => {
@@ -1556,12 +1603,25 @@ export default function StatusPedidos() {
             </Dialog>
 
             <Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
-              <CardHeader className="bg-gradient-to-r from-blue-400/40 via-cyan-400/40 to-blue-400/40 border-b-2 border-blue-400 dark:border-blue-600">
-                <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                  <div className="h-6 w-1 bg-gradient-to-b from-blue-500 via-cyan-500 to-blue-500 rounded-full shadow-md"></div>
-                  Produtos do Pedido
-                </CardTitle>
-              </CardHeader>
+<CardHeader className="bg-gradient-to-r from-blue-400/40 via-cyan-400/40 to-blue-400/40 border-b-2 border-blue-400 dark:border-blue-600 flex justify-between items-center">
+  <CardTitle className="text-lg text-foreground flex items-center gap-2">
+    <div className="h-6 w-1 bg-gradient-to-b from-blue-500 via-cyan-500 to-blue-500 rounded-full shadow-md"></div>
+    Produtos do Pedido
+  </CardTitle>
+
+  {/* 👇 Exibição dos quilos totais */}
+  <div className="flex items-center gap-2">
+    <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+      Kilos Totais:
+    </span>
+    <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-3 py-1 rounded-lg shadow-sm">
+      {pedidoSelecionado?.kilosTotais
+        ? `${Number(pedidoSelecionado.kilosTotais).toFixed(2)} kg`
+        : "—"}
+    </span>
+  </div>
+</CardHeader>
+
               <CardContent className="pt-6">
                 <div className="overflow-x-auto text-center">
                   <Table>

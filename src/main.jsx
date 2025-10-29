@@ -46,7 +46,7 @@ import GerenciadorCardapios from './pages/cardapio/cadapio_primary/gerenciador';
 import CadastroCardapio from './pages/cardapio';
 import ViewCardapio from './pages/cardapio/view';
 import CadastroReceitas from './pages/cardapio/technical_sheet_register';
-import Anual from './pages/dashboard/anual_mensal';
+import Anual from './pages/dashboard/novosPedidos/index.jsx';
 import Caixa from './pages/caixa/index.jsx';
 import VisualizarInventario from './pages/Stock/inventary/index.jsx';
 
