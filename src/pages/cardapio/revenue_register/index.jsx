@@ -55,39 +55,56 @@ export default function CadastroRefeicoes() {
       .catch((error) => console.error("Erro ao ler dados do Firebase:", error));
   }, []);
 
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    const valorNumerico = Number.parseInt(value) || 0;
+const handleChange = (e) => {
+  const { id, value } = e.target;
 
-    setFormData((prev) => {
-      const novoEstado = { ...prev, [id]: valorNumerico };
+  setFormData((prev) => {
+    const novoEstado = { ...prev };
 
-      // Café da manhã
-      if (id === "cafeTotalQtd" || id === "cafeFuncionariosQtd") {
-        novoEstado.cafeJovensQtd = Math.max(0, novoEstado.cafeTotalQtd - novoEstado.cafeFuncionariosQtd);
-      }
+    // Campos que devem ser tratados como NUMÉRICOS
+    const camposNumericos = [
+      "cafeTotalQtd", "cafeFuncionariosQtd", "cafeJovensQtd",
+      "almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd", "almocoJovensTardeQtd",
+      "lancheTotalQtd", "lancheFuncionariosQtd", "lancheJovensQtd", "lancheJovensManhaQtd",
+      "outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd", "outrasJovensTardeQtd",
+      "desperdicioQtd"
+    ];
 
-      // Almoço
-      if (["almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd"].includes(id)) {
-        novoEstado.almocoJovensTardeQtd = Math.max(0, novoEstado.almocoTotalQtd - novoEstado.almocoFuncionariosQtd - novoEstado.almocoJovensQtd);
-        // Atualiza lanche automaticamente
-        novoEstado.lancheTotalQtd = Math.max(0, novoEstado.almocoTotalQtd - novoEstado.almocoJovensQtd + 10);
-        novoEstado.lancheJovensQtd = Math.max(0, novoEstado.lancheTotalQtd - novoEstado.lancheFuncionariosQtd);
-      }
+    if (camposNumericos.includes(id)) {
+      novoEstado[id] = Number.parseInt(value) || 0;
+    } else {
+      // Campos de texto (descrições, observações etc.)
+      novoEstado[id] = value;
+    }
 
-      // Lanche
-      if (["lancheFuncionariosQtd"].includes(id)) {
-        novoEstado.lancheJovensQtd = Math.max(0, novoEstado.lancheTotalQtd - novoEstado.lancheFuncionariosQtd);
-      }
+    // Regras de cálculo automáticas
+    if (id === "cafeTotalQtd" || id === "cafeFuncionariosQtd") {
+      novoEstado.cafeJovensQtd = Math.max(0, novoEstado.cafeTotalQtd - novoEstado.cafeFuncionariosQtd);
+    }
 
-      // Outras refeições
-      if (["outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd"].includes(id)) {
-        novoEstado.outrasJovensTardeQtd = Math.max(0, novoEstado.outrasTotalQtd - novoEstado.outrasFuncionariosQtd - novoEstado.outrasJovensQtd);
-      }
+    if (["almocoTotalQtd", "almocoFuncionariosQtd", "almocoJovensQtd"].includes(id)) {
+      novoEstado.almocoJovensTardeQtd = Math.max(
+        0,
+        novoEstado.almocoTotalQtd - novoEstado.almocoFuncionariosQtd - novoEstado.almocoJovensQtd
+      );
+      novoEstado.lancheTotalQtd = Math.max(0, novoEstado.almocoTotalQtd - novoEstado.almocoJovensQtd + 10);
+      novoEstado.lancheJovensQtd = Math.max(0, novoEstado.lancheTotalQtd - novoEstado.lancheFuncionariosQtd);
+    }
 
-      return novoEstado;
-    });
-  };
+    if (["lancheFuncionariosQtd"].includes(id)) {
+      novoEstado.lancheJovensQtd = Math.max(0, novoEstado.lancheTotalQtd - novoEstado.lancheFuncionariosQtd);
+    }
+
+    if (["outrasTotalQtd", "outrasFuncionariosQtd", "outrasJovensQtd"].includes(id)) {
+      novoEstado.outrasJovensTardeQtd = Math.max(
+        0,
+        novoEstado.outrasTotalQtd - novoEstado.outrasFuncionariosQtd - novoEstado.outrasJovensQtd
+      );
+    }
+
+    return novoEstado;
+  });
+};
 
   const handleDateChange = (e) => setFormData((prev) => ({ ...prev, dataRefeicao: e.target.value }));
   const handleBack = () => navigate("/refeicoes");

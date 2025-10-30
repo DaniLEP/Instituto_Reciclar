@@ -343,56 +343,165 @@ useEffect(() => {
       })
   }
 
-  const enviarParaEstoque = async (pedidoId) => {
-    try {
-      const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`)
-      const pedidoSnapshot = await get(pedidoRef)
-      if (!pedidoSnapshot.exists()) {
-        console.warn("Pedido não encontrado!")
-        return
+  // const enviarParaEstoque = async (pedidoId) => {
+  //   try {
+  //     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`)
+  //     const pedidoSnapshot = await get(pedidoRef)
+  //     if (!pedidoSnapshot.exists()) {
+  //       console.warn("Pedido não encontrado!")
+  //       return
+  //     }
+
+  //     const pedido = pedidoSnapshot.val()
+  //     const fornecedor = pedido.fornecedor
+  //     const dataCadastro = new Date().toISOString().split("T")[0]
+
+  //     const produtoPromises = pedido.produtos.map(async (produto) => {
+  //       if (!produto.sku) {
+  //         console.warn("Produto sem SKU, não será enviado para o estoque:", produto)
+  //         return
+  //       }
+
+  //       const dataProduto = {
+  //         sku: produto.sku,
+  //         name: produto.name || "Indefinido",
+  //         quantity: produto.quantidade || 0,
+  //         projeto: produto.projeto || "Indefinido",
+  //         category: produto.category || "Indefinido",
+  //         tipo: produto.tipo || "Indefinido",
+  //         marca: produto.marca || "Indefinido",
+  //         peso: produto.peso || 0,
+  //         unit: produto.unit || " ",
+  //         supplier: fornecedor?.razaoSocial || "Indefinido",
+  //         dateAdded: dataCadastro,
+  //         unitPrice: produto.unitPrice || 0,
+  //         totalPrice: produto.totalPrice || 0,
+  //         expiryDate: produto.expiryDate || "",
+  //       }
+
+  //       // Salva usando a SKU como chave
+  //       await set(ref(dbRealtime, `Estoque/${produto.sku}`), dataProduto)
+  //       console.log("Produto salvo com SKU:", produto.sku)
+  //     })
+
+  //     await Promise.all(produtoPromises)
+  //     console.log("Todos os produtos foram enviados para o estoque.")
+  //     toast.success("Produtos enviados para o estoque com sucesso!")
+  //   } catch (error) {
+  //     console.error("Erro ao enviar produtos para o estoque:", error)
+  //     toast.error("Erro ao enviar produtos para o estoque")
+  //   }
+  // }
+
+  
+const enviarParaEstoque = async (pedidoId) => {
+  try {
+    const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
+    const pedidoSnapshot = await get(pedidoRef);
+
+    if (!pedidoSnapshot.exists()) {
+      console.warn("Pedido não encontrado!");
+      return;
+    }
+
+    const pedido = pedidoSnapshot.val();
+    const fornecedor = pedido.fornecedor;
+    const dataCadastro = new Date().toISOString().split("T")[0];
+
+    const produtoPromises = pedido.produtos.map(async (produto) => {
+      if (!produto.sku) {
+        console.warn("Produto sem SKU, não será enviado para o estoque:", produto);
+        return;
       }
 
-      const pedido = pedidoSnapshot.val()
-      const fornecedor = pedido.fornecedor
-      const dataCadastro = new Date().toISOString().split("T")[0]
+      const produtoRef = ref(dbRealtime, `Estoque/${produto.sku}`);
+      const snapshotProduto = await get(produtoRef);
 
-      const produtoPromises = pedido.produtos.map(async (produto) => {
-        if (!produto.sku) {
-          console.warn("Produto sem SKU, não será enviado para o estoque:", produto)
-          return
-        }
+      // 🔹 Garante que os campos numéricos estão corretos
+      const qtdEntrada = Number(produto.quantidade ?? produto.quantity ?? 0);
+      const pesoEntrada = Number(produto.peso ?? 0);
+      const precoEntrada = Number(produto.totalPrice ?? 0);
 
-        const dataProduto = {
-          sku: produto.sku,
-          name: produto.name || "Indefinido",
-          quantity: produto.quantidade || 0,
-          projeto: produto.projeto || "Indefinido",
-          category: produto.category || "Indefinido",
-          tipo: produto.tipo || "Indefinido",
-          marca: produto.marca || "Indefinido",
-          peso: produto.peso || 0,
-          unit: produto.unit || " ",
-          supplier: fornecedor?.razaoSocial || "Indefinido",
-          dateAdded: dataCadastro,
-          unitPrice: produto.unitPrice || 0,
-          totalPrice: produto.totalPrice || 0,
-          expiryDate: produto.expiryDate || "",
-        }
+      // 🔹 Estrutura base
+      const dataProduto = {
+        sku: produto.sku,
+        name: produto.name || "Indefinido",
+        projeto: produto.projeto || "Indefinido",
+        category: produto.category || "Indefinido",
+        tipo: produto.tipo || "Indefinido",
+        marca: produto.marca || "Indefinido",
+        unit: produto.unit || "",
+        supplier: fornecedor?.razaoSocial || "Indefinido",
+        unitPrice: Number(produto.unitPrice || 0),
+        expiryDate: produto.expiryDate || "",
+        dateAdded: dataCadastro,
+      };
 
-        // Salva usando a SKU como chave
-        await set(ref(dbRealtime, `Estoque/${produto.sku}`), dataProduto)
-        console.log("Produto salvo com SKU:", produto.sku)
-      })
+      // 🔎 Verifica duplicidade no histórico
+      const historicoRef = ref(dbRealtime, `Estoque/${produto.sku}/historicoEntradas`);
+      const historicoSnapshot = await get(historicoRef);
+      const historico = historicoSnapshot.val() || {};
 
-      await Promise.all(produtoPromises)
-      console.log("Todos os produtos foram enviados para o estoque.")
-      toast.success("Produtos enviados para o estoque com sucesso!")
-    } catch (error) {
-      console.error("Erro ao enviar produtos para o estoque:", error)
-      toast.error("Erro ao enviar produtos para o estoque")
-    }
+      const pedidoJaRegistrado = Object.values(historico).some(
+        (item) => item.pedidoId === pedidoId
+      );
+      if (pedidoJaRegistrado) {
+        console.warn(`⏩ Pedido ${pedidoId} já registrado no histórico do SKU ${produto.sku}. Ignorando duplicação.`);
+        return;
+      }
+
+      if (snapshotProduto.exists()) {
+        // 🔹 Produto já existe → soma quantidades
+        const existente = snapshotProduto.val();
+
+        const quantidadeAntiga = Number(existente.quantity ?? 0);
+        const pesoAntigo = Number(existente.peso ?? 0);
+        const totalAntigo = Number(existente.totalPrice ?? 0);
+
+        const novaQuantidade = quantidadeAntiga + qtdEntrada;
+        const novoPeso = pesoAntigo + pesoEntrada;
+        const novoTotal = totalAntigo + precoEntrada;
+
+        await update(produtoRef, {
+          ...existente, // mantém os dados existentes
+          quantity: novaQuantidade,
+          peso: novoPeso,
+          totalPrice: novoTotal,
+          dateUpdated: new Date().toISOString(),
+        });
+
+        console.log(`✅ SKU ${produto.sku}: estoque somado (${quantidadeAntiga} + ${qtdEntrada} = ${novaQuantidade})`);
+      } else {
+        // 🔹 Produto novo → cria registro
+        await set(produtoRef, {
+          ...dataProduto,
+          quantity: qtdEntrada,
+          peso: pesoEntrada,
+          totalPrice: precoEntrada,
+        });
+
+        console.log(`🆕 SKU ${produto.sku}: produto novo adicionado ao estoque.`);
+      }
+
+      // 🔹 Adiciona histórico de entrada
+      await push(historicoRef, {
+        pedidoId,
+        quantidade: qtdEntrada,
+        peso: pesoEntrada,
+        totalPrice: precoEntrada,
+        fornecedor: fornecedor?.razaoSocial || "Indefinido",
+        dataEntrada: dataCadastro,
+      });
+    });
+
+    await Promise.all(produtoPromises);
+    toast.success("Produtos enviados para o estoque com sucesso!");
+    console.log("✅ Todos os produtos foram enviados e atualizados no estoque.");
+  } catch (error) {
+    console.error("❌ Erro ao enviar produtos para o estoque:", error);
+    toast.error("Erro ao enviar produtos para o estoque");
   }
-
+};
   const formatDate = (timestamp) => {
     if (!timestamp) return "Data inválida"
     const date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp)
