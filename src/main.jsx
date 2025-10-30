@@ -130,7 +130,8 @@ const router = createBrowserRouter([
       { path: '/consultar-cardapio',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <ViewCardapio /> </Suspense></ProtectedRoute>),},
       { path: '/sistema-caixa',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <Caixa /> </Suspense></ProtectedRoute>),},
       { path: '/visualizar-inventario',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <VisualizarInventario /> </Suspense></ProtectedRoute>),},
- 
+      { path: '/dashboard-revenue',element: ( <ProtectedRoute allowedTypes={[...ALL_TYPES, ADMIN_ONLY, ADMIN_TI, ...COZINHA_ONLY]}> <Suspense fallback={<div>Carregando Cardapios...</div>}>  <RelatorioRef /> </Suspense></ProtectedRoute>),},
+
     ],
   },
 ]);

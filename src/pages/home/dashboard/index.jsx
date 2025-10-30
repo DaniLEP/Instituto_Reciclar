@@ -22,7 +22,7 @@ const cardData = [
     color: "from-orange-500 to-red-500",
     bgColor: "bg-orange-50 hover:bg-orange-100",
     stats: "Completo",
-    route: "", // Rota vazia como no original
+    route: "/dashboard-revenue", // Rota vazia como no original
   },
 ]
 
