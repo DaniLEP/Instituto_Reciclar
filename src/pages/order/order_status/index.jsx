@@ -108,6 +108,9 @@ export default function StatusPedidos() {
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null)
   const [modalFornecedorAberto, setModalFornecedorAberto] = useState(false)
   const [projetoSelecionado, setProjetoSelecionado] = useState(null)
+  const [editandoPeriodo, setEditandoPeriodo] = useState(false);
+  const [editPeriodoInicio, setEditPeriodoInicio] = useState("");
+  const [editPeriodoFim, setEditPeriodoFim] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
@@ -983,6 +986,86 @@ const enviarParaEstoque = async (pedidoId) => {
     }))
   }
 
+  const formatInputDate = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return "";
+    
+    // Ajusta para o fuso horário local para garantir que a data selecionada seja a correta
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const day = String(localDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Ativa o modo de edição e preenche os inputs com as datas atuais
+  const handleEditarPeriodo = () => {
+    setEditPeriodoInicio(formatInputDate(pedidoSelecionado.periodoInicio));
+    setEditPeriodoFim(formatInputDate(pedidoSelecionado.periodoFim));
+    setEditandoPeriodo(true);
+  };
+
+  // Cancela a edição
+  const handleCancelarPeriodo = () => {
+    setEditandoPeriodo(false);
+    setEditPeriodoInicio(""); // Limpa os estados de edição
+    setEditPeriodoFim("");
+  };
+
+  // Salva as novas datas no Firebase
+  const handleSalvarPeriodo = async () => {
+    if (!pedidoSelecionado?.id) {
+      toast.error("Nenhum pedido selecionado.");
+      return;
+    }
+    if (!editPeriodoInicio || !editPeriodoFim) {
+      toast.warn("As datas de início e fim são obrigatórias.");
+      return;
+    }
+
+    // Converte de "YYYY-MM-DD" para um formato ISO string (armazenando a data local)
+    const novoInicio = new Date(`${editPeriodoInicio}T00:00:00`).toISOString();
+    const novoFim = new Date(`${editPeriodoFim}T00:00:00`).toISOString();
+
+    if (new Date(novoFim) < new Date(novoInicio)) {
+        toast.error("A data final não pode ser anterior à data inicial.");
+        return;
+    }
+
+    const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoSelecionado.id}`);
+    try {
+      await update(pedidoRef, {
+        periodoInicio: novoInicio,
+        periodoFim: novoFim,
+      });
+
+      // Atualiza o estado local para refletir a mudança imediatamente
+      const pedidoAtualizado = {
+        ...pedidoSelecionado,
+        periodoInicio: novoInicio,
+        periodoFim: novoFim
+      };
+      setPedidoSelecionado(pedidoAtualizado);
+
+      // Atualiza a lista principal de pedidos também
+      setPedidos(prev => prev.map(p =>
+        p.id === pedidoSelecionado.id ? pedidoAtualizado : p
+      ));
+      
+      setPedidosFiltrados(prev => prev.map(p =>
+        p.id === pedidoSelecionado.id ? pedidoAtualizado : p
+      ));
+
+      toast.success("Período atualizado com sucesso!");
+      setEditandoPeriodo(false);
+    } catch (error) {
+      console.error("Erro ao salvar período:", error);
+      toast.error("Erro ao salvar período.");
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950 dark:via-purple-950 dark:to-pink-950">
       <ToastContainer position="top-right" />
@@ -1420,7 +1503,7 @@ const enviarParaEstoque = async (pedidoId) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
-            <Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+            {/* <Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
               <CardHeader className="bg-gradient-to-r from-blue-400/40 to-purple-400/40 border-b-2 border-blue-400 dark:border-blue-600">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
                   <div className="h-6 w-1 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full shadow-md"></div>
@@ -1452,8 +1535,83 @@ const enviarParaEstoque = async (pedidoId) => {
                   ))}
                 </div>
               </CardContent>
+            </Card> */}
+<Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+              <CardHeader className="bg-gradient-to-r from-blue-400/40 to-purple-400/40 border-b-2 border-blue-400 dark:border-blue-600">
+                <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                  <div className="h-6 w-1 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full shadow-md"></div>
+                  Informações Gerais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    ["Status", <StatusBadge key="status" status={pedidoSelecionado.status} />],
+                    ["Projeto Custeador", pedidoSelecionado.projeto || "Não informado"],
+                    ["Fornecedor", pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"],
+                    ["Contato", pedidoSelecionado.fornecedor?.contato || "Não informado"],
+                    ["Telefone", pedidoSelecionado.fornecedor?.telefone || "Não informado"],
+                    ["E-mail", pedidoSelecionado.fornecedor?.email || "Não informado"],
+                    
+                    // --- INÍCIO DA MODIFICAÇÃO ---
+                    [
+                      "Período",
+                      !editandoPeriodo ? (
+                        // Modo de Visualização
+                        <div className="flex items-center justify-between min-h-[36px]"> {/* Altura mínima para alinhar */}
+                          <span>
+                            {formatDate(pedidoSelecionado.periodoInicio)} até {formatDate(pedidoSelecionado.periodoFim)}
+                          </span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleEditarPeriodo} title="Editar período">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        // Modo de Edição
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground">Início:</Label>
+                          <Input
+                            type="date"
+                            value={editPeriodoInicio}
+                            onChange={(e) => setEditPeriodoInicio(e.target.value)}
+                            className="text-sm h-9"
+                          />
+                          <Label className="text-xs text-muted-foreground">Fim:</Label>
+                           <Input
+                            type="date"
+                            value={editPeriodoFim}
+                            onChange={(e) => setEditPeriodoFim(e.target.value)}
+                            className="text-sm h-9"
+                          />
+                          <div className="flex gap-2 justify-end pt-1">
+                            <Button variant="ghost" size="sm" onClick={handleCancelarPeriodo}>
+                              <X className="h-4 w-4 mr-1" />
+                              Cancelar
+                            </Button>
+                            <Button variant="default" size="sm" onClick={handleSalvarPeriodo}>
+                              <Check className="h-4 w-4 mr-1" />
+                              Salvar
+                            </Button>
+                          </div>
+                        </div>
+                      ),
+                    ],
+                    // --- FIM DA MODIFICAÇÃO ---
+                    
+                    ["Motivo de Cancelamento", pedidoSelecionado.motivoCancelamento || "Não informado"],
+                    ["Nota Fiscal", pedidoSelecionado.numeroNotaFiscal || "Não informado"],
+                    ["Chave de Acesso", pedidoSelecionado.chaveAcesso || "Não informado"],
+                    ["Recebido por", pedidoSelecionado.recebido || "Não informado"],
+                  ].map(([label, value], index) => (
+                    <div key={index} className="space-y-1">
+                      <Label className="text-sm font-medium text-gray-600">{label}</Label>
+                      {/* O div abaixo agora renderiza JSX ou texto simples */}
+                      <div className="text-sm">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-
             <Card className="shadow-xl border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
               <CardHeader className="bg-gradient-to-r from-purple-400/40 to-pink-400/40 border-b-2 border-purple-400 dark:border-purple-600">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
