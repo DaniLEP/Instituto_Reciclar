@@ -308,41 +308,40 @@ export default function DashboardComprasModernTabs() {
     }
   }, [orders, selectedYear])
 
-const handleOpenDetail = (order) => {
-  if (!order) return;
+const handleOpenDetail = ({ categoria, monthIndex }) => {
+  const ordersList = orders.filter((o) => {
+    const d = parseDate(o.dataPedido);
+    return (
+      o.category === categoria &&
+      d &&
+      d.getFullYear() === selectedYear &&
+      d.getMonth() === monthIndex
+    );
+  });
 
-  // Função de segurança para números
-  const safeNumber = (num) => (typeof num === "number" ? num : 0);
+  // Agregações por tipo/produto
+  const tipos = {};
+  const produtos = {};
+  for (const o of ordersList) {
+    for (const p of o.produtos) {
+      tipos[p.tipo] = (tipos[p.tipo] || 0) + p.valor;
+      produtos[p.name] = (produtos[p.name] || 0) + p.valor;
+    }
+  }
 
-  // Processa os produtos do pedido
-  const produtos = (order.produtos || []).map((p) => ({
-    ...p,
-    valor: safeNumber(p.valor), // caso não tenha valor
-    totalValor: safeNumber(p.valor) * safeNumber(p.quantidade),
-    totalKg: safeNumber(p.peso) * safeNumber(p.quantidade),
-  }));
+  setDetailContext({
+    categoria,
+    monthIndex,
+    totalValor: ordersList.reduce((a, o) => a + (o.valorPedido || 0), 0),
+    totalKg: ordersList.reduce((a, o) => a + (o.kilosTotais || 0), 0),
+    tipos: Object.entries(tipos).map(([tipo, valor]) => ({ tipo, valor })),
+    products: Object.entries(produtos).map(([name, valor]) => ({ name, valor })),
+    ordersList,
+  });
 
-  // Calcula total do pedido usando fallback se necessário
-  const valorOrder =
-    safeNumber(order.valorPedido) ||
-    produtos.reduce((acc, p) => acc + p.totalValor, 0);
-
-  const kgOrder =
-    safeNumber(order.kilosTotais) ||
-    produtos.reduce((acc, p) => acc + p.totalKg, 0);
-
-  // Monta os dados para exibir no DataGrid/modal
-  const orderDetail = {
-    ...order,
-    produtos,
-    totalValorPedido: valorOrder,
-    totalKgPedido: kgOrder,
-  };
-
-  // Aqui você pode abrir o modal ou atualizar o estado
-  setDetail(orderDetail);
-  setModalOpen(true);
+  setOpenDetail(true);
 };
+
 
 
   const exportCategoryTableToExcel = () => {
@@ -593,377 +592,431 @@ const handleOpenDetail = (order) => {
       {/* Charts - Stacked Vertically */}
       <Box mb={4}>
         {/* Chart 1: Monthly Value */}
-        <Card
-          ref={refChartMain}
-          sx={{
-            mb: 3,
-            p: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
+<Card
+  ref={refChartMain}
+  sx={{
+    mb: 3,
+    p: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+  }}
+>
+  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box>
+      <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
+        Evolução Mensal — Investimento (R$)
+      </Typography>
+      <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
+        {selectedYear}
+      </Typography>
+    </Box>
+    <Button
+      size="small"
+      onClick={() => exportRefToPNG(refChartMain, `evolucao_valor_${selectedYear}.png`)}
+      startIcon={<Download size={16} />}
+      sx={{ textTransform: "none", fontWeight: 600 }}
+    >
+      PNG
+    </Button>
+  </Box>
+
+  <Box
+    sx={{
+      height: 400, // altura reduzida
+      backgroundColor: "#f8fafc",
+      borderRadius: "10px",
+      p: 1,
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={monthlyTotalsSeriesValor}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+        <XAxis dataKey="month" stroke="#94a3b8" style={{ fontSize: "0.85rem" }} />
+        <YAxis stroke="#94a3b8" style={{ fontSize: "0.85rem" }} />
+        <RechartTooltip
+          formatter={(v) => formatBR(v)}
+          contentStyle={{
+            backgroundColor: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            color: "#f1f5f9",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
           }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
-                Evolução Mensal — Investimento (R$)
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
-                {selectedYear}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={() => exportRefToPNG(refChartMain, `evolucao_valor_${selectedYear}.png`)}
-              startIcon={<Download size={16} />}
-              sx={{ textTransform: "none", fontWeight: 600 }}
-            >
-              PNG
-            </Button>
-          </Box>
-          <Box
-            sx={{ height: 500, backgroundColor: "#f8fafc", borderRadius: "10px", p: 2, border: "1px solid #e2e8f0" }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={monthlyTotalsSeriesValor}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="month" stroke="#94a3b8" style={{ fontSize: "0.9rem" }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: "0.9rem" }} />
-                <RechartTooltip
-                  formatter={(v) => formatBR(v)}
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "10px",
-                    color: "#f1f5f9",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                  }}
-                />
-                <Legend wrapperStyle={{ paddingTop: "10px" }} />
-                <Bar dataKey="valor" name="Investimento" fill="#1e40af" radius={[8, 8, 0, 0]}>
-                  <LabelList
-                    dataKey="valor"
-                    position="top"
-                    formatter={(v) => formatBR(v)}
-                    style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.85rem" }}
-                  />
-                </Bar>
-                <Line type="monotone" dataKey="valor" name="Tendência" stroke="#0d9488" strokeWidth={3} dot={false} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </Box>
-        </Card>
+        />
+        <Legend wrapperStyle={{ paddingTop: "10px", fontSize: "0.85rem" }} />
+        <Bar dataKey="valor" name="Investimento" fill="#1e40af" radius={[8, 8, 0, 0]}>
+          <LabelList
+            dataKey="valor"
+            position="top"
+            formatter={(v) => formatBR(v)}
+            style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.75rem" }} // fonte menor
+          />
+        </Bar>
+        <Line
+          type="monotone"
+          dataKey="valor"
+          name="Tendência"
+          stroke="#0d9488"
+          strokeWidth={3}
+          dot={false}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
+
 
         {/* Chart 2: Monthly Kg */}
-        <Card
-          ref={refChartKg}
-          sx={{
-            mb: 3,
-            p: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
+<Card
+  ref={refChartKg}
+  sx={{
+    mb: 3,
+    p: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+  }}
+>
+  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box>
+      <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
+        Evolução Mensal — Volume (Kg)
+      </Typography>
+      <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
+        {selectedYear}
+      </Typography>
+    </Box>
+    <Button
+      size="small"
+      onClick={() => exportRefToPNG(refChartKg, `evolucao_kg_${selectedYear}.png`)}
+      startIcon={<Download size={16} />}
+      sx={{ textTransform: "none", fontWeight: 600 }}
+    >
+      PNG
+    </Button>
+  </Box>
+
+  <Box
+    sx={{
+      height: 400, // altura reduzida
+      backgroundColor: "#f8fafc",
+      borderRadius: "10px",
+      p: 2, // padding um pouco maior para conforto visual
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={monthlyTotalsSeriesKg} margin={{ top: 20, right: 10, left: 0, bottom: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+        <XAxis
+          dataKey="month"
+          stroke="#94a3b8"
+          style={{ fontSize: "0.85rem" }}
+          tick={{ fontSize: 12, fill: "#0f172a" }}
+        />
+        <YAxis
+          stroke="#94a3b8"
+          style={{ fontSize: "0.85rem" }}
+          tick={{ fontSize: 12, fill: "#0f172a" }}
+        />
+        <RechartTooltip
+          formatter={(v) => formatWeight(v)}
+          contentStyle={{
+            backgroundColor: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            color: "#f1f5f9",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
           }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
-                Evolução Mensal — Volume (Kg)
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
-                {selectedYear}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={() => exportRefToPNG(refChartKg, `evolucao_kg_${selectedYear}.png`)}
-              startIcon={<Download size={16} />}
-              sx={{ textTransform: "none", fontWeight: 600 }}
-            >
-              PNG
-            </Button>
-          </Box>
-          <Box
-            sx={{ height: 540, backgroundColor: "#f8fafc", borderRadius: "10px", p: 1, border: "1px solid #e2e8f0" }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyTotalsSeriesKg}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="month" stroke="#94a3b8" style={{ fontSize: "0.9rem" }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: "0.9rem" }} />
-                <RechartTooltip
-                  formatter={(v) => formatWeight(v)}
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "10px",
-                    color: "#f1f5f9",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                  }}
-                />
-                <Legend wrapperStyle={{ paddingTop: "20px" }} />
-                <Bar dataKey="kg" name="Volume (Kg)" fill="#0891b2" radius={[8, 8, 0, 0]}>
-                  <LabelList
-                    dataKey="kg"
-                    position="top"
-                    formatter={(v) => formatWeight(v)}
-                    style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.85rem" }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-        </Card>
+        />
+        <Legend wrapperStyle={{ paddingTop: "10px", fontSize: "0.85rem" }} />
+        <Bar dataKey="kg" name="Volume (Kg)" fill="#0891b2" radius={[8, 8, 0, 0]}>
+          <LabelList
+            dataKey="kg"
+            position="top"
+            formatter={(v) => formatWeight(v)}
+            style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.75rem" }} // fonte menor para caber
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
+
 
         {/* Chart 3: Distribution by Type */}
-        <Card
-          ref={refProteins}
-          sx={{
-            mb: 3,
-            p: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
-          }}
+<Card
+  ref={refProteins}
+  sx={{
+    mb: 3,
+    p: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+  }}
+>
+  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box>
+      <Typography variant="h6" fontWeight={500} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
+        Distribuição por Tipo
+      </Typography>
+      <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
+        {selectedYear}
+      </Typography>
+    </Box>
+    <Button
+      size="small"
+      onClick={() => exportRefToPNG(refProteins, `tipos_${selectedYear}.png`)}
+      startIcon={<Download size={16} />}
+      sx={{ textTransform: "none", fontWeight: 600 }}
+    >
+      PNG
+    </Button>
+  </Box>
+  
+  <Box
+    sx={{
+      height: 400, // altura reduzida
+      backgroundColor: "#f8fafc",
+      borderRadius: "10px",
+      p: 2,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={productsByTypeSummary.map((p) => ({ name: p.tipo, value: p.valor }))}
+          dataKey="value"
+          nameKey="name"
+          outerRadius={150} // reduzido para caber no container
+          label={({ name, value }) =>
+            `${name}: ${value ? value.toLocaleString("pt-BR", { minimumFractionDigits: 0 }) : 0}`
+          }
+          labelLine={false}
         >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h6" fontWeight={500} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
-                Distribuição por Tipo
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
-                {selectedYear}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={() => exportRefToPNG(refProteins, `tipos_${selectedYear}.png`)}
-              startIcon={<Download size={16} />}
-              sx={{ textTransform: "none", fontWeight: 600 }}
-            >
-              PNG
-            </Button>
-          </Box>
-          <Box
-            sx={{
-              height: 500,
-              backgroundColor: "#f8fafc",
-              borderRadius: "10px",
-              p: 2,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <ResponsiveContainer width="100%" height="150%">
-              <PieChart>
-                <Pie
-                  data={productsByTypeSummary.map((p) => ({ name: p.tipo, value: p.valor }))}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={210}
-                  label={({ name, value }) =>
-                    `${name}: ${value ? value.toLocaleString("pt-BR", { minimumFractionDigits: 0 }) : 0}`
-                  }
-                  labelLine={false}
-                >
-                  {productsByTypeSummary.map((entry, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <RechartTooltip
-                  formatter={(v) => formatBR(v)}
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "10px",
-                    color: "#f1f5f9",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </Box>
-        </Card>
+          {productsByTypeSummary.map((entry, i) => (
+            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+          ))}
+        </Pie>
+        <RechartTooltip
+          formatter={(v) => formatBR(v)}
+          contentStyle={{
+            backgroundColor: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            color: "#f1f5f9",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          }}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
+
 
         {/* Chart 4: Top Products by Kg */}
-        <Card
-          ref={refTopProducts}
-          sx={{
-            mb: 3,
-            p: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
-          }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
-                Top 12 Produtos — Volume (Kg)
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
-                {selectedYear}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={() => exportRefToPNG(refTopProducts, `top_produtos_kg_${selectedYear}.png`)}
-              startIcon={<Download size={16} />}
-              sx={{ textTransform: "none", fontWeight: 600 }}
-            >
-              PNG
-            </Button>
-          </Box>
+<Card
+  ref={refTopProducts}
+  sx={{
+    mb: 3,
+    p: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+  }}
+>
+  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box>
+      <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
+        Top 12 Produtos — Volume (Kg)
+      </Typography>
+      <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
+        {selectedYear}
+      </Typography>
+    </Box>
+    <Button
+      size="small"
+      onClick={() => exportRefToPNG(refTopProducts, `top_produtos_kg_${selectedYear}.png`)}
+      startIcon={<Download size={16} />}
+      sx={{ textTransform: "none", fontWeight: 600 }}
+    >
+      PNG
+    </Button>
+  </Box>
 
-          <Box
-            sx={{
-              height: 450,
-              backgroundColor: "#f8fafc",
-              borderRadius: "10px",
-              p: 2,
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                layout="vertical"
-                data={topProductsForCharts.byKg}
-                margin={{ top: 10, right: 20, left: -50, bottom: 10 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={true} />
-                <XAxis
-                  type="number"
-                  stroke="#94a3b8"
-                  style={{ fontSize: "0.9rem" }}
-                  tickFormatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={180}
-                  interval={0}
-                  stroke="#94a3b8"
-                  tick={{
-                    fontSize: 12,
-                    fill: "#0f172a",
-                    fontWeight: 500,
-                  }}
-                />
-                <RechartTooltip
-                  formatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "10px",
-                    color: "#f1f5f9",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                  }}
-                />
-                <Bar dataKey="kg" fill="#0891b2" radius={[0, 8, 8, 0]}>
-                  <LabelList
-                    dataKey="kg"
-                    position="right"
-                    formatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
-                    style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.85rem" }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-        </Card>
+  <Box
+    sx={{
+      height: 400, // altura reduzida
+      backgroundColor: "#f8fafc",
+      borderRadius: "10px",
+      p: 2, // padding reduzido
+      border: "1px solid #e2e8f0",
+      overflow: "hidden", // garante que nada saia do box
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        layout="vertical"
+        data={topProductsForCharts.byKg}
+        margin={{ top: 10, left: 0, bottom: 10, right: 50 }} // ajustando margens
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={true} />
+        <XAxis
+          type="number"
+          stroke="#94a3b8"
+          style={{ fontSize: "0.9rem" }}
+          tickFormatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
+        />
+        <YAxis
+          dataKey="name"
+          type="category"
+          width={150} // largura menor
+          interval={0}
+          stroke="#94a3b8"
+          tick={({ x, y, payload }) => (
+            <text
+              x={x}
+              y={y}
+              textAnchor="end"
+              fill="#0f172a"
+              fontSize={12}
+              fontWeight={500}
+              style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+            >
+              {payload.value}
+            </text>
+          )}
+        />
+        <RechartTooltip
+          formatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
+          contentStyle={{
+            backgroundColor: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            color: "#f1f5f9",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          }}
+        />
+        <Bar dataKey="kg" fill="#0891b2" radius={[0, 8, 8, 0]}>
+          <LabelList
+            dataKey="kg"
+            position="right"
+            formatter={(v) => `${v.toLocaleString("pt-BR")} Kg`}
+            style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.75rem" }} // menor para caber
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
 
         {/* Chart 5: Top Products by Value */}
-        <Card
-          ref={refTopProductsValor}
-          sx={{
-            mb: 4,
-            p: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
-          }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
-                Top 12 Produtos — Investimento (R$)
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
-                {selectedYear}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={() => exportRefToPNG(refTopProductsValor, `top_produtos_valor_${selectedYear}.png`)}
-              startIcon={<Download size={16} />}
-              sx={{ textTransform: "none", fontWeight: 600 }}
-            >
-              PNG
-            </Button>
-          </Box>
+<Card
+  ref={refTopProductsValor}
+  sx={{
+    mb: 4,
+    p: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+  }}
+>
+  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box>
+      <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
+        Top 12 Produtos — Investimento (R$)
+      </Typography>
+      <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.85rem" }}>
+        {selectedYear}
+      </Typography>
+    </Box>
+    <Button
+      size="small"
+      onClick={() => exportRefToPNG(refTopProductsValor, `top_produtos_valor_${selectedYear}.png`)}
+      startIcon={<Download size={16} />}
+      sx={{ textTransform: "none", fontWeight: 600 }}
+    >
+      PNG
+    </Button>
+  </Box>
 
-          <Box
-            sx={{
-              height: 500,
-              backgroundColor: "#f8fafc",
-              borderRadius: "10px",
-              p: 2,
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                layout="vertical"
-                data={topProductsForCharts.byValor}
-                margin={{ top: 10, left: -40, bottom: 10 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={true} />
-                <XAxis
-                  type="number"
-                  style={{ fontSize: "0.9rem" }}
-                  tickFormatter={(v) => (v ? `R$ ${(v / 1000).toFixed(0)}k` : "0")}
-                  stroke="#94a3b8"
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={180}
-                  interval={0}
-                  stroke="#94a3b8"
-                  tick={{
-                    fontSize: 12,
-                    fill: "#0f172a",
-                    fontWeight: 500,
-                  }}
-                />
-                <RechartTooltip
-                  formatter={(v) => formatBR(v)}
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "10px",
-                    color: "#f1f5f9",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                  }}
-                />
-                <Bar dataKey="valor" fill="#6d28d9" radius={[0, 8, 8, 0]}>
-                  <LabelList
-                    dataKey="valor"
-                    position="right"
-                    formatter={(v) =>
-                      `R$ ${v.toLocaleString("pt-BR", {
-                        minimumFractionDigits: 2,
-                      })}`
-                    }
-                    style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.85rem" }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-        </Card>
+  <Box
+    sx={{
+      height: 400, // altura reduzida
+      backgroundColor: "#f8fafc",
+      borderRadius: "10px",
+      p: 2, // padding reduzido
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        layout="vertical"
+        data={topProductsForCharts.byValor}
+        margin={{ top: 10, left: 0, bottom: 10, right: 50 }} // margens ajustadas
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={true} />
+        <XAxis
+          type="number"
+          style={{ fontSize: "0.9rem" }}
+          tickFormatter={(v) => (v ? `R$ ${(v / 1000).toFixed(0)}k` : "0")}
+          stroke="#94a3b8"
+        />
+        <YAxis
+          dataKey="name"
+          type="category"
+          width={150} // largura menor
+          interval={0}
+          stroke="#94a3b8"
+          tick={({ x, y, payload }) => (
+            <text
+              x={x}
+              y={y}
+              textAnchor="end"
+              fill="#0f172a"
+              fontSize={12}
+              fontWeight={500}
+              style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+            >
+              {payload.value}
+            </text>
+          )}
+        />
+        <RechartTooltip
+          formatter={(v) => formatBR(v)}
+          contentStyle={{
+            backgroundColor: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "10px",
+            color: "#f1f5f9",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          }}
+        />
+        <Bar dataKey="valor" fill="#6d28d9" radius={[0, 8, 8, 0]}>
+          <LabelList
+            dataKey="valor"
+            position="right"
+            formatter={(v) =>
+              `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+            }
+            style={{ fill: "#0f172a", fontWeight: 700, fontSize: "0.75rem" }} // fonte menor
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
+
       </Box>
 
       {/* Category Table */}
