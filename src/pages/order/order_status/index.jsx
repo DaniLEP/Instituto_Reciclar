@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useMemo } from "react"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -111,6 +109,10 @@ export default function StatusPedidos() {
   const [editandoPeriodo, setEditandoPeriodo] = useState(false);
   const [editPeriodoInicio, setEditPeriodoInicio] = useState("");
   const [editPeriodoFim, setEditPeriodoFim] = useState("");
+const [editandoDataId, setEditandoDataId] = useState(null);
+const [novaDataPedidoTabela, setNovaDataPedidoTabela] = useState("");
+
+
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
@@ -346,57 +348,6 @@ useEffect(() => {
       })
   }
 
-  // const enviarParaEstoque = async (pedidoId) => {
-  //   try {
-  //     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`)
-  //     const pedidoSnapshot = await get(pedidoRef)
-  //     if (!pedidoSnapshot.exists()) {
-  //       console.warn("Pedido não encontrado!")
-  //       return
-  //     }
-
-  //     const pedido = pedidoSnapshot.val()
-  //     const fornecedor = pedido.fornecedor
-  //     const dataCadastro = new Date().toISOString().split("T")[0]
-
-  //     const produtoPromises = pedido.produtos.map(async (produto) => {
-  //       if (!produto.sku) {
-  //         console.warn("Produto sem SKU, não será enviado para o estoque:", produto)
-  //         return
-  //       }
-
-  //       const dataProduto = {
-  //         sku: produto.sku,
-  //         name: produto.name || "Indefinido",
-  //         quantity: produto.quantidade || 0,
-  //         projeto: produto.projeto || "Indefinido",
-  //         category: produto.category || "Indefinido",
-  //         tipo: produto.tipo || "Indefinido",
-  //         marca: produto.marca || "Indefinido",
-  //         peso: produto.peso || 0,
-  //         unit: produto.unit || " ",
-  //         supplier: fornecedor?.razaoSocial || "Indefinido",
-  //         dateAdded: dataCadastro,
-  //         unitPrice: produto.unitPrice || 0,
-  //         totalPrice: produto.totalPrice || 0,
-  //         expiryDate: produto.expiryDate || "",
-  //       }
-
-  //       // Salva usando a SKU como chave
-  //       await set(ref(dbRealtime, `Estoque/${produto.sku}`), dataProduto)
-  //       console.log("Produto salvo com SKU:", produto.sku)
-  //     })
-
-  //     await Promise.all(produtoPromises)
-  //     console.log("Todos os produtos foram enviados para o estoque.")
-  //     toast.success("Produtos enviados para o estoque com sucesso!")
-  //   } catch (error) {
-  //     console.error("Erro ao enviar produtos para o estoque:", error)
-  //     toast.error("Erro ao enviar produtos para o estoque")
-  //   }
-  // }
-
-  
 const enviarParaEstoque = async (pedidoId) => {
   try {
     const pedidoRef = ref(dbRealtime, `novosPedidos/${pedidoId}`);
@@ -505,16 +456,19 @@ const enviarParaEstoque = async (pedidoId) => {
     toast.error("Erro ao enviar produtos para o estoque");
   }
 };
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "Data inválida"
-    const date = typeof timestamp === "string" ? new Date(Date.parse(timestamp)) : new Date(timestamp)
-    if (isNaN(date.getTime())) return "Data inválida"
-    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
-    const day = String(localDate.getDate()).padStart(2, "0")
-    const month = String(localDate.getMonth() + 1).padStart(2, "0")
-    const year = localDate.getFullYear()
-    return `${day}/${month}/${year}`
-  }
+const formatDate = (timestamp) => {
+  if (!timestamp) return "Data inválida";
+
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return "Data inválida";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${day}/${month}/${year}`;
+};
+
 
   const exportToExcel = () => {
     if (!pedidoSelecionado || !pedidoSelecionado.produtos || pedidoSelecionado.produtos.length === 0) {
@@ -1065,6 +1019,48 @@ const enviarParaEstoque = async (pedidoId) => {
       toast.error("Erro ao salvar período.");
     }
   };
+
+
+
+
+  // APAGAR ESSA PARTE DEPOIS DE TESTAR
+const iniciarEdicaoData = (pedido) => {
+  setEditandoDataId(pedido.id);
+  setNovaDataPedidoTabela(formatInputDate(pedido.dataPedido));
+};
+const salvarDataPedidoTabela = async (pedido) => {
+  try {
+    const novaDataISO = new Date(`${novaDataPedidoTabela}T00:00:00`).toISOString();
+
+    await update(ref(dbRealtime, `novosPedidos/${pedido.id}`), {
+      dataPedido: novaDataISO,
+    });
+
+    // Atualiza listas locais
+    setPedidos(prev =>
+      prev.map(p => p.id === pedido.id ? { ...p, dataPedido: novaDataISO } : p)
+    );
+
+    setPedidosFiltrados(prev =>
+      prev.map(p => p.id === pedido.id ? { ...p, dataPedido: novaDataISO } : p)
+    );
+
+    toast.success("Data atualizada!");
+
+  } catch (error) {
+    toast.error("Erro ao atualizar data!");
+  }
+
+  setEditandoDataId(null);
+};
+const handleKeyDownData = (e, pedido) => {
+  if (e.key === "Enter") {
+    salvarDataPedidoTabela(pedido);
+  }
+};
+
+
+
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950 dark:via-purple-950 dark:to-pink-950">
@@ -1250,7 +1246,27 @@ const enviarParaEstoque = async (pedidoId) => {
                                 "-"
                               )}
                             </TableCell>
-                            <TableCell className="text-center">{formatDate(pedido.dataPedido)}</TableCell>
+
+                            {/* VOLTAR AO NORMAL QUANDO TERMINAR DE TROCAR */}
+<TableCell
+  className="text-center cursor-pointer"
+  onDoubleClick={() => iniciarEdicaoData(pedido)}
+>
+  {editandoDataId === pedido.id ? (
+    <Input
+      type="date"
+      autoFocus
+      className="w-[150px]"
+      value={novaDataPedidoTabela}
+      onChange={(e) => setNovaDataPedidoTabela(e.target.value)}
+      onKeyDown={(e) => handleKeyDownData(e, pedido)} // SALVA AO APERTAR ENTER
+    />
+  ) : (
+    <span>{formatDate(pedido.dataPedido)}</span>
+  )}
+</TableCell>
+
+
                             <TableCell className="text-center font-medium">
                               {pedido?.fornecedor?.razaoSocial || "Não informado"}
                             </TableCell>
@@ -1503,39 +1519,8 @@ const enviarParaEstoque = async (pedidoId) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
-            {/* <Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
-              <CardHeader className="bg-gradient-to-r from-blue-400/40 to-purple-400/40 border-b-2 border-blue-400 dark:border-blue-600">
-                <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                  <div className="h-6 w-1 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full shadow-md"></div>
-                  Informações Gerais
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    ["Status", <StatusBadge key="status" status={pedidoSelecionado.status} />],
-                    ["Projeto Custeador", pedidoSelecionado.projeto || "Não informado"],
-                    ["Fornecedor", pedidoSelecionado.fornecedor?.razaoSocial || "Não informado"],
-                    ["Contato", pedidoSelecionado.fornecedor?.contato || "Não informado"],
-                    ["Telefone", pedidoSelecionado.fornecedor?.telefone || "Não informado"],
-                    ["E-mail", pedidoSelecionado.fornecedor?.email || "Não informado"],
-                    [
-                      "Período",
-                      `${formatDate(pedidoSelecionado.periodoInicio)} até ${formatDate(pedidoSelecionado.periodoFim)}`,
-                    ],
-                    ["Motivo de Cancelamento", pedidoSelecionado.motivoCancelamento || "Não informado"],
-                    ["Nota Fiscal", pedidoSelecionado.numeroNotaFiscal || "Não informado"],
-                    ["Chave de Acesso", pedidoSelecionado.chaveAcesso || "Não informado"],
-                    ["Recebido por", pedidoSelecionado.recebido || "Não informado"],
-                  ].map(([label, value], index) => (
-                    <div key={index} className="space-y-1">
-                      <Label className="text-sm font-medium text-gray-600">{label}</Label>
-                      <div className="text-sm">{value}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card> */}
+
+
 <Card className="shadow-xl border-2 border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
               <CardHeader className="bg-gradient-to-r from-blue-400/40 to-purple-400/40 border-b-2 border-blue-400 dark:border-blue-600">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
