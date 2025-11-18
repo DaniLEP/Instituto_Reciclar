@@ -113,83 +113,35 @@ export default function NovoPedido() {
     const auth = getAuth();
     const user = auth.currentUser;
     if (!user) return;
-
     const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
-    await set(rascunhoRef, {
-      numeroPedido,
-      dataSelecionada,
-      periodoInicio,
-      periodoFim,
-      category,
-      projeto,
-      fornecedorSelecionado,
-      dadosFornecedor,
-      itensPedido: novaListaItens,
-    });
+    await set(rascunhoRef, { numeroPedido, dataSelecionada, periodoInicio, periodoFim, category, projeto, fornecedorSelecionado, dadosFornecedor, itensPedido: novaListaItens });
   };
 
-// Converte o peso unitário sempre para gramas
-const getPesoEmGramas = (item) => {
-  if (!item?.peso) return 0;
-
-  if (item.unitMeasure?.toLowerCase() === "kg") {
-    return item.peso * 1000;
-  }
-  return item.peso; // já está em gramas
-};
-
-// Atualiza quantidade e kilosDesejados de forma bidirecional
-const handleQuantidadeChange = async (index, value, modoKg = true) => {
-  const item = itensPedido[index];
-  const pesoUnitario = getPesoEmGramas(item);
-  let novaQuantidade = 0;
-  let kilosDesejados = item.kilosDesejados || 0;
-
-  if (modoKg) {
-    // Atualização via quilos
-    kilosDesejados = parseFloat(value) || 0;
-    if (pesoUnitario > 0) {
-      novaQuantidade = Math.ceil((kilosDesejados * 1000) / pesoUnitario);
+  // Converte o peso unitário sempre para gramas
+  const getPesoEmGramas = (item) => {
+    if (!item?.peso) return 0;
+    if (item.unitMeasure?.toLowerCase() === "kg") {return item.peso * 1000;} return item.peso;};
+  
+  const handleQuantidadeChange = async (index, value, modoKg = true) => {
+    const item = itensPedido[index];
+    const pesoUnitario = getPesoEmGramas(item);
+    let novaQuantidade = 0;
+    let kilosDesejados = item.kilosDesejados || 0;
+    if (modoKg) { kilosDesejados = parseFloat(value) || 0;
+      if (pesoUnitario > 0) { novaQuantidade = Math.ceil((kilosDesejados * 1000) / pesoUnitario); }
+    } 
+    else {novaQuantidade = parseInt(value) || 0;
+      if (pesoUnitario > 0) {kilosDesejados = (novaQuantidade * pesoUnitario) / 1000;}
     }
-  } else {
-    // Atualização via quantidade
-    novaQuantidade = parseInt(value) || 0;
-    if (pesoUnitario > 0) {
-      kilosDesejados = (novaQuantidade * pesoUnitario) / 1000;
-    }
-  }
-
-  const novaLista = itensPedido.map((prod, i) =>
-    i === index
-      ? { ...prod, quantidade: novaQuantidade, kilosDesejados }
-      : prod
-  );
-
-  setItensPedido(novaLista);
-  await atualizarRascunho(novaLista);
-};
-
-
-  const handleObservacaoChange = async (index, novaObs) => {
-    const novaLista = itensPedido.map((item, i) =>
-      i === index ? { ...item, observacao: novaObs } : item
-    );
+    const novaLista = itensPedido.map((prod, i) => i === index ? { ...prod, quantidade: novaQuantidade, kilosDesejados } : prod);
     setItensPedido(novaLista);
     await atualizarRascunho(novaLista);
   };
 
-  const handleProductSelect = (p) => {
-    setProductSelecionado(p);
-    setDadosProduct({ ...p, quantidade: 1, observacao: "" });
-    setShowModalProduto(false);
-    toast.success("Produto selecionado!");
-  };
-
+  const handleObservacaoChange = async (index, novaObs) => { const novaLista = itensPedido.map((item, i) => i === index ? { ...item, observacao: novaObs } : item); setItensPedido(novaLista); await atualizarRascunho(novaLista);};
+  const handleProductSelect = (p) => { setProductSelecionado(p); setDadosProduct({ ...p, quantidade: 1, observacao: "" }); setShowModalProduto(false); toast.success("Produto selecionado!");};
   const handleAddProductToOrder = async () => {
-    if (!productSelecionado || dadosProduct.quantidade <= 0) {
-      toast.error("Selecione um produto e insira uma quantidade válida!");
-      return;
-    }
+    if (!productSelecionado || dadosProduct.quantidade <= 0) {toast.error("Selecione um produto e insira uma quantidade válida!"); return;}
     const novaLista = [...itensPedido, dadosProduct];
     setItensPedido(novaLista);
     setProductSelecionado(null);
@@ -199,82 +151,35 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
   };
   
 
-  const handleDelete = async (index) => {
-    const clone = [...itensPedido];
-    clone.splice(index, 1);
-    setItensPedido(clone);
-    await atualizarRascunho(clone);
-  };
-
+  const handleDelete = async (index) => { const clone = [...itensPedido]; clone.splice(index, 1); setItensPedido(clone);  await atualizarRascunho(clone);};
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!dataSelecionada || !periodoInicio || !periodoFim || !category || !projeto || !fornecedorSelecionado || itensPedido.length === 0) {
-      toast.error("Por favor, preencha todos os campos obrigatórios!");
-      return;
-    }
-    const pedido = {
-      numeroPedido,
-      projeto,
-      dataPedido: dataSelecionada,
-      periodoInicio,
-      periodoFim,
-      category,
-      fornecedor: dadosFornecedor,
-      produtos: itensPedido,
-      status: "Pendente",
-      dataCriacao: new Date().toISOString(),
-    };
+      toast.error("Por favor, preencha todos os campos obrigatórios!"); return;}
+    const pedido = { numeroPedido, projeto, dataPedido: dataSelecionada, periodoInicio, periodoFim, category, fornecedor: dadosFornecedor, produtos: itensPedido, status: "Pendente", dataCriacao: new Date().toISOString(), };
     try {
       const pedidosRef = ref(db, "novosPedidos");
       const newPedidoRef = push(pedidosRef);
       await set(newPedidoRef, pedido);
       const auth = getAuth();
       const user = auth.currentUser;
-      if (user) {
-        const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
-        await remove(rascunhoRef);
-      }
+      if (user) {const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`); await remove(rascunhoRef);}
       toast.success("Pedido finalizado e rascunho removido!");
-      setDataSelecionada("");
-      setPeriodoInicio("");
-      setPeriodoFim("");
-      setCategory("");
-      setProjeto("");
-      setFornecedorSelecionado(null);
-      setItensPedido([]);
-    } catch (error) {
-      toast.error("Erro ao salvar o pedido: " + error.message);
-    }
+      setDataSelecionada(""); setPeriodoInicio(""); setPeriodoFim(""); setCategory(""); setProjeto(""); setFornecedorSelecionado(null); setItensPedido([]);
+    } catch (error) { toast.error("Erro ao salvar o pedido: " + error.message);}
   };
 
   const filteredProducts = products.filter((p) => {
     const termo = searchTerm.toLowerCase();
-    return (
-      p.name?.toLowerCase().includes(termo) ||
-      p.tipo?.toLowerCase().includes(termo) ||
-      p.category?.toLowerCase().includes(termo)
-    );
+    return (p.name?.toLowerCase().includes(termo) || p.tipo?.toLowerCase().includes(termo) || p.category?.toLowerCase().includes(termo));
   });
 
   const salvarRascunhoManual = async (e) => {
     e?.preventDefault();
     const auth = getAuth();
     const user = auth.currentUser;
-    if (!user) {
-      toast.error("❌ Usuário não autenticado.");
-      return;
-    }
-    const rascunho = {
-      numeroPedido,
-      dataSelecionada,
-      periodoInicio,
-      periodoFim,
-      category,
-      projeto,
-      fornecedorSelecionado,
-      dadosFornecedor,
-      itensPedido,
-    };
+    if (!user) { toast.error("❌ Usuário não autenticado."); return;}
+    const rascunho = {numeroPedido, dataSelecionada, periodoInicio, periodoFim, category, projeto, fornecedorSelecionado, dadosFornecedor, itensPedido,};
     try {
       const rascunhoRef = ref(db, `rascunhosPedidos/${user.uid}`);
       await set(rascunhoRef, rascunho);
@@ -290,49 +195,27 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-gray-800">Cadastro de Pedido</CardTitle>
-          <CardDescription className="text-lg">
-            <Badge variant="outline" className="text-lg px-3 py-1">
-              Número do Pedido: {numeroPedido}
-            </Badge>
+          <CardDescription className="text-lg"><Badge variant="outline" className="text-lg px-3 py-1">Número do Pedido: {numeroPedido}</Badge>
           </CardDescription>
           <p className="text-gray-600">Preencha os detalhes do pedido abaixo</p>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="order-date" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />Data do Pedido
-            </Label>
-            <Input
-              id="order-date"
-              type="date"
-              value={dataSelecionada}
-              onChange={(e) => setDataSelecionada(e.target.value)}
-            />
+            <Label htmlFor="order-date" className="flex items-center gap-2"><Calendar className="h-4 w-4" />Data do Pedido</Label>
+            <Input id="order-date" type="date" value={dataSelecionada} onChange={(e) => setDataSelecionada(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="period-start">Período - Início</Label>
-            <Input
-              id="period-start"
-              type="date"
-              value={periodoInicio}
-              onChange={(e) => setPeriodoInicio(e.target.value)}
-            />
+            <Input id="period-start" type="date" value={periodoInicio} onChange={(e) => setPeriodoInicio(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="period-end">Período - Fim</Label>
-            <Input
-              id="period-end"
-              type="date"
-              value={periodoFim}
-              onChange={(e) => setPeriodoFim(e.target.value)}
-            />
+            <Input id="period-end" type="date" value={periodoFim} onChange={(e) => setPeriodoFim(e.target.value)}/>
           </div>
           <div>
             <Label>Categoria</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Proteina">Proteína</SelectItem>
                 <SelectItem value="Mantimento">Mantimento</SelectItem>
@@ -345,9 +228,7 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
           <div className="space-y-2">
             <Label>Projeto</Label>
             <Select value={projeto} onValueChange={setProjeto}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o projeto" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecione o projeto" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="CONDECA">CONDECA</SelectItem>
                 <SelectItem value="FUMCAD">FUMCAD</SelectItem>
@@ -361,16 +242,10 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
           <div className="flex justify-center w-full mb-8">
             <Card className="bg-yellow-50 border-yellow-200 shadow-md w-[700px]">
               <CardContent className="p-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-yellow-800 text-sm md:text-base">
-                  Você possui um pedido em andamento salvo automaticamente. Deseja continuar de onde parou?
-                </div>
+                <div className="text-yellow-800 text-sm md:text-base">Você possui um pedido em andamento salvo automaticamente. Deseja continuar de onde parou?</div>
                 <div className="flex gap-2">
-                  <Button variant="default" onClick={aplicarRascunho}>
-                    Continuar Rascunho
-                  </Button>
-                  <Button variant="outline" onClick={() => setRascunhoDisponivel(false)}>
-                    Ignorar
-                  </Button>
+                  <Button variant="default" onClick={aplicarRascunho}>Continuar Rascunho</Button>
+                  <Button variant="outline" onClick={() => setRascunhoDisponivel(false)}> Ignorar </Button>
                 </div>
               </CardContent>
             </Card>
@@ -381,16 +256,12 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
       {/* MODAL FORNECEDOR */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" /> Fornecedor
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Fornecedor</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Dialog open={showModalFornecedor} onOpenChange={setShowModalFornecedor}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />Selecionar Fornecedor
-              </Button>
+              <Button variant="outline" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />Selecionar Fornecedor </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
@@ -413,13 +284,7 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
                     </CardContent>
                   </Card>
                 ))}
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => navigate("/Cadastro_Fornecedor")}
-                >
-                  <Plus className="h-4 w-4 mr-2" />Novo Fornecedor
-                </Button>
+                <Button className="w-full" variant="outline"  onClick={() => navigate("/Cadastro_Fornecedor")}><Plus className="h-4 w-4 mr-2" />Novo Fornecedor</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -429,24 +294,12 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
               <CardContent className="p-4">
                 <h4 className="font-semibold text-green-800 mb-2">Fornecedor Selecionado</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>Razão Social:</strong> {fornecedorSelecionado.razaoSocial}
-                  </div>
-                  <div>
-                    <strong>CNPJ:</strong> {fornecedorSelecionado.cnpj}
-                  </div>
-                  <div>
-                    <strong>Grupo:</strong> {fornecedorSelecionado.grupo}
-                  </div>
-                  <div>
-                    <strong>Contato:</strong> {fornecedorSelecionado.contato}
-                  </div>
-                  <div>
-                    <strong>E-mail:</strong> {fornecedorSelecionado.email}
-                  </div>
-                  <div>
-                    <strong>Telefone:</strong> {fornecedorSelecionado.telefone}
-                  </div>
+                  <div><strong>Razão Social:</strong> {fornecedorSelecionado.razaoSocial}</div>
+                  <div><strong>CNPJ:</strong> {fornecedorSelecionado.cnpj}</div>
+                  <div><strong>Grupo:</strong> {fornecedorSelecionado.grupo}</div>
+                  <div><strong>Contato:</strong> {fornecedorSelecionado.contato}</div>
+                  <div><strong>E-mail:</strong> {fornecedorSelecionado.email}</div>
+                  <div><strong>Telefone:</strong> {fornecedorSelecionado.telefone}</div>
                 </div>
               </CardContent>
             </Card>
@@ -457,9 +310,7 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
       {/* MODAL PRODUTOS */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />Produtos
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"> <Package className="h-5 w-5" />Produtos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Dialog open={showModalProduto} onOpenChange={setShowModalProduto}>
@@ -476,12 +327,7 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
               <div className="space-y-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filtrar por produto, tipo ou grupo..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Filtrar por produto, tipo ou grupo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10"/>
                 </div>
                 <div className="border rounded-lg overflow-hidden">
                   <Table>
@@ -502,28 +348,16 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.tipo}</TableCell>
                           <TableCell>{product.marca}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{product.category}</Badge>
-                          </TableCell>
+                          <TableCell><Badge variant="secondary">{product.category}</Badge></TableCell>
                           <TableCell>{product.peso}</TableCell>
                           <TableCell>{product.unitMeasure}</TableCell>
-                          <TableCell>
-                            <Button size="sm" onClick={() => handleProductSelect(product)}>
-                              Selecionar
-                            </Button>
-                          </TableCell>
+                          <TableCell><Button size="sm" onClick={() => handleProductSelect(product)}>Selecionar</Button></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </div>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => navigate("/Cadastro_Geral")}
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Cadastrar Novo Produto
-                </Button>
+                <Button className="w-full" variant="outline" onClick={() => navigate("/Cadastro_Geral")}> <Plus className="h-4 w-4 mr-2" /> Cadastrar Novo Produto </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -548,12 +382,7 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
                   </div>
                   <div>
                     <Label>Marca</Label>
-                    <Input
-                      value={dadosProduct.marca || ""}
-                      onChange={(e) =>
-                        setDadosProduct({ ...dadosProduct, marca: e.target.value })
-                      }
-                    />
+                    <Input value={dadosProduct.marca || ""} onChange={(e) => setDadosProduct({ ...dadosProduct, marca: e.target.value })} />
                   </div>
                   <div>
                     <Label>Grupo</Label>
@@ -567,33 +396,14 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="quantity">Quantidade *</Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      value={dadosProduct.quantidade}
-                      onChange={(e) =>
-                        setDadosProduct({ ...dadosProduct, quantidade: Number(e.target.value) })
-                      }
-                      placeholder="Digite a quantidade"
-                    />
+                    <Input id="quantity" type="number" min="1" value={dadosProduct.quantidade} onChange={(e) => setDadosProduct({ ...dadosProduct, quantidade: Number(e.target.value) })} placeholder="Digite a quantidade" />
                   </div>
                   <div>
                     <Label htmlFor="observation">Observação</Label>
-                    <Textarea
-                      id="observation"
-                      value={dadosProduct.observacao}
-                      onChange={(e) =>
-                        setDadosProduct({ ...dadosProduct, observacao: e.target.value })
-                      }
-                      placeholder="Observações sobre o produto..."
-                      rows={3}
-                    />
+                    <Textarea id="observation" value={dadosProduct.observacao} onChange={(e) => setDadosProduct({ ...dadosProduct, observacao: e.target.value })} placeholder="Observações sobre o produto..." rows={3} />
                   </div>
                 </div>
-                <Button onClick={handleAddProductToOrder} className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />Adicionar Produto ao Pedido
-                </Button>
+                <Button onClick={handleAddProductToOrder} className="w-full"><Plus className="h-4 w-4 mr-2" />Adicionar Produto ao Pedido</Button>
               </CardContent>
             </Card>
           )}
@@ -603,137 +413,63 @@ const handleQuantidadeChange = async (index, value, modoKg = true) => {
       {/* TABELA DE ITENS DO PEDIDO */}
       {itensPedido.length > 0 && (
         <Card className="text-center">
-          <CardHeader>
-            <CardTitle>Itens do Pedido</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Itens do Pedido</CardTitle></CardHeader>
           <CardContent>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Filtrar por produto, tipo ou grupo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Filtrar por produto, tipo ou grupo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
-<Table>
-  <TableHeader>
-    <TableRow>
-      <TableHead>SKU</TableHead>
-      <TableHead>Nome</TableHead>
-      <TableHead>Tipo</TableHead>
-      <TableHead>Marca</TableHead>
-      <TableHead>Grupo</TableHead>
-      <TableHead>Peso</TableHead>
-      <TableHead>Kg Desejados</TableHead>
-      <TableHead>Quantidade Calculada</TableHead>
-      <TableHead>Observação</TableHead>
-      <TableHead>Ações</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {itensPedido
-      .filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.category.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .map((item, idx) => (
-        <TableRow key={idx}>
-          <TableCell className="font-mono text-sm">{item.sku}</TableCell>
-          <TableCell className="font-medium">{item.name}</TableCell>
-          <TableCell>{item.tipo}</TableCell>
-          <TableCell>
-            <Input
-              className="w-32 text-sm"
-              value={item.marca || ""}
-              onChange={async (e) => {
-                const novaLista = itensPedido.map((prod, i) =>
-                  i === idx ? { ...prod, marca: e.target.value } : prod
-                );
-                setItensPedido(novaLista);
-                await atualizarRascunho(novaLista);
-              }}
-            />
-          </TableCell>
-          <TableCell>
-            <Badge variant="secondary">{item.category}</Badge>
-          </TableCell>
-          <TableCell>
-            {item.peso} {item.unitMeasure}
-          </TableCell>
-
-          {/* Campo 1: Kg desejados */}
-          <TableCell>
-            <Input
-              type="number"
-              min="0"
-              step="0.1"
-              className="w-24 border rounded px-2 py-1 text-sm text-center"
-              value={item.kilosDesejados || ""}
-              onChange={(e) =>
-                handleQuantidadeChange(idx, parseFloat(e.target.value) || 0, true)
-              }
-              placeholder="Kg"
-            />
-          </TableCell>
-
-          {/* Campo 2: Quantidade calculada (agora editável) */}
-          <TableCell>
-            <Input
-              type="number"
-              min="0"
-              className="w-24 border rounded px-2 py-1 text-sm text-center"
-              value={item.quantidade || ""}
-              onChange={(e) =>
-                handleQuantidadeChange(idx, parseInt(e.target.value) || 0, false)
-              }
-              placeholder="Qtd"
-            />
-          </TableCell>
-
-          <TableCell>
-            <Textarea
-              className="w-full min-w-[200px] text-sm"
-              rows={2}
-              value={item.observacao || ""}
-              onChange={(e) => handleObservacaoChange(idx, e.target.value)}
-              placeholder="Digite a observação..."
-            />
-          </TableCell>
-          <TableCell>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => handleDelete(idx)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </TableCell>
-        </TableRow>
-      ))}
-  </TableBody>
-</Table>
-
-
-
-
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Marca</TableHead>
+                  <TableHead>Grupo</TableHead>
+                  <TableHead>Peso</TableHead>
+                  <TableHead>Kg Desejados</TableHead>
+                  <TableHead>Quantidade Calculada</TableHead>
+                  <TableHead>Observação</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {itensPedido.filter((item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                  item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-mono text-sm">{item.sku}</TableCell>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.tipo}</TableCell>
+                      <TableCell><Input className="w-32 text-sm" value={item.marca || ""}
+                          onChange={async (e) => {const novaLista = itensPedido.map((prod, i) => i === idx ? { ...prod, marca: e.target.value } : prod); setItensPedido(novaLista); await atualizarRascunho(novaLista);}}/></TableCell>
+                      <TableCell><Badge variant="secondary">{item.category}</Badge></TableCell>
+                      <TableCell>{item.peso} {item.unitMeasure}</TableCell>
+                      {/* Campo 1: Kg desejados */}
+                      <TableCell>
+                        <Input type="number" min="0" step="0.1" className="w-24 border rounded px-2 py-1 text-sm text-center"
+                          value={item.kilosDesejados || ""} onChange={(e) => handleQuantidadeChange(idx, parseFloat(e.target.value) || 0, true) } placeholder="Kg" />
+                      </TableCell>
+                      <TableCell>
+                        <Input type="number" min="0" className="w-24 border rounded px-2 py-1 text-sm text-center" value={item.quantidade || ""} onChange={(e) => handleQuantidadeChange(idx, parseInt(e.target.value) || 0, false)} placeholder="Qtd"/></TableCell>
+                      <TableCell>
+                        <Textarea className="w-full min-w-[200px] text-sm" rows={2} value={item.observacao || ""} onChange={(e) => handleObservacaoChange(idx, e.target.value)} placeholder="Digite a observação..." />
+                      </TableCell>
+                      <TableCell><Button size="sm" variant="destructive" onClick={() => handleDelete(idx)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}
 
       {/* BOTOES FINAIS */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => navigate("/Pedidos")}>
-          <ArrowLeft size={16} /> Voltar
-        </Button>
-        <Button variant="secondary" onClick={salvarRascunhoManual}>
-          💾 Salvar Rascunho
-        </Button>
-        <Button className="bg-green-600 hover:bg-green-700" type="submit" onClick={handleSubmit}>
-          Finalizar Pedido
-        </Button>
+        <Button variant="outline" onClick={() => navigate("/Pedidos")}><ArrowLeft size={16} /> Voltar</Button>
+        <Button variant="secondary" onClick={salvarRascunhoManual}>💾 Salvar Rascunho</Button>
+        <Button className="bg-green-600 hover:bg-green-700" type="submit" onClick={handleSubmit}>Finalizar Pedido</Button>
       </div>
     </div>
   );

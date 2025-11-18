@@ -334,7 +334,8 @@ const handleSave = () => {
 }
 
 
-
+// Código antigo para upload de planilha Excel
+// import React from "react";
 // import { useState } from "react";
 // import * as XLSX from "xlsx";
 // import { getDatabase, ref, set } from "firebase/database";

@@ -222,8 +222,8 @@ const fetchCNPJData = async (cnpj) => {
   )
 }
 
-
-
+// Código antigo para upload de planilha Excel
+// import React from "react";
 // import * as XLSX from "xlsx";
 // import { getDatabase, ref, push } from "firebase/database";
 // import { toast } from "react-toastify";

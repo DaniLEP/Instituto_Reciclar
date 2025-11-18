@@ -11,22 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
-
-import {
-  Mail,
-  ArrowLeft,
-  LogOut,
-  Loader2,
-  Shield,
-  Clock,
-  Settings,
-  Camera,
-  Star,
-  Activity,
-  User,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react"
+import { Mail, ArrowLeft, LogOut, Loader2, Shield, Clock, Settings, Camera, Star, Activity, User, ChevronRight, Sparkles } from "lucide-react"
 
 export default function Perfil() {
   const [usuario, setUsuario] = useState(null)
@@ -43,77 +28,41 @@ export default function Perfil() {
         const snapshot = await get(dbRef)
         if (snapshot.exists()) {
           const userData = snapshot.val()
-
           // Formata último acesso
-          const ultimoAcessoFormatado = userData.ultimoAcesso
-            ? new Date(userData.ultimoAcesso).toLocaleString("pt-BR", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })
-            : "Desconhecido"
-
+          const ultimoAcessoFormatado = userData.ultimoAcesso? new Date(userData.ultimoAcesso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short"}): "Desconhecido"
           setUsuario({ ...userData, ultimoAcessoFormatado })
-
           // Calcular progresso do perfil
           let completion = 0
           if (userData.nome) completion += 25
           if (userData.email) completion += 25
           if (userData.funcao) completion += 25
           if (userData.fotoPerfil) completion += 25
-          setProfileCompletion(completion)
-        } else {
-          console.warn("Usuário não encontrado no banco de dados.")
-          navigate("/")
-        }
-      } else {
-        console.warn("Usuário não autenticado.")
-        navigate("/")
-      }
-      setIsLoading(false)
+          setProfileCompletion(completion)} 
+        else {console.warn("Usuário não encontrado no banco de dados."); navigate("/")}} 
+      else {console.warn("Usuário não autenticado."); navigate("/")}
+      setIsLoading(false);
     }
 
     fetchUserData()
   }, [navigate])
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      navigate("/")
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error)
-    }
+    try { await signOut(auth); navigate("/");
+    } catch (error) {console.error("Erro ao fazer logout:", error)}
   }
 
   const getInitials = (nome) => {
     if (!nome) return "U"
-    return nome
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+    return nome.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
   }
 
   const getFuncaoConfig = (funcao) => {
     const configs = {
-      admin: {
-        color: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0",
-        icon: Shield,
-        label: "Administrador",
-      },
-      moderador: {color: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0", icon: Star, label: "Cozinha",},
-      usuario: {
-        color: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0",
-        icon: User,
-        label: "Nutricionista",
-      },
-      default: {
-        color: "bg-gray-300 text-black",
-        icon: User,
-        label: "Usuário",
-      },
+      admin: { color: "bg-gradient-to-r from-red-500 to-pink-500 text-white border-0", icon: Shield, label: "Administrador",},
+      moderador: { color: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0", icon: Star, label: "Cozinha",},
+      usuario: { color: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0", icon: User, label: "Nutricionista"},
+      default: { color: "bg-gray-300 text-black", icon: User, label: "Usuário"},
     }
-
     return configs[funcao?.toLowerCase()] || configs.default
   }
 
@@ -143,14 +92,7 @@ export default function Perfil() {
     )
   }
 
-  if (!usuario) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Usuário não encontrado.
-      </div>
-    )
-  }
-
+  if (!usuario) {return (<div className="min-h-screen flex items-center justify-center text-gray-500">Usuário não encontrado.</div>)}
   const funcaoConfig = getFuncaoConfig(usuario.funcao)
   const IconComponent = funcaoConfig.icon
 
@@ -161,9 +103,7 @@ export default function Perfil() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
             <img src="/Reciclar_LOGO.png" alt="Logo da Reciclar" className="w-20 h-15" />
-            <span className="font-bold text-xl bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-              Reciclar
-            </span>
+            <span className="font-bold text-xl bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">Reciclar</span>
           </div>
         </div>
 
@@ -176,14 +116,8 @@ export default function Perfil() {
                 <div className="absolute -bottom-12 left-8">
                   <div className="relative group">
                     <Avatar className="w-24 h-24 ring-4 ring-white shadow-2xl">
-                      <AvatarImage
-                        src={usuario.fotoPerfil || "/placeholder.svg"}
-                        alt={`Foto de perfil de ${usuario.nome}`}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-violet-500 to-cyan-500 text-white text-xl font-bold">
-                        {getInitials(usuario.nome)}
-                      </AvatarFallback>
+                      <AvatarImage src={usuario.fotoPerfil || "/placeholder.svg"} alt={`Foto de perfil de ${usuario.nome}`} className="object-cover"/>
+                      <AvatarFallback className="bg-gradient-to-br from-violet-500 to-cyan-500 text-white text-xl font-bold">{getInitials(usuario.nome)}</AvatarFallback>
                     </Avatar>
                     <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center cursor-pointer">
                       <Camera className="h-6 w-6 text-white" />
@@ -195,15 +129,9 @@ export default function Perfil() {
               <CardContent className="pt-16 pb-8 px-8">
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {usuario.nome}
-                      <Sparkles className="inline h-6 w-6 text-yellow-500 ml-2" />
-                    </h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{usuario.nome}<Sparkles className="inline h-6 w-6 text-yellow-500 ml-2" /></h1>
                     <p className="text-gray-600 mb-4">Bem-vindo de volta! 👋</p>
-                    <Badge className={`${funcaoConfig.color} px-3 py-1 text-sm font-semibold shadow-lg`}>
-                      <IconComponent className="h-4 w-4 mr-2" />
-                      {funcaoConfig.label}
-                    </Badge>
+                    <Badge className={`${funcaoConfig.color} px-3 py-1 text-sm font-semibold shadow-lg`}><IconComponent className="h-4 w-4 mr-2" />{funcaoConfig.label} </Badge>
                   </div>
                 </div>
 
@@ -217,27 +145,9 @@ export default function Perfil() {
 
                 {/* Dados */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoCard
-                    title="Email"
-                    value={usuario.email}
-                    icon={<Mail className="h-4 w-4 text-white" />}
-                    bgColor="bg-blue-500"
-                    textColor="text-blue"
-                  />
-                  <InfoCard
-                    title="Status"
-                    value="Ativo"
-                    icon={<Activity className="h-4 w-4 text-white" />}
-                    bgColor="bg-emerald-500"
-                    textColor="text-emerald"
-                  />
-                  <InfoCard
-                    title="Último acesso"
-                    value={usuario.ultimoAcessoFormatado || "Desconhecido"}
-                    icon={<Clock className="h-4 w-4 text-white" />}
-                    bgColor="bg-orange-500"
-                    textColor="text-orange"
-                  />
+                  <InfoCard title="Email" value={usuario.email} icon={<Mail className="h-4 w-4 text-white" />} bgColor="bg-blue-500" textColor="text-blue"/>
+                  <InfoCard title="Status" value="Ativo" icon={<Activity className="h-4 w-4 text-white" />} bgColor="bg-emerald-500" textColor="text-emerald" />
+                  <InfoCard title="Último acesso" value={usuario.ultimoAcessoFormatado || "Desconhecido"} icon={<Clock className="h-4 w-4 text-white" />} bgColor="bg-orange-500" textColor="text-orange"/>
                 </div>
               </CardContent>
             </Card>
@@ -247,27 +157,17 @@ export default function Perfil() {
           <div className="space-y-6">
             <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-xl">
               <CardHeader className="pb-3">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-violet-600" />
-                  Ações Rápidas
-                </h3>
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2"><Settings className="h-5 w-5 text-violet-600" />Ações Rápidas</h3>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to="/Home">
                   <Button className="w-full h-12 bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold rounded-xl shadow-lg group hover:scale-[1.02] transition-transform">
-                    <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Voltar ao Início
-                  </Button>
+                    <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />Voltar ao Início</Button>
                 </Link>
                 <Separator />
-                <Button
-                  onClick={handleLogout}
-                  variant="destructive"
-                  className="w-full h-12 bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold rounded-xl shadow-lg group hover:scale-[1.02] transition-transform"
-                >
-                  <LogOut className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-                  Sair da Conta
-                </Button>
+                <Button onClick={handleLogout} variant="destructive"
+                  className="w-full h-12 bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold rounded-xl shadow-lg group hover:scale-[1.02] transition-transform">
+                  <LogOut className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />Sair da Conta</Button>
               </CardContent>
             </Card>
 
@@ -287,9 +187,7 @@ export default function Perfil() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Nível de acesso</span>
-                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                      {funcaoConfig.label}
-                    </Badge>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0">{funcaoConfig.label}</Badge>
                   </div>
                 </div>
               </CardContent>

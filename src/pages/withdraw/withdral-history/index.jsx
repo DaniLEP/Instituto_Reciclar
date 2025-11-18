@@ -30,32 +30,19 @@ export default function HistoricoRetiradas() {
       const snapshot = await get(child(dbRef, "Retiradas"));
       if (snapshot.exists()) {
         const dataObj = snapshot.val();
-        let data = Object.entries(dataObj).map(([id, value]) => ({
-          id,
-          ...value,
-          totalKG: (Number(value.quantity) || 0) * (Number(value.peso) || 0),
-          dataRetirada: value.dataPedido // garante que a data exista
-        }));
+        let data = Object.entries(dataObj).map(([id, value]) => ({id, ...value, totalKG: (Number(value.quantity) || 0) * (Number(value.peso) || 0), dataRetirada: value.dataPedido})); // garante que a data exista
         // Ordena pelo mais recente primeiro
         data.sort((a, b) => new Date(b.dataRetirada) - new Date(a.dataRetirada));
-        setRetiradas(data);
-        setRetiradasFiltradas(data);
-      } else {
-        setRetiradas([]);
-        setRetiradasFiltradas([]);
-      }
+        setRetiradas(data); setRetiradasFiltradas(data);
+      } else {setRetiradas([]); setRetiradasFiltradas([]);}
     } catch (error) {
       console.error("Erro ao ler dados:", error);
       setRetiradas([]);
       setRetiradasFiltradas([]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false);}
   };
 
-  useEffect(() => {
-    fetchRetiradas();
-  }, []);
+  useEffect(() => {fetchRetiradas();}, []);
 
   // Formata datas
   const formatDate = (timestamp) => {
@@ -70,40 +57,26 @@ export default function HistoricoRetiradas() {
   useEffect(() => {
     let filtradas = [...retiradas];
     if (search.trim() !== "") {
-      const term = search.trim().toLowerCase();
-      filtradas = filtradas.filter(
-        (r) => r.name?.toLowerCase().includes(term) || r.sku?.toLowerCase().includes(term)
-      );
+      const term = search.trim().toLowerCase(); filtradas = filtradas.filter((r) => r.name?.toLowerCase().includes(term) || r.sku?.toLowerCase().includes(term));
     }
     if (responsavel !== "all") {
       filtradas = filtradas.filter((retirada) => retirada.retirante === responsavel);
     }
     if (dataInicio) {
-      const dtInicio = new Date(dataInicio);
-      filtradas = filtradas.filter((r) => new Date(r.dataRetirada) >= dtInicio);
+      const dtInicio = new Date(dataInicio); filtradas = filtradas.filter((r) => new Date(r.dataRetirada) >= dtInicio);
     }
     if (dataFim) {
-      const dtFim = new Date(dataFim);
-      filtradas = filtradas.filter((r) => new Date(r.dataRetirada) <= dtFim);
+      const dtFim = new Date(dataFim); filtradas = filtradas.filter((r) => new Date(r.dataRetirada) <= dtFim);
     }
     setRetiradasFiltradas(filtradas);
     setCurrentPage(1); // reinicia a paginação ao filtrar
   }, [search, responsavel, dataInicio, dataFim, retiradas]);
 
-  const limparFiltros = () => {
-    setSearch("");
-    setResponsavel("all");
-    setDataInicio("");
-    setDataFim("");
-  };
+  const limparFiltros = () => {setSearch(""); setResponsavel("all"); setDataInicio(""); setDataFim("");};
 
   // Paginação
   const totalPages = Math.ceil(retiradasFiltradas.length / itemsPerPage);
-  const currentItems = retiradasFiltradas.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
+  const currentItems = retiradasFiltradas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
@@ -126,9 +99,7 @@ export default function HistoricoRetiradas() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Cabeçalho */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => navigate("/Home")} className="bg-white">
-            <ArrowLeft className="h-4 w-4 mr-2" />Voltar
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate("/Home")} className="bg-white"><ArrowLeft className="h-4 w-4 mr-2" />Voltar</Button>
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Histórico de Retiradas</h1>
             <p className="text-slate-600 mt-1">Visualize e filtre todas as retiradas registradas</p>
@@ -138,9 +109,7 @@ export default function HistoricoRetiradas() {
         {/* Filtros */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Search className="h-5 w-5" /> Filtros de Busca
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-lg"><Search className="h-5 w-5" /> Filtros de Busca</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -148,23 +117,13 @@ export default function HistoricoRetiradas() {
                 <Label htmlFor="search">Buscar produto ou SKU</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="search"
-                    type="text"
-                    placeholder="Digite o produto ou SKU..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input id="search" type="text" placeholder="Digite o produto ou SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Responsável</Label>
                 <Select value={responsavel} onValueChange={setResponsavel}>
-                  <SelectTrigger>
-                    <User className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
+                  <SelectTrigger><User className="h-4 w-4 mr-2" /><SelectValue placeholder="Todos" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os responsáveis</SelectItem>
                     <SelectItem value="Camila">Camila</SelectItem>
@@ -188,9 +147,7 @@ export default function HistoricoRetiradas() {
                   <Input id="dataFim" type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="pl-10"/>
                 </div>
               </div>
-              <div className="flex items-end">
-                <Button variant="outline" onClick={limparFiltros} className="w-full"> Limpar filtros</Button>
-              </div>
+              <div className="flex items-end"><Button variant="outline" onClick={limparFiltros} className="w-full"> Limpar filtros</Button></div>
             </div>
           </CardContent>
         </Card>
@@ -199,12 +156,8 @@ export default function HistoricoRetiradas() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" /> Resultados
-              </CardTitle>
-              <div className="text-sm text-slate-600">
-                {retiradasFiltradas.length} {retiradasFiltradas.length === 1 ? "retirada encontrada" : "retiradas encontradas"}
-              </div>
+              <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Resultados</CardTitle>
+              <div className="text-sm text-slate-600">{retiradasFiltradas.length} {retiradasFiltradas.length === 1 ? "retirada encontrada" : "retiradas encontradas"}</div>
             </div>
           </CardHeader>
           <CardContent>
@@ -238,9 +191,7 @@ export default function HistoricoRetiradas() {
                           <TableCell>{retirada.marca}</TableCell>
                           <TableCell>{retirada.peso}</TableCell>
                           <TableCell className="text-center">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                              {retirada.quantity}
-                            </span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">{retirada.quantity}</span>
                           </TableCell>
                           <TableCell>{retirada.totalKG.toFixed(2)} kg</TableCell>
                           <TableCell>{retirada.retirante}</TableCell>
@@ -250,26 +201,11 @@ export default function HistoricoRetiradas() {
                     </TableBody>
                   </Table>
                 </div>
-
                 {/* Paginação */}
                 <div className="flex justify-between mt-4">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                  >
-                    Anterior
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    Página {currentPage} de {totalPages}
-                  </div>
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                  >
-                    Próximo
-                  </Button>
+                  <Button variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)} > Anterior </Button>
+                  <div className="flex items-center gap-2">Página {currentPage} de {totalPages}</div>
+                  <Button variant="outline" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => prev + 1)}>Próximo</Button>
                 </div>
               </>
             )}
